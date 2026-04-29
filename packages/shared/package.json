@@ -1,0 +1,18 @@
+{
+  "name": "@webpad/shared",
+  "version": "1.0.0",
+  "description": "Shared types, mock data, and utilities for WebPad projects",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "webpad",
+    "webtoon",
+    "shared"
+  ],
+  "author": "WebPad Team",
+  "license": "MIT"
+}

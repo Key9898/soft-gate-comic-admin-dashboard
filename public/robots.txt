@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /
+
+Sitemap: https://admin.webpad.com/sitemap.xml
