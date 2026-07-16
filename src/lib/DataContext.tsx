@@ -151,14 +151,69 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     return defaultSettings;
   });
 
-  // Save shared database to localStorage on modifications
+  // Load data from backend if VITE_USE_MOCK_API is 'false'
   useEffect(() => {
-    saveToLocalStorage(db);
+    const isMock = import.meta.env.VITE_USE_MOCK_API !== 'false';
+    if (!isMock) {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      fetch(`${baseUrl}/api/data`)
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch data');
+          return res.json();
+        })
+        .then((data) => {
+          setDb(data);
+        })
+        .catch((err) => {
+          console.error('Error fetching data from backend, falling back to local/mock:', err);
+        });
+
+      fetch(`${baseUrl}/api/settings`)
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch settings');
+          return res.json();
+        })
+        .then((data) => {
+          setSettings(data);
+        })
+        .catch((err) => {
+          console.error('Error fetching settings from backend, falling back to local/mock:', err);
+        });
+    }
+  }, []);
+
+  // Save shared database to localStorage or Backend on modifications
+  useEffect(() => {
+    const isMock = import.meta.env.VITE_USE_MOCK_API !== 'false';
+    if (isMock) {
+      saveToLocalStorage(db);
+    } else {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      fetch(`${baseUrl}/api/data`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(db),
+      }).catch((err) => {
+        console.error('Error saving data to backend:', err);
+      });
+    }
   }, [db]);
 
-  // Save settings to localStorage on modifications
+  // Save settings to localStorage or Backend on modifications
   useEffect(() => {
-    localStorage.setItem('softgate_admin_settings', JSON.stringify(settings));
+    const isMock = import.meta.env.VITE_USE_MOCK_API !== 'false';
+    if (isMock) {
+      localStorage.setItem('softgate_admin_settings', JSON.stringify(settings));
+    } else {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      fetch(`${baseUrl}/api/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      }).catch((err) => {
+        console.error('Error saving settings to backend:', err);
+      });
+    }
   }, [settings]);
 
   // State setters helpers to trigger re-renders by mutating the db wrapper state
