@@ -22,7 +22,7 @@ const config: StorybookConfig = {
         alias: {
           ...config.resolve?.alias,
           '@': path.resolve(__dirname, '../src'),
-          '@webpad/shared': path.resolve(__dirname, '../packages/shared/src'),
+          '@softgate/shared': path.resolve(__dirname, '../packages/shared/src'),
         },
       },
     }

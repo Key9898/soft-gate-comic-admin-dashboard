@@ -6,4 +6,4 @@ export {
   NoComments,
   NoSearchResults,
   NoMedia,
-} from './EmptyState'
+} from './EmptyState';

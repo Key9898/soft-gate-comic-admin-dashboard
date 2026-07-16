@@ -1,13 +1,13 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@webpad/shared': path.resolve(__dirname, './packages/shared/src'),
+      '@softgate/shared': path.resolve(__dirname, './packages/shared/src'),
     },
   },
   build: {
@@ -26,4 +26,4 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'recharts', 'framer-motion'],
   },
-})
+});

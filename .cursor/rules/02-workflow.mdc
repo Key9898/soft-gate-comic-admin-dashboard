@@ -1,0 +1,51 @@
+---
+description: Git workflow with husky pre-commit + pre-push hooks. Auto-attached when committing or pushing.
+globs:
+  - ".husky/**"
+  - "package.json"
+alwaysApply: false
+---
+
+# Git workflow
+
+## Hooks (husky)
+
+### pre-commit (`.husky/pre-commit`)
+
+Runs `npx lint-staged` — only touches **staged files**:
+
+| Pattern | Task |
+|---|---|
+| `*.{ts,tsx}` | `eslint --fix` → `prettier --write` |
+| `*.{js,jsx,json,css,md}` | `prettier --write` |
+| `wiki/**/*.md` | `prettier --write` |
+
+### pre-push (`.husky/pre-push`)
+
+Runs `npm run check` — full project validation:
+1. `eslint .`
+2. `prettier --check`
+3. `vitest run`
+4. `tsc -b && vite build`
+
+If any step fails, push is **blocked**.
+
+## Branching
+
+- `main` — production / stable
+- Feature: `feat/<scope>`, `fix/<scope>`, `chore/<scope>`
+
+## Standard flow
+
+```bash
+git add <files>
+git commit -m "feat: ..."   # pre-commit runs lint-staged
+git push origin <branch>    # pre-push runs full check
+```
+
+## Bypass (emergency)
+
+```bash
+git commit --no-verify
+git push --no-verify
+```

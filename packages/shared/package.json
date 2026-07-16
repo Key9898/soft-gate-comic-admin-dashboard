@@ -1,7 +1,7 @@
 {
-  "name": "@webpad/shared",
+  "name": "@softgate/shared",
   "version": "1.0.0",
-  "description": "Shared types, mock data, and utilities for WebPad projects",
+  "description": "Shared types, mock data, and utilities for Soft-Gate Comic projects",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
@@ -9,10 +9,11 @@
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "webpad",
+    "soft-gate",
+    "comic",
     "webtoon",
     "shared"
   ],
-  "author": "WebPad Team",
+  "author": "Soft-Gate Comic Team",
   "license": "MIT"
 }

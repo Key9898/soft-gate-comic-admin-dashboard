@@ -1,16 +1,16 @@
-import { useEffect, useRef, type ReactNode } from 'react'
-import { X } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useRef, type ReactNode } from 'react';
+import { X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title?: string
-  children: ReactNode
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
-  showCloseButton?: boolean
-  closeOnOverlayClick?: boolean
-  closeOnEscape?: boolean
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  showCloseButton?: boolean;
+  closeOnOverlayClick?: boolean;
+  closeOnEscape?: boolean;
 }
 
 const Modal = ({
@@ -23,25 +23,25 @@ const Modal = ({
   closeOnOverlayClick = true,
   closeOnEscape = true,
 }: ModalProps) => {
-  const modalRef = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (closeOnEscape && e.key === 'Escape') {
-        onClose()
+        onClose();
       }
-    }
+    };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'hidden'
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen, onClose, closeOnEscape])
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose, closeOnEscape]);
 
   const sizes = {
     sm: 'max-w-sm',
@@ -49,7 +49,7 @@ const Modal = ({
     lg: 'max-w-lg',
     xl: 'max-w-xl',
     full: 'max-w-4xl',
-  }
+  };
 
   return (
     <AnimatePresence>
@@ -69,10 +69,10 @@ const Modal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className={`relative w-full ${sizes[size]} bg-white rounded-2xl shadow-xl overflow-hidden`}
+            className={`relative w-full ${sizes[size]} overflow-hidden rounded-2xl bg-white shadow-xl`}
           >
             {(title || showCloseButton) && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
                 {title && <h2 className="text-lg font-semibold text-gray-900">{title}</h2>}
                 {showCloseButton && (
                   <button
@@ -80,9 +80,9 @@ const Modal = ({
                     title="Close"
                     aria-label="Close modal"
                     onClick={onClose}
-                    className="p-1 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+                    className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="h-5 w-5" />
                   </button>
                 )}
               </div>
@@ -92,7 +92,7 @@ const Modal = ({
         </div>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};
 
-export default Modal
+export default Modal;

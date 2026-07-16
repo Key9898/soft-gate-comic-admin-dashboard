@@ -1,25 +1,25 @@
-import { useState, useRef } from 'react'
-import { Upload, X, Image as ImageIcon, FileText } from 'lucide-react'
-import Button from '../Button/Button'
+import { useState, useRef } from 'react';
+import { Upload, X, Image as ImageIcon, FileText } from 'lucide-react';
+import Button from '../Button/Button';
 
 interface MediaFile {
-  id: string
-  name: string
-  type: 'image' | 'pdf'
-  url: string
-  size: number
-  dimensions?: { width: number; height: number }
-  pageCount?: number
-  uploadedAt: string
-  category: string
+  id: string;
+  name: string;
+  type: 'image' | 'pdf';
+  url: string;
+  size: number;
+  dimensions?: { width: number; height: number };
+  pageCount?: number;
+  uploadedAt: string;
+  category: string;
 }
 
 interface MediaPickerProps {
-  isOpen: boolean
-  onClose: () => void
-  onSelect: (files: MediaFile[]) => void
-  multiple?: boolean
-  accept?: 'image' | 'pdf' | 'all'
+  isOpen: boolean;
+  onClose: () => void;
+  onSelect: (files: MediaFile[]) => void;
+  multiple?: boolean;
+  accept?: 'image' | 'pdf' | 'all';
 }
 
 const mockMediaFiles: MediaFile[] = [
@@ -63,7 +63,7 @@ const mockMediaFiles: MediaFile[] = [
     uploadedAt: '2026-04-24',
     category: 'pdfs',
   },
-]
+];
 
 const MediaPicker = ({
   isOpen,
@@ -72,35 +72,35 @@ const MediaPicker = ({
   multiple = false,
   accept = 'all',
 }: MediaPickerProps) => {
-  const [files, setFiles] = useState<MediaFile[]>(mockMediaFiles)
-  const [selectedFiles, setSelectedFiles] = useState<MediaFile[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterType, setFilterType] = useState<'all' | 'image' | 'pdf'>('all')
-  const [filterCategory, setFilterCategory] = useState('all')
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [files, setFiles] = useState<MediaFile[]>(mockMediaFiles);
+  const [selectedFiles, setSelectedFiles] = useState<MediaFile[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<'all' | 'image' | 'pdf'>('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const filteredFiles = files.filter((file) => {
-    const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesType = filterType === 'all' || file.type === filterType
-    const matchesCategory = filterCategory === 'all' || file.category === filterCategory
-    const matchesAccept = accept === 'all' || file.type === accept
-    return matchesSearch && matchesType && matchesCategory && matchesAccept
-  })
+    const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = filterType === 'all' || file.type === filterType;
+    const matchesCategory = filterCategory === 'all' || file.category === filterCategory;
+    const matchesAccept = accept === 'all' || file.type === accept;
+    return matchesSearch && matchesType && matchesCategory && matchesAccept;
+  });
 
   const toggleSelect = (file: MediaFile) => {
     if (multiple) {
       setSelectedFiles((prev) =>
-        prev.find((f) => f.id === file.id) ? prev.filter((f) => f.id !== file.id) : [...prev, file]
-      )
+        prev.find((f) => f.id === file.id) ? prev.filter((f) => f.id !== file.id) : [...prev, file],
+      );
     } else {
-      setSelectedFiles([file])
+      setSelectedFiles([file]);
     }
-  }
+  };
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFiles = e.target.files
+    const uploadedFiles = e.target.files;
     if (uploadedFiles) {
       Array.from(uploadedFiles).forEach((file) => {
         const newFile: MediaFile = {
@@ -111,57 +111,57 @@ const MediaPicker = ({
           size: file.size,
           uploadedAt: new Date().toISOString().split('T')[0],
           category: 'general',
-        }
-        setFiles((prev) => [newFile, ...prev])
-      })
+        };
+        setFiles((prev) => [newFile, ...prev]);
+      });
     }
-  }
+  };
 
   const handleConfirm = () => {
-    onSelect(selectedFiles)
-    setSelectedFiles([])
-    onClose()
-  }
+    onSelect(selectedFiles);
+    setSelectedFiles([]);
+    onClose();
+  };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  }
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b">
+      <div className="relative mx-4 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b p-4">
           <h2 className="text-lg font-semibold text-gray-900">Select Media</h2>
           <button
             type="button"
             title="Close"
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="rounded-lg p-2 hover:bg-gray-100"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-4 border-b space-y-4">
+        <div className="space-y-4 border-b p-4">
           <div className="flex gap-4">
-            <div className="flex-1 relative">
+            <div className="relative flex-1">
               <input
                 type="text"
                 placeholder="Search files..."
                 aria-label="Search files"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <select
               aria-label="Filter by file type"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as 'all' | 'image' | 'pdf')}
-              className="px-4 py-2 border rounded-lg"
+              className="rounded-lg border px-4 py-2"
             >
               <option value="all">All Types</option>
               <option value="image">Images</option>
@@ -171,7 +171,7 @@ const MediaPicker = ({
               aria-label="Filter by category"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-4 py-2 border rounded-lg"
+              className="rounded-lg border px-4 py-2"
             >
               <option value="all">All Categories</option>
               <option value="covers">Covers</option>
@@ -192,7 +192,7 @@ const MediaPicker = ({
               className="hidden"
             />
             <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="w-4 h-4 mr-2" />
+              <Upload className="mr-2 h-4 w-4" />
               Upload New
             </Button>
             {selectedFiles.length > 0 && (
@@ -207,27 +207,27 @@ const MediaPicker = ({
               <div
                 key={file.id}
                 onClick={() => toggleSelect(file)}
-                className={`relative rounded-lg border-2 cursor-pointer overflow-hidden transition-all ${
+                className={`relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${
                   selectedFiles.find((f) => f.id === file.id)
                     ? 'border-primary-500 ring-2 ring-primary-200'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 {file.type === 'image' ? (
-                  <img src={file.url} alt={file.name} className="w-full h-32 object-cover" />
+                  <img src={file.url} alt={file.name} className="h-32 w-full object-cover" />
                 ) : (
-                  <div className="w-full h-32 bg-gray-100 flex items-center justify-center">
-                    <FileText className="w-12 h-12 text-gray-400" />
+                  <div className="flex h-32 w-full items-center justify-center bg-gray-100">
+                    <FileText className="h-12 w-12 text-gray-400" />
                   </div>
                 )}
                 <div className="p-2">
-                  <p className="text-xs font-medium text-gray-900 truncate">{file.name}</p>
+                  <p className="truncate text-xs font-medium text-gray-900">{file.name}</p>
                   <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
                 </div>
                 {selectedFiles.find((f) => f.id === file.id) && (
-                  <div className="absolute top-2 right-2 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center">
+                  <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary-500">
                     <svg
-                      className="w-4 h-4 text-white"
+                      className="h-4 w-4 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -246,14 +246,14 @@ const MediaPicker = ({
           </div>
 
           {filteredFiles.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <div className="py-12 text-center text-gray-500">
+              <ImageIcon className="mx-auto mb-4 h-12 w-12 text-gray-300" />
               <p>No files found</p>
             </div>
           )}
         </div>
 
-        <div className="flex justify-end gap-3 p-4 border-t">
+        <div className="flex justify-end gap-3 border-t p-4">
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
@@ -263,8 +263,8 @@ const MediaPicker = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MediaPicker
-export type { MediaFile }
+export default MediaPicker;
+export type { MediaFile };

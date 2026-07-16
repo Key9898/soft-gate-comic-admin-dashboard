@@ -1,18 +1,18 @@
-import { type ButtonHTMLAttributes } from 'react'
+import { type ButtonHTMLAttributes } from 'react';
 
 export interface ToggleProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   'type' | 'onChange'
 > {
-  checked: boolean
-  label: string
-  description?: string
-  onChange: (checked: boolean) => void
+  checked: boolean;
+  label: string;
+  description?: string;
+  onChange: (checked: boolean) => void;
 }
 
 const getAriaChecked = (checked: boolean): 'true' | 'false' => {
-  return checked ? 'true' : 'false'
-}
+  return checked ? 'true' : 'false';
+};
 
 const Toggle = ({
   checked,
@@ -23,7 +23,7 @@ const Toggle = ({
   ...props
 }: ToggleProps) => {
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+    <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
       <div>
         <p className="font-medium text-gray-900">{label}</p>
         {description && <p className="text-sm text-gray-500">{description}</p>}
@@ -46,7 +46,7 @@ const Toggle = ({
         />
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default Toggle
+export default Toggle;

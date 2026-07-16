@@ -1,0 +1,51 @@
+---
+description: Project overview, entry points, and core commands for the Soft-Gate Comic Admin Dashboard. Always attached as base context.
+globs: []
+alwaysApply: true
+---
+
+# Project: soft-gate-comic-admin-dashboard
+
+Soft-Gate Comic Admin Dashboard — production-grade React dashboard for managing webtoons, episodes, comments, users, and analytics.
+
+## Stack at a glance
+
+- **React 18** + **TypeScript 5**
+- **Vite 5** — build tool, dev server
+- **Tailwind CSS v3** — style config (`tailwind.config.js`)
+- **ESLint 9** + **Prettier 3** + `prettier-plugin-tailwindcss`
+- **Vitest 4** + Testing Library + jsdom
+- **Husky 9** + **lint-staged 15** — git hooks
+
+## Entry points
+
+- `index.html` → `src/main.tsx` → `<App />` (`src/App.tsx`)
+- `global.css` — Tailwind import + styling
+- `vite.config.ts` — app build config
+- `vitest.config.ts` — test config
+
+## Top-level commands
+
+```bash
+npm run dev          # vite dev server (port 5173)
+npm run build        # tsc -b && vite build
+npm run preview      # serve production build
+npm run lint         # eslint .
+npm run format       # prettier --write (src/ + wiki/)
+npm run format:check # prettier --check
+npm run test         # vitest (watch)
+npm run test:run     # vitest run (single)
+npm run check        # lint + format:check + test:run + build  ← runs in pre-push
+```
+
+## Where things live
+
+| Area | Location |
+|---|---|
+| App source | `src/` |
+| Tests | `src/test/` or next to source files |
+| Wiki (AI knowledge base) | `wiki/` |
+| Project rules (Cursor) | `.cursor/rules/` |
+| Project skills (Cursor) | `.cursor/skills/` |
+| Project skills (Trae) | `.trae/skills/` |
+| Git hooks | `.husky/` |

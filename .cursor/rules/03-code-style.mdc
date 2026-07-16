@@ -1,0 +1,65 @@
+---
+description: Code style conventions — formatting, naming, component structure. Auto-attached when editing src/.
+globs:
+  - "src/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Code style
+
+## Formatting (Prettier-enforced)
+
+- 2-space indentation
+- Single quotes for strings, double for JSX attributes
+- Trailing commas (all)
+- 100-char line width
+- LF line endings
+- `prettier-plugin-tailwindcss` sorts Tailwind classes — let it run.
+
+## Naming
+
+| Thing | Convention | Example |
+|---|---|---|
+| Components | PascalCase | `UserCard.tsx` |
+| Hooks | camelCase, `use` prefix | `useDebounce.ts` |
+| Utilities | camelCase | `formatDate.ts` |
+| Constants | UPPER_SNAKE_CASE | `MAX_RETRIES` |
+| Types/Interfaces | PascalCase | `UserProfile` |
+| Folders | kebab-case (when multi-word) | `user-profile/` |
+| Test files | `*.test.tsx` / `*.test.ts` |
+
+## Component structure
+
+```tsx
+import { type ReactNode } from 'react';
+
+interface CardProps {
+  title: string;
+  children: ReactNode;
+}
+
+export function Card({ title, children }: CardProps) {
+  return (
+    <div className="rounded-2xl border border-slate-200 p-6 dark:border-slate-800">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      {children}
+    </div>
+  );
+}
+```
+
+- Destructure props in the signature when there are ≥3 props.
+
+## Avoid
+
+- ❌ Inline `style={{}}` (use Tailwind classes)
+- ❌ `any`
+- ❌ Comments that restate the code
+- ❌ Premature abstractions
+- ❌ Empty try/catch — log or re-throw
+
+## Imports
+
+- Absolute paths via TS config (no relative `../../../`)
+- Group order: 1) external, 2) internal `@/`, 3) relative `./`
+- Newline between groups

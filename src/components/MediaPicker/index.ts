@@ -1,2 +1,2 @@
-export { default } from './MediaPicker'
-export type { MediaFile } from './MediaPicker'
+export { default } from './MediaPicker';
+export type { MediaFile } from './MediaPicker';

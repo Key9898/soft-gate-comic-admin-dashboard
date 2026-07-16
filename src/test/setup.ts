@@ -1,29 +1,29 @@
-import '@testing-library/jest-dom'
-import { cleanup } from '@testing-library/react'
-import { afterEach, vi } from 'vitest'
+import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi } from 'vitest';
 
 afterEach(() => {
-  cleanup()
-})
+  cleanup();
+});
 
-const localStorageStore: Record<string, string> = {}
+const localStorageStore: Record<string, string> = {};
 
 const localStorageMock = {
   getItem: vi.fn((key: string) => localStorageStore[key] || null),
   setItem: vi.fn((key: string, value: string) => {
-    localStorageStore[key] = value
+    localStorageStore[key] = value;
   }),
   removeItem: vi.fn((key: string) => {
-    delete localStorageStore[key]
+    delete localStorageStore[key];
   }),
   clear: vi.fn(() => {
-    Object.keys(localStorageStore).forEach((key) => delete localStorageStore[key])
+    Object.keys(localStorageStore).forEach((key) => delete localStorageStore[key]);
   }),
-}
+};
 
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
-})
+});
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -37,7 +37,7 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-})
+});
 
-HTMLDialogElement.prototype.showModal = vi.fn()
-HTMLDialogElement.prototype.close = vi.fn()
+HTMLDialogElement.prototype.showModal = vi.fn();
+HTMLDialogElement.prototype.close = vi.fn();

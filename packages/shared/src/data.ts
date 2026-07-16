@@ -15,7 +15,7 @@ import type {
   Transaction,
   ScheduledEpisode,
   SharedData,
-} from './types'
+} from './types';
 
 export const mockDashboardStats: DashboardStats = {
   totalUsers: 125430,
@@ -26,7 +26,7 @@ export const mockDashboardStats: DashboardStats = {
   newUsersToday: 234,
   activeUsersToday: 8934,
   newEpisodesToday: 12,
-}
+};
 
 export const mockRevenueData: RevenueData[] = [
   { date: '2026-04-01', revenue: 4200, coins: 42000 },
@@ -43,7 +43,7 @@ export const mockRevenueData: RevenueData[] = [
   { date: '2026-04-12', revenue: 7200, coins: 72000 },
   { date: '2026-04-13', revenue: 6800, coins: 68000 },
   { date: '2026-04-14', revenue: 5900, coins: 59000 },
-]
+];
 
 export const mockUserGrowthData: UserGrowthData[] = [
   { date: '2026-03-27', users: 120000, activeUsers: 7500 },
@@ -51,15 +51,45 @@ export const mockUserGrowthData: UserGrowthData[] = [
   { date: '2026-04-10', users: 123200, activeUsers: 8400 },
   { date: '2026-04-17', users: 124500, activeUsers: 8700 },
   { date: '2026-04-24', users: 125430, activeUsers: 8934 },
-]
+];
 
 export const mockPopularWebtoons: PopularWebtoon[] = [
-  { id: '1', title: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' }, views: 2500000, likes: 125000, revenue: 12500 },
-  { id: '3', title: { mm: 'အမှောင်သူရဲကောင်း', en: 'Dark Hero' }, views: 3200000, likes: 156000, revenue: 15600 },
-  { id: '2', title: { mm: 'ရန်ကုန်မြို့မှာ ချစ်ခြင်းတရား', en: 'Love in Yangon' }, views: 1800000, likes: 98000, revenue: 9800 },
-  { id: '7', title: { mm: 'သွေးနက်လ', en: 'Blood Moon' }, views: 1100000, likes: 78000, revenue: 7800 },
-  { id: '8', title: { mm: 'ဆိုက်ဘာအိပ်မက်', en: 'Cyber Dream' }, views: 980000, likes: 72000, revenue: 7200 },
-]
+  {
+    id: '1',
+    title: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    views: 2500000,
+    likes: 125000,
+    revenue: 12500,
+  },
+  {
+    id: '3',
+    title: { mm: 'အမှောင်သူရဲကောင်း', en: 'Dark Hero' },
+    views: 3200000,
+    likes: 156000,
+    revenue: 15600,
+  },
+  {
+    id: '2',
+    title: { mm: 'ရန်ကုန်မြို့မှာ ချစ်ခြင်းတရား', en: 'Love in Yangon' },
+    views: 1800000,
+    likes: 98000,
+    revenue: 9800,
+  },
+  {
+    id: '7',
+    title: { mm: 'သွေးနက်လ', en: 'Blood Moon' },
+    views: 1100000,
+    likes: 78000,
+    revenue: 7800,
+  },
+  {
+    id: '8',
+    title: { mm: 'ဆိုက်ဘာအိပ်မက်', en: 'Cyber Dream' },
+    views: 980000,
+    likes: 72000,
+    revenue: 7200,
+  },
+];
 
 export const mockAuthors: Author[] = [
   {
@@ -97,25 +127,88 @@ export const mockAuthors: Author[] = [
   {
     id: '5',
     name: { mm: 'ကိုမြင့်', en: 'Ko Myint' },
-    bio: { mm: 'ကြောက်ရွံ့ဖွယ်နှင့် စိတ်လှုပ်ရှားဖွယ် ကားများ အထူးပြု', en: 'Horror and thriller specialist' },
+    bio: {
+      mm: 'ကြောက်ရွံ့ဖွယ်နှင့် စိတ်လှုပ်ရှားဖွယ် ကားများ အထူးပြု',
+      en: 'Horror and thriller specialist',
+    },
     followerCount: 92000,
     webtoonCount: 6,
     status: 'inactive',
   },
-]
+];
 
 export const mockGenres: Genre[] = [
-  { id: '1', name: { mm: 'အားလုံး', en: 'All' }, slug: 'all', description: 'All genres', webtoonCount: 892 },
-  { id: '2', name: { mm: 'အက်ရှင်', en: 'Action' }, slug: 'action', description: 'Action-packed stories', webtoonCount: 156 },
-  { id: '3', name: { mm: 'အချစ်ဇာတ်လမ်း', en: 'Romance' }, slug: 'romance', description: 'Love stories', webtoonCount: 234 },
-  { id: '4', name: { mm: 'စိတ်ကူးယဉ်', en: 'Fantasy' }, slug: 'fantasy', description: 'Magical worlds', webtoonCount: 189 },
-  { id: '5', name: { mm: 'ဟာသ', en: 'Comedy' }, slug: 'comedy', description: 'Funny stories', webtoonCount: 98 },
-  { id: '6', name: { mm: 'ဒရမ်မာ', en: 'Drama' }, slug: 'drama', description: 'Emotional stories', webtoonCount: 145 },
-  { id: '7', name: { mm: 'ကြောက်ရွံ့ဖွယ်', en: 'Horror' }, slug: 'horror', description: 'Scary stories', webtoonCount: 67 },
-  { id: '8', name: { mm: 'သိပ္ပံစိတ်ကူးယဉ်', en: 'Sci-Fi' }, slug: 'sci-fi', description: 'Science fiction', webtoonCount: 45 },
-  { id: '9', name: { mm: 'စိတ်လှုပ်ရှားဖွယ်', en: 'Thriller' }, slug: 'thriller', description: 'Suspenseful stories', webtoonCount: 78 },
-  { id: '10', name: { mm: 'နေ့စဉ်ဘဝ', en: 'Slice of Life' }, slug: 'slice-of-life', description: 'Daily life stories', webtoonCount: 56 },
-]
+  {
+    id: '1',
+    name: { mm: 'အားလုံး', en: 'All' },
+    slug: 'all',
+    description: 'All genres',
+    webtoonCount: 892,
+  },
+  {
+    id: '2',
+    name: { mm: 'အက်ရှင်', en: 'Action' },
+    slug: 'action',
+    description: 'Action-packed stories',
+    webtoonCount: 156,
+  },
+  {
+    id: '3',
+    name: { mm: 'အချစ်ဇာတ်လမ်း', en: 'Romance' },
+    slug: 'romance',
+    description: 'Love stories',
+    webtoonCount: 234,
+  },
+  {
+    id: '4',
+    name: { mm: 'စိတ်ကူးယဉ်', en: 'Fantasy' },
+    slug: 'fantasy',
+    description: 'Magical worlds',
+    webtoonCount: 189,
+  },
+  {
+    id: '5',
+    name: { mm: 'ဟာသ', en: 'Comedy' },
+    slug: 'comedy',
+    description: 'Funny stories',
+    webtoonCount: 98,
+  },
+  {
+    id: '6',
+    name: { mm: 'ဒရမ်မာ', en: 'Drama' },
+    slug: 'drama',
+    description: 'Emotional stories',
+    webtoonCount: 145,
+  },
+  {
+    id: '7',
+    name: { mm: 'ကြောက်ရွံ့ဖွယ်', en: 'Horror' },
+    slug: 'horror',
+    description: 'Scary stories',
+    webtoonCount: 67,
+  },
+  {
+    id: '8',
+    name: { mm: 'သိပ္ပံစိတ်ကူးယဉ်', en: 'Sci-Fi' },
+    slug: 'sci-fi',
+    description: 'Science fiction',
+    webtoonCount: 45,
+  },
+  {
+    id: '9',
+    name: { mm: 'စိတ်လှုပ်ရှားဖွယ်', en: 'Thriller' },
+    slug: 'thriller',
+    description: 'Suspenseful stories',
+    webtoonCount: 78,
+  },
+  {
+    id: '10',
+    name: { mm: 'နေ့စဉ်ဘဝ', en: 'Slice of Life' },
+    slug: 'slice-of-life',
+    description: 'Daily life stories',
+    webtoonCount: 56,
+  },
+];
 
 export const mockWebtoons: Webtoon[] = [
   {
@@ -307,7 +400,7 @@ export const mockWebtoons: Webtoon[] = [
     createdAt: '2024-09-01',
     updatedAt: '2026-04-19',
   },
-]
+];
 
 export const mockEpisodes: Episode[] = [
   {
@@ -363,7 +456,10 @@ export const mockEpisodes: Episode[] = [
     webtoonId: '1',
     webtoonTitle: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
     title: { mm: 'လေ့ကျင့်ခန်း', en: 'Training' },
-    description: { mm: 'စွမ်းအားကို ထိန်းချုပ်တတ်အောင် သင်ယူခြင်း...', en: 'Learning to control the power...' },
+    description: {
+      mm: 'စွမ်းအားကို ထိန်းချုပ်တတ်အောင် သင်ယူခြင်း...',
+      en: 'Learning to control the power...',
+    },
     images: [],
     isPremium: true,
     coinPrice: 5,
@@ -379,7 +475,10 @@ export const mockEpisodes: Episode[] = [
     webtoonId: '1',
     webtoonTitle: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
     title: { mm: 'အမှောင်လျှို့ဝှက်ချက်များ', en: 'Dark Secrets' },
-    description: { mm: 'ဖုံးကွယ်ထားသော အမှန်တရားများ ထွက်ပေါ်လာသည်...', en: 'Hidden truths begin to surface...' },
+    description: {
+      mm: 'ဖုံးကွယ်ထားသော အမှန်တရားများ ထွက်ပေါ်လာသည်...',
+      en: 'Hidden truths begin to surface...',
+    },
     images: [],
     isPremium: true,
     coinPrice: 5,
@@ -390,7 +489,7 @@ export const mockEpisodes: Episode[] = [
     createdAt: '2024-02-12',
     updatedAt: '2024-02-12',
   },
-]
+];
 
 export const mockUsers: User[] = [
   {
@@ -448,7 +547,7 @@ export const mockUsers: User[] = [
     createdAt: '2024-05-15',
     lastLoginAt: '2026-04-20',
   },
-]
+];
 
 export const mockComments: Comment[] = [
   {
@@ -457,7 +556,10 @@ export const mockComments: Comment[] = [
     user: mockUsers[0],
     webtoonId: '1',
     episodeId: '1',
-    content: { mm: 'အရမ်းကောင်းတယ်! ဇာတ်လမ်းကို အရမ်းနှစ်သက်တယ်။', en: 'Amazing! I really love this story.' },
+    content: {
+      mm: 'အရမ်းကောင်းတယ်! ဇာတ်လမ်းကို အရမ်းနှစ်သက်တယ်။',
+      en: 'Amazing! I really love this story.',
+    },
     likeCount: 24,
     status: 'visible',
     createdAt: '2026-04-25T10:30:00Z',
@@ -473,7 +575,7 @@ export const mockComments: Comment[] = [
     status: 'visible',
     createdAt: '2026-04-25T11:45:00Z',
   },
-]
+];
 
 export const mockMediaFiles: MediaFile[] = [
   {
@@ -494,7 +596,7 @@ export const mockMediaFiles: MediaFile[] = [
     uploadedAt: '2026-04-21',
     category: 'covers',
   },
-]
+];
 
 export const mockActivityLogs: ActivityLog[] = [
   {
@@ -508,7 +610,7 @@ export const mockActivityLogs: ActivityLog[] = [
     details: { mm: 'ဝက်ဘ်တွန်းအသစ် ဖန်တီးခဲ့သည်', en: 'Created new webtoon' },
     createdAt: '2026-04-27T10:00:00Z',
   },
-]
+];
 
 export const mockReports: Report[] = [
   {
@@ -520,11 +622,14 @@ export const mockReports: Report[] = [
     reporterName: 'john_doe',
     targetId: 'c1',
     targetName: { mm: 'အပိုင်း ၅ မှ မှတ်ချက်', en: 'Comment on Episode 5' },
-    description: { mm: 'ဤမှတ်ချက်တွင် မသင့်လျော်သော စကားလုံးများ ပါဝင်နေသည်။', en: 'This comment contains inappropriate language.' },
+    description: {
+      mm: 'ဤမှတ်ချက်တွင် မသင့်လျော်သော စကားလုံးများ ပါဝင်နေသည်။',
+      en: 'This comment contains inappropriate language.',
+    },
     priority: 'high',
     createdAt: '2026-04-27T12:00:00Z',
   },
-]
+];
 
 export const mockTransactions: Transaction[] = [
   {
@@ -539,7 +644,7 @@ export const mockTransactions: Transaction[] = [
     createdAt: '2026-04-27 14:30',
     paymentMethod: 'Credit Card',
   },
-]
+];
 
 export const mockScheduledEpisodes: ScheduledEpisode[] = [
   {
@@ -551,9 +656,7 @@ export const mockScheduledEpisodes: ScheduledEpisode[] = [
     scheduledAt: '2026-04-28T10:00:00',
     status: 'scheduled',
   },
-]
-
-
+];
 
 export const getSharedData = (): SharedData => ({
   dashboardStats: mockDashboardStats,
@@ -571,43 +674,43 @@ export const getSharedData = (): SharedData => ({
   reports: mockReports,
   transactions: mockTransactions,
   scheduledEpisodes: mockScheduledEpisodes,
-})
+});
 
 export const exportToJSON = (data: SharedData): string => {
-  return JSON.stringify(data, null, 2)
-}
+  return JSON.stringify(data, null, 2);
+};
 
 export const importFromJSON = (jsonString: string): SharedData => {
   try {
-    return JSON.parse(jsonString) as SharedData
+    return JSON.parse(jsonString) as SharedData;
   } catch {
-    throw new Error('Invalid JSON format')
+    throw new Error('Invalid JSON format');
   }
-}
+};
 
-export const downloadJSON = (data: SharedData, filename: string = 'webpad-data.json') => {
-  const json = exportToJSON(data)
-  const blob = new Blob([json], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
+export const downloadJSON = (data: SharedData, filename: string = 'softgate-comic-data.json') => {
+  const json = exportToJSON(data);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
 export const saveToLocalStorage = (data: SharedData) => {
-  localStorage.setItem('webpad-shared-data', exportToJSON(data))
-}
+  localStorage.setItem('softgate-comic-shared-data', exportToJSON(data));
+};
 
 export const loadFromLocalStorage = (): SharedData | null => {
-  const stored = localStorage.getItem('webpad-shared-data')
+  const stored = localStorage.getItem('softgate-comic-shared-data');
   if (stored) {
     try {
-      return importFromJSON(stored)
+      return importFromJSON(stored);
     } catch {
-      return null
+      return null;
     }
   }
-  return null
-}
+  return null;
+};

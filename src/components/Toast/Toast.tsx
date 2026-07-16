@@ -1,41 +1,41 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react'
-import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-type ToastType = 'success' | 'error' | 'warning' | 'info'
+type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 interface Toast {
-  id: string
-  message: string
-  type: ToastType
-  duration?: number
+  id: string;
+  message: string;
+  type: ToastType;
+  duration?: number;
 }
 
 interface ToastContextType {
-  toasts: Toast[]
-  addToast: (message: string, type: ToastType, duration?: number) => void
-  removeToast: (id: string) => void
+  toasts: Toast[];
+  addToast: (message: string, type: ToastType, duration?: number) => void;
+  removeToast: (id: string) => void;
 }
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined)
+const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const useToast = () => {
-  const context = useContext(ToastContext)
+  const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used within a ToastProvider')
+    throw new Error('useToast must be used within a ToastProvider');
   }
-  return context
-}
+  return context;
+};
 
 const ToastIcon = ({ type }: { type: ToastType }) => {
   const icons = {
-    success: <CheckCircle className="w-5 h-5 text-green-500" />,
-    error: <AlertCircle className="w-5 h-5 text-red-500" />,
-    warning: <AlertTriangle className="w-5 h-5 text-yellow-500" />,
-    info: <Info className="w-5 h-5 text-blue-500" />,
-  }
-  return icons[type]
-}
+    success: <CheckCircle className="h-5 w-5 text-green-500" />,
+    error: <AlertCircle className="h-5 w-5 text-red-500" />,
+    warning: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+    info: <Info className="h-5 w-5 text-blue-500" />,
+  };
+  return icons[type];
+};
 
 const ToastItem = ({ toast, onClose }: { toast: Toast; onClose: () => void }) => {
   const bgColors = {
@@ -43,7 +43,7 @@ const ToastItem = ({ toast, onClose }: { toast: Toast; onClose: () => void }) =>
     error: 'bg-red-50 border-red-200',
     warning: 'bg-yellow-50 border-yellow-200',
     info: 'bg-blue-50 border-blue-200',
-  }
+  };
 
   return (
     <motion.div
@@ -51,7 +51,7 @@ const ToastItem = ({ toast, onClose }: { toast: Toast; onClose: () => void }) =>
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 50, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className={`flex items-center gap-3 p-4 rounded-lg border shadow-lg ${bgColors[toast.type]}`}
+      className={`flex items-center gap-3 rounded-lg border p-4 shadow-lg ${bgColors[toast.type]}`}
     >
       <ToastIcon type={toast.type} />
       <p className="flex-1 text-sm text-gray-700">{toast.message}</p>
@@ -60,39 +60,39 @@ const ToastItem = ({ toast, onClose }: { toast: Toast; onClose: () => void }) =>
         onClick={onClose}
         title="Close notification"
         aria-label="Close notification"
-        className="p-1 text-gray-400 hover:text-gray-600 rounded"
+        className="rounded p-1 text-gray-400 hover:text-gray-600"
       >
-        <X className="w-4 h-4" />
+        <X className="h-4 w-4" />
       </button>
     </motion.div>
-  )
-}
+  );
+};
 
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
-  const [toasts, setToasts] = useState<Toast[]>([])
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
   const addToast = (message: string, type: ToastType, duration = 5000) => {
-    const id = Math.random().toString(36).substring(2, 11)
-    setToasts((prev) => [...prev, { id, message, type, duration }])
-  }
+    const id = Math.random().toString(36).substring(2, 11);
+    setToasts((prev) => [...prev, { id, message, type, duration }]);
+  };
 
   const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id))
-  }
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
 
   useEffect(() => {
     if (toasts.length > 0) {
       const timer = setTimeout(() => {
-        setToasts((prev) => prev.slice(1))
-      }, toasts[0].duration)
-      return () => clearTimeout(timer)
+        setToasts((prev) => prev.slice(1));
+      }, toasts[0].duration);
+      return () => clearTimeout(timer);
     }
-  }, [toasts])
+  }, [toasts]);
 
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
       {children}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
+      <div className="fixed right-4 top-4 z-50 flex max-w-sm flex-col gap-2">
         <AnimatePresence mode="popLayout">
           {toasts.map((toast) => (
             <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
@@ -100,5 +100,5 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
         </AnimatePresence>
       </div>
     </ToastContext.Provider>
-  )
-}
+  );
+};

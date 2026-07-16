@@ -1,0 +1,56 @@
+---
+description: Testing conventions with Vitest + Testing Library. Auto-attached when writing or editing tests.
+globs:
+  - "src/test/**/*.{ts,tsx}"
+  - "src/**/*.{test,spec}.{ts,tsx}"
+alwaysApply: false
+---
+
+# Testing
+
+## Setup
+
+- Runner: **Vitest 4** (Vite-native)
+- Environment: `jsdom`
+- Globals: enabled (`describe`, `it`, `expect`, `beforeEach` etc. — no imports needed)
+- Matchers: `@testing-library/jest-dom/vitest` (loaded in `src/test/setup.ts`)
+
+## Patterns
+
+### Component smoke test
+
+```tsx
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { Card } from '../components/Card';
+
+describe('Card', () => {
+  it('renders title and children', () => {
+    render(<Card title="Hi"><p>Body</p></Card>);
+    expect(screen.getByRole('heading', { name: 'Hi' })).toBeInTheDocument();
+    expect(screen.getByText('Body')).toBeInTheDocument();
+  });
+});
+```
+
+### User interaction
+
+```tsx
+import userEvent from '@testing-library/user-event';
+
+it('submits the form', async () => {
+  const onSubmit = vi.fn();
+  render(<Form onSubmit={onSubmit} />);
+  await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  expect(onSubmit).toHaveBeenCalledOnce();
+});
+```
+
+## What to test
+
+- ✅ Component renders expected text/elements
+- ✅ User interactions (click, type, submit)
+- ✅ Conditional rendering (loading, error, empty states)
+- ✅ Accessibility — queries by role, name, label
+- ❌ Snapshot tests
+- ❌ Trivial getters

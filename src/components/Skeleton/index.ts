@@ -5,4 +5,4 @@ export {
   StatsSkeleton,
   ImageSkeleton,
   TextSkeleton,
-} from './Skeleton'
+} from './Skeleton';

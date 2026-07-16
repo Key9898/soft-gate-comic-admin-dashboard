@@ -1,17 +1,17 @@
-import { AlertTriangle } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import Button from '../Button/Button'
+import { AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Button from '../Button/Button';
 
 interface ConfirmDialogProps {
-  isOpen: boolean
-  title: string
-  message: string
-  confirmText?: string
-  cancelText?: string
-  onConfirm: () => void
-  onCancel: () => void
-  isLoading?: boolean
-  variant?: 'danger' | 'warning' | 'info'
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isLoading?: boolean;
+  variant?: 'danger' | 'warning' | 'info';
 }
 
 const ConfirmDialog = ({
@@ -29,13 +29,13 @@ const ConfirmDialog = ({
     danger: 'text-red-600 bg-red-100',
     warning: 'text-yellow-600 bg-yellow-100',
     info: 'text-blue-600 bg-blue-100',
-  }
+  };
 
   const buttonVariants = {
     danger: 'danger' as const,
     warning: 'primary' as const,
     info: 'primary' as const,
-  }
+  };
 
   return (
     <AnimatePresence>
@@ -54,11 +54,11 @@ const ConfirmDialog = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6"
+            className="relative mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
           >
             <div className="flex items-start gap-4">
-              <div className={`p-3 rounded-full ${iconColors[variant]}`}>
-                <AlertTriangle className="w-6 h-6" />
+              <div className={`rounded-full p-3 ${iconColors[variant]}`}>
+                <AlertTriangle className="h-6 w-6" />
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
@@ -77,7 +77,7 @@ const ConfirmDialog = ({
         </div>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};
 
-export default ConfirmDialog
+export default ConfirmDialog;

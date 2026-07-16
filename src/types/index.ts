@@ -17,4 +17,4 @@ export type {
   Transaction,
   ScheduledEpisode,
   SharedData,
-} from '@webpad/shared'
+} from '@softgate/shared';

@@ -1,0 +1,34 @@
+---
+description: Tailwind v3 + TypeScript + React 18 specific patterns. Auto-attached when editing src/ files.
+globs:
+  - "src/**/*.{ts,tsx,css}"
+alwaysApply: false
+---
+
+# Tech stack specifics
+
+## Tailwind CSS v3
+
+- Configuration lives in `tailwind.config.js`.
+- Use `@tailwind base; @tailwind components; @tailwind utilities;` in `global.css`.
+- Path aliases: `@/` maps to `src/`.
+
+## TypeScript
+
+- Strict mode ON (`strict`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`).
+- Paths map in `tsconfig.json`.
+- Prefer `type` imports for types-only: `import { type Foo } from '...'`.
+
+## React 18
+
+- Use `<StrictMode>` in entry (already set in `src/main.tsx`).
+- Functional components only.
+- Hooks rules enforced by `eslint-plugin-react-hooks`.
+- Avoid `useEffect` deps with object literals.
+
+## Vitest
+
+- Config: `vitest.config.ts`.
+- Globals enabled (`describe` / `it` / `expect` available without import).
+- Setup file: `src/test/setup.ts` loads `@testing-library/jest-dom/vitest`.
+- Tests live next to source: `src/test/<Name>.test.tsx` or `<Name>.test.tsx`.
