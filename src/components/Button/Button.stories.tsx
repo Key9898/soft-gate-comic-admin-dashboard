@@ -9,7 +9,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'outline', 'ghost', 'danger'],
+      options: ['primary', 'secondary', 'outline', 'ghost', 'danger', 'burst'],
     },
     size: {
       control: 'select',
@@ -59,6 +59,13 @@ export const Danger: Story = {
   args: {
     variant: 'danger',
     children: 'Danger Button',
+  },
+};
+
+export const Burst: Story = {
+  args: {
+    variant: 'burst',
+    children: 'Burst Button',
   },
 };
 

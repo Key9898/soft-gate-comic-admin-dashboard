@@ -31,3 +31,10 @@ storybook-static
 .env
 .env.local
 .env.*.local
+
+# Local session detail (dual-track docs — wiki/ is committed)
+docs/
+
+# Windows reserved-name accidentals (e.g. `npx ... -o ./nul`)
+/nul
+nul

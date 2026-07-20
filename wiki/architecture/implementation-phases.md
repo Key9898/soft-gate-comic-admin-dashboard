@@ -37,3 +37,16 @@
 - [x] Rename reference instructions document to `SOFTGATE_INSTRUCTIONS.md` (2026-07-15)
 - [x] Clean up old links inside crawler files `robots.txt` and `sitemap.xml` (2026-07-15)
 - [x] Verify complete system compiles and executes unit checks successfully (2026-07-15)
+
+## Brand Theme Alignment (Phase 6)
+
+> Logo + teal/`burst-*` magenta theme (website mark). Includes token naming fix so Tailwind compiles cleanly. (Former draft Phase 5 work folded here.)
+
+- [x] Switch Sidebar + Login logo from `logo-v2.jpg` to website mark `logo.jpg` (2026-07-20)
+- [x] Recalibrate Tailwind `primary-*` to logo teal (`#64c8c8` / CTA `#0e9494`) (2026-07-20)
+- [x] Add magenta `burst-*` tokens for logo starburst (`#e63264`); do not use Tailwind `accent-*` name (2026-07-20)
+- [x] Remove purple/violet brand chrome from charts and feature pages (2026-07-20)
+- [x] Wire burst to notification dots / content badges; add Button `burst` variant (2026-07-20)
+- [x] Fix invalid `@apply` opacity / broken color utilities in `global.css` (2026-07-20)
+- [x] Document brand tokens in `wiki/conventions/brand-color-tokens.md` (2026-07-20)
+- [x] Verify Tailwind CSS compiles cleanly (2026-07-20)

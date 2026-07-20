@@ -133,7 +133,7 @@ const NotificationsPage = () => {
       case 'payment':
         return <DollarSign className="h-5 w-5 text-green-500" />;
       case 'content':
-        return <FileText className="h-5 w-5 text-purple-500" />;
+        return <FileText className="h-5 w-5 text-burst-600" />;
       default:
         return <Info className="h-5 w-5 text-gray-500" />;
     }
@@ -144,7 +144,7 @@ const NotificationsPage = () => {
       system: 'bg-blue-100 text-blue-700',
       report: 'bg-orange-100 text-orange-700',
       payment: 'bg-green-100 text-green-700',
-      content: 'bg-purple-100 text-purple-700',
+      content: 'bg-burst-100 text-burst-700',
     };
     return styles[type] || 'bg-gray-100 text-gray-700';
   };
@@ -304,7 +304,7 @@ const NotificationsPage = () => {
                             {notification.title.en}
                           </h3>
                           {!notification.isRead && (
-                            <span className="h-2 w-2 rounded-full bg-primary-500" />
+                            <span className="h-2 w-2 rounded-full bg-burst-600" />
                           )}
                         </div>
                         <p className="mt-1 text-sm text-gray-600">{notification.message.en}</p>

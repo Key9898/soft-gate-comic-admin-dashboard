@@ -72,7 +72,7 @@ const Sidebar = () => {
           {isCollapsed ? (
             <div className="absolute left-6 flex items-center justify-center">
               <img
-                src="/logo/logo-v2.jpg"
+                src="/logo/logo.jpg"
                 alt="Logo"
                 className="h-8 w-8 rounded-full object-cover shadow-sm"
               />
@@ -80,7 +80,7 @@ const Sidebar = () => {
           ) : (
             <div className="absolute left-4 flex items-center gap-2">
               <img
-                src="/logo/logo-v2.jpg"
+                src="/logo/logo.jpg"
                 alt="Logo"
                 className="h-8 w-8 rounded-full object-cover shadow-sm"
               />

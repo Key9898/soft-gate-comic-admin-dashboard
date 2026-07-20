@@ -15,6 +15,7 @@ After completing implementation work (code changes, bugfix batch, new Impl phase
 2. **Session** — update `docs/sessions/YYYY-MM-DD-session-summary.md` (today's date or active work end date) with full detail: phases, key files, test count, QA notes. `docs/` is gitignored — local mirror only.
 3. **Index drift** — if phase/row counts change, update `wiki/README.md` and `wiki/02-workflow.md`.
 4. **Confirm** briefly at end of task: which wiki + session paths were updated.
+5. **Lark** — always give the user a copy-pasteable **Title + Note gist** for manual Lark update. Use plain `-` bullets only (no `[x]` / `[ ]` checkboxes).
 
 **Never skip** because the user did not say "မှတ်ထား" / "save to wiki".
 

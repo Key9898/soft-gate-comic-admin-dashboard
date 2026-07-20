@@ -20,3 +20,8 @@ After completing implementation work:
 2. **Session**: Update `docs/sessions/YYYY-MM-DD-session-summary.md` (gitignored).
 3. **Index drift**: If phase counts change, update `wiki/README.md` and `wiki/02-workflow.md`.
 4. **Confirm**: Confirm which wiki + session paths were updated at the end of the task.
+5. **Lark**: Always give the user a copy-pasteable **Title + Note gist** for manual Lark task update (no `[x]` / `[ ]` checkboxes — use plain `-` bullets).
+
+## Lark Checklist Formatting
+
+- When providing a copy-pasteable checklist summary for Lark manual update, do NOT include checkmark indicators like `[x]` or `[ ]` in the markdown list items. Instead, provide a clean list structure (e.g. using regular bullet points `-`) so the user can easily copy and track it manually.

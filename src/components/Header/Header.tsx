@@ -31,7 +31,7 @@ const Header = () => {
           whileTap={{ scale: 0.95 }}
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-burst-600" />
         </motion.button>
 
         <ProfileDropdown onThemeToggle={toggleTheme} isDarkMode={isDarkMode} />

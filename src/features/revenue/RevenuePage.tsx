@@ -393,8 +393,8 @@ const RevenuePage = () => {
                       <span className="text-sm text-green-600">+{stats.coinsGrowth}%</span>
                     </div>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
-                    <Coins className="h-6 w-6 text-purple-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-burst-100">
+                    <Coins className="h-6 w-6 text-burst-600" />
                   </div>
                 </div>
               </Card>

@@ -130,7 +130,7 @@ const ActivityLogPage = () => {
       );
     }
     const icons: Record<string, React.ReactNode> = {
-      webtoon: <BookOpen className="h-4 w-4 text-purple-500" />,
+      webtoon: <BookOpen className="h-4 w-4 text-primary-500" />,
       episode: <FileText className="h-4 w-4 text-blue-500" />,
       user: <User className="h-4 w-4 text-orange-500" />,
       comment: <MessageSquare className="h-4 w-4 text-green-500" />,

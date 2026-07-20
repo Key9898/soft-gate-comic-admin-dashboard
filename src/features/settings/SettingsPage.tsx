@@ -171,7 +171,7 @@ const SettingsPage = () => {
                   <button
                     type="button"
                     className="h-8 w-8 rounded-full bg-primary-600 ring-2 ring-primary-600 ring-offset-2"
-                    title="Purple"
+                    title="Teal"
                   />
                   <button type="button" className="h-8 w-8 rounded-full bg-blue-600" title="Blue" />
                   <button

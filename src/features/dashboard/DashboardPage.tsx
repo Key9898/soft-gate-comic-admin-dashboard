@@ -129,8 +129,8 @@ const DashboardPage = () => {
                 <AreaChart data={revenueData}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#9333EA" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#9333EA" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#0E9494" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#0E9494" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -152,7 +152,7 @@ const DashboardPage = () => {
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#9333EA"
+                    stroke="#0E9494"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorRevenue)"
@@ -180,9 +180,9 @@ const DashboardPage = () => {
                   <Line
                     type="monotone"
                     dataKey="users"
-                    stroke="#9333EA"
+                    stroke="#0E9494"
                     strokeWidth={2}
-                    dot={{ fill: '#9333EA', strokeWidth: 2 }}
+                    dot={{ fill: '#0E9494', strokeWidth: 2 }}
                   />
                   <Line
                     type="monotone"
@@ -223,7 +223,7 @@ const DashboardPage = () => {
                     }}
                     formatter={(value: number) => [formatNumber(value), 'Views']}
                   />
-                  <Bar dataKey="views" fill="#9333EA" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="views" fill="#0E9494" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

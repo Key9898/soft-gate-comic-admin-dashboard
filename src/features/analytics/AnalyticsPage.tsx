@@ -21,13 +21,13 @@ import { Card, ProgressBar, PageSEO } from '../../components';
 import { useData } from '@/lib/DataContext';
 
 const PIE_COLORS = [
-  '#9333EA',
+  '#0E9494',
   '#22C55E',
   '#3B82F6',
   '#F59E0B',
   '#EF4444',
-  '#8B5CF6',
-  '#EC4899',
+  '#E63264',
+  '#FA326E',
   '#14B8A6',
 ];
 
@@ -37,8 +37,8 @@ const GENRE_COLORS = [
   'bg-blue-500',
   'bg-amber-500',
   'bg-red-500',
-  'bg-violet-500',
-  'bg-pink-500',
+  'bg-burst-600',
+  'bg-burst-500',
   'bg-teal-500',
 ] as const;
 
@@ -158,8 +158,8 @@ const AnalyticsPage = () => {
                 <AreaChart data={revenueData}>
                   <defs>
                     <linearGradient id="colorRevenueAnalytics" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#9333EA" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#9333EA" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#0E9494" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#0E9494" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -181,7 +181,7 @@ const AnalyticsPage = () => {
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#9333EA"
+                    stroke="#0E9494"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorRevenueAnalytics)"
@@ -210,9 +210,9 @@ const AnalyticsPage = () => {
                   <Line
                     type="monotone"
                     dataKey="users"
-                    stroke="#9333EA"
+                    stroke="#0E9494"
                     strokeWidth={2}
-                    dot={{ fill: '#9333EA', strokeWidth: 2 }}
+                    dot={{ fill: '#0E9494', strokeWidth: 2 }}
                     name="Total Users"
                   />
                   <Line
@@ -254,7 +254,7 @@ const AnalyticsPage = () => {
                     formatter={(value: number) => [formatNumber(value), 'Views']}
                   />
                   <Legend />
-                  <Bar dataKey="views" fill="#9333EA" radius={[4, 4, 0, 0]} name="Views" />
+                  <Bar dataKey="views" fill="#0E9494" radius={[4, 4, 0, 0]} name="Views" />
                   <Bar dataKey="likes" fill="#22C55E" radius={[4, 4, 0, 0]} name="Likes" />
                 </BarChart>
               </ResponsiveContainer>

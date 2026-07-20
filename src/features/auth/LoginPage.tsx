@@ -44,7 +44,7 @@ const LoginPage = () => {
           <Card className="w-full max-w-md">
             <div className="mb-8 text-center">
               <img
-                src="/logo/logo-v2.jpg"
+                src="/logo/logo.jpg"
                 alt="Logo"
                 className="mx-auto mb-4 h-16 w-16 rounded-full object-cover shadow-md"
               />
