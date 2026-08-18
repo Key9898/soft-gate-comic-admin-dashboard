@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import { Card, PageSEO } from '../../components';
 import { useData } from '@/lib/DataContext';
+import { readSgVar, useTheme } from '@/lib/theme';
 
 interface StatCardProps {
   title: string;
@@ -27,15 +28,15 @@ const StatCard = ({ title, value, icon, change, changeType = 'neutral' }: StatCa
   const changeColors = {
     positive: 'text-green-600',
     negative: 'text-red-600',
-    neutral: 'text-gray-500',
+    neutral: 'text-fg-muted',
   };
 
   return (
     <Card>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-fg-muted">{title}</p>
+          <p className="mt-1 text-2xl font-bold text-fg">{value}</p>
           {change && <p className={`mt-1 text-sm ${changeColors[changeType]}`}>{change}</p>}
         </div>
         <div className="rounded-lg bg-primary-50 p-3 text-primary-600">{icon}</div>
@@ -45,7 +46,21 @@ const StatCard = ({ title, value, icon, change, changeType = 'neutral' }: StatCa
 };
 
 const DashboardPage = () => {
-  const { dashboardStats: stats, revenueData, userGrowthData, popularWebtoons } = useData();
+  const { resolvedTheme } = useTheme();
+  const gridStroke = readSgVar('--sg-border', '#d1d5db');
+  const tickStroke = readSgVar('--sg-text-muted', '#4b5563');
+  // Subscribe to theme so chart strokes refresh when preference changes.
+  void resolvedTheme;
+  const {
+    revenueData,
+    userGrowthData,
+    popularWebtoons,
+    webtoons,
+    episodes,
+    users,
+    comments,
+    transactions,
+  } = useData();
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -61,38 +76,53 @@ const DashboardPage = () => {
     return `$${num.toLocaleString()}`;
   };
 
+  const totalViews = webtoons.reduce((sum, item) => sum + (item.viewCount || 0), 0);
+  const totalRevenue = transactions
+    .filter((tx) => tx.type === 'purchase' && tx.status === 'completed')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+  const activeUsers = users.filter((u) => u.status === 'active').length;
+  const visibleComments = comments.filter((c) => c.status === 'visible').length;
+  const growthRate =
+    userGrowthData.length >= 2
+      ? (
+          ((userGrowthData[userGrowthData.length - 1].users - userGrowthData[0].users) /
+            Math.max(userGrowthData[0].users, 1)) *
+          100
+        ).toFixed(1)
+      : '0.0';
+
   return (
     <>
       <PageSEO.Dashboard />
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="mt-1 text-gray-500">Welcome back! Here's what's happening today.</p>
+          <h1 className="text-2xl font-bold text-fg">Dashboard</h1>
+          <p className="mt-1 text-fg-muted">Welcome back! Here's what's happening today.</p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Users"
-            value={formatNumber(stats.totalUsers)}
+            value={formatNumber(users.length)}
             icon={<Users className="h-6 w-6" />}
-            change={`+${stats.newUsersToday} today`}
+            change={`${activeUsers} active`}
             changeType="positive"
           />
           <StatCard
             title="Total Webtoons"
-            value={stats.totalWebtoons}
+            value={webtoons.length}
             icon={<BookOpen className="h-6 w-6" />}
           />
           <StatCard
             title="Total Episodes"
-            value={formatNumber(stats.totalEpisodes)}
+            value={formatNumber(episodes.length)}
             icon={<FileText className="h-6 w-6" />}
-            change={`+${stats.newEpisodesToday} today`}
-            changeType="positive"
+            change={`${visibleComments} visible comments`}
+            changeType="neutral"
           />
           <StatCard
             title="Total Views"
-            value={formatNumber(stats.totalViews)}
+            value={formatNumber(totalViews)}
             icon={<Eye className="h-6 w-6" />}
           />
         </div>
@@ -100,30 +130,29 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <StatCard
             title="Total Revenue"
-            value={formatCurrency(stats.totalRevenue)}
+            value={formatCurrency(totalRevenue)}
             icon={<DollarSign className="h-6 w-6" />}
-            change="+12.5% from last month"
+            change="From completed purchases"
             changeType="positive"
           />
           <StatCard
-            title="Active Users Today"
-            value={formatNumber(stats.activeUsersToday)}
+            title="Active Users"
+            value={formatNumber(activeUsers)}
             icon={<Activity className="h-6 w-6" />}
-            change="+8.3% from yesterday"
             changeType="positive"
           />
           <StatCard
             title="Growth Rate"
-            value="23.5%"
+            value={`${growthRate}%`}
             icon={<TrendingUp className="h-6 w-6" />}
-            change="+2.1% from last week"
+            change="Across user-growth series"
             changeType="positive"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">Revenue Overview</h3>
+            <h3 className="mb-4 text-lg font-semibold text-fg">Revenue Overview</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={revenueData}>
@@ -133,18 +162,18 @@ const DashboardPage = () => {
                       <stop offset="95%" stopColor="#0E9494" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
                   <XAxis
                     dataKey="date"
                     tickFormatter={(value) => value.split('-')[2]}
-                    stroke="#9CA3AF"
+                    stroke={tickStroke}
                     fontSize={12}
                   />
-                  <YAxis stroke="#9CA3AF" fontSize={12} />
+                  <YAxis stroke={tickStroke} fontSize={12} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'white',
-                      border: '1px solid #E5E7EB',
+                      border: `1px solid ${gridStroke}`,
                       borderRadius: '8px',
                     }}
                     formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
@@ -163,17 +192,17 @@ const DashboardPage = () => {
           </Card>
 
           <Card>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">User Growth</h3>
+            <h3 className="mb-4 text-lg font-semibold text-fg">User Growth</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={userGrowthData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="date" stroke="#9CA3AF" fontSize={12} />
-                  <YAxis stroke="#9CA3AF" fontSize={12} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                  <XAxis dataKey="date" stroke={tickStroke} fontSize={12} />
+                  <YAxis stroke={tickStroke} fontSize={12} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'white',
-                      border: '1px solid #E5E7EB',
+                      border: `1px solid ${gridStroke}`,
                       borderRadius: '8px',
                     }}
                   />
@@ -199,16 +228,16 @@ const DashboardPage = () => {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">Popular Webtoons</h3>
+            <h3 className="mb-4 text-lg font-semibold text-fg">Popular Webtoons</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={popularWebtoons} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis type="number" stroke="#9CA3AF" fontSize={12} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                  <XAxis type="number" stroke={tickStroke} fontSize={12} />
                   <YAxis
                     dataKey="title.en"
                     type="category"
-                    stroke="#9CA3AF"
+                    stroke={tickStroke}
                     fontSize={12}
                     width={100}
                     tickFormatter={(value) =>
@@ -218,7 +247,7 @@ const DashboardPage = () => {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'white',
-                      border: '1px solid #E5E7EB',
+                      border: `1px solid ${gridStroke}`,
                       borderRadius: '8px',
                     }}
                     formatter={(value: number) => [formatNumber(value), 'Views']}
@@ -230,7 +259,7 @@ const DashboardPage = () => {
           </Card>
 
           <Card>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">Top Revenue Webtoons</h3>
+            <h3 className="mb-4 text-lg font-semibold text-fg">Top Revenue Webtoons</h3>
             <div className="space-y-4">
               {popularWebtoons.map((webtoon, index) => (
                 <div
@@ -238,14 +267,12 @@ const DashboardPage = () => {
                   className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-600">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-700">
                       {index + 1}
                     </span>
-                    <span className="font-medium text-gray-900">{webtoon.title.en}</span>
+                    <span className="font-medium text-fg">{webtoon.title.en}</span>
                   </div>
-                  <span className="font-semibold text-gray-900">
-                    {formatCurrency(webtoon.revenue)}
-                  </span>
+                  <span className="font-semibold text-fg">{formatCurrency(webtoon.revenue)}</span>
                 </div>
               ))}
             </div>

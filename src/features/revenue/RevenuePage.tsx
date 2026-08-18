@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   DollarSign,
-  TrendingUp,
   Coins,
   CreditCard,
   Download,
@@ -16,187 +15,33 @@ import {
   Clock,
 } from 'lucide-react';
 import { Card, Button, Input, Modal, PageSEO } from '../../components';
+import { useAuth } from '@/features/auth/useAuth';
+import { appendActivityLog } from '@/lib/activityLog';
+import { useData } from '@/lib/DataContext';
 
 import type { Transaction } from '../../types';
 
-interface PayoutRequest {
-  id: string;
-  authorId: string;
-  authorName: string;
-  amount: number;
-  status: 'pending' | 'approved' | 'rejected' | 'paid';
-  bankAccount: string;
-  requestedAt: string;
-  processedAt?: string;
-}
-
-const mockTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'purchase',
-    userId: 'u1',
-    userName: { en: 'john_doe', mm: 'ကိုဂျွန်' },
-    amount: 9.99,
-    coins: 100,
-    status: 'completed',
-    description: { en: 'Coin purchase - 100 coins', mm: 'ဒင်္ဂါးဝယ်ယူမှု - ၁၀၀ ဒင်္ဂါး' },
-    createdAt: '2026-04-27 14:30',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    id: '2',
-    type: 'purchase',
-    userId: 'u2',
-    userName: { en: 'jane_smith', mm: 'မဂျိန်း' },
-    amount: 19.99,
-    coins: 220,
-    status: 'completed',
-    description: { en: 'Coin purchase - 220 coins', mm: 'ဒင်္ဂါးဝယ်ယူမှု - ၂၂၀ ဒင်္ဂါး' },
-    createdAt: '2026-04-27 13:15',
-    paymentMethod: 'PayPal',
-  },
-  {
-    id: '3',
-    type: 'payout',
-    userId: 'a1',
-    userName: { en: 'Author One', mm: 'စာရေးသူ တစ်ဦး' },
-    amount: 150.0,
-    coins: 1500,
-    status: 'pending',
-    description: { en: 'Payout request', mm: 'ငွေထုတ်ယူရန် တောင်းဆိုချက်' },
-    createdAt: '2026-04-27 12:00',
-  },
-  {
-    id: '4',
-    type: 'refund',
-    userId: 'u3',
-    userName: { en: 'user_123', mm: 'အသုံးပြုသူ ၁၂၃' },
-    amount: 4.99,
-    coins: 50,
-    status: 'completed',
-    description: {
-      en: 'Refund for duplicate purchase',
-      mm: 'ထပ်နေသော ဝယ်ယူမှုအတွက် ငွေပြန်အမ်းခြင်း',
-    },
-    createdAt: '2026-04-26 18:45',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    id: '5',
-    type: 'purchase',
-    userId: 'u4',
-    userName: { en: 'reader_456', mm: 'စာဖတ်သူ ၄၅၆' },
-    amount: 49.99,
-    coins: 600,
-    status: 'completed',
-    description: { en: 'Coin purchase - 600 coins', mm: 'ဒင်္ဂါးဝယ်ယူမှု - ၆၀၀ ဒင်္ဂါး' },
-    createdAt: '2026-04-26 15:30',
-    paymentMethod: 'Google Pay',
-  },
-  {
-    id: '6',
-    type: 'payout',
-    userId: 'a2',
-    userName: { en: 'Author Two', mm: 'စာရေးသူ နှစ်ဦး' },
-    amount: 320.5,
-    coins: 3205,
-    status: 'completed',
-    description: { en: 'Payout approved', mm: 'ငွေထုတ်ယူခွင့် ပြုပြီး' },
-    createdAt: '2026-04-26 10:00',
-  },
-  {
-    id: '7',
-    type: 'purchase',
-    userId: 'u5',
-    userName: { en: 'webtoon_fan', mm: 'ဝက်ဘ်တွန်းပရိသတ်' },
-    amount: 9.99,
-    coins: 100,
-    status: 'failed',
-    description: { en: 'Coin purchase - 100 coins', mm: 'ဒင်္ဂါးဝယ်ယူမှု - ၁၀၀ ဒင်္ဂါး' },
-    createdAt: '2026-04-25 20:00',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    id: '8',
-    type: 'deposit',
-    userId: 'system',
-    userName: { en: 'System', mm: 'စနစ်' },
-    amount: 1000.0,
-    coins: 10000,
-    status: 'completed',
-    description: { en: 'Promotional coins added', mm: 'အရောင်းမြှင့်တင်ရေး ဒင်္ဂါးများ ထည့်ပြီး' },
-    createdAt: '2026-04-25 09:00',
-  },
-];
-
-const mockPayoutRequests: PayoutRequest[] = [
-  {
-    id: 'p1',
-    authorId: 'a1',
-    authorName: 'Author One',
-    amount: 150.0,
-    status: 'pending',
-    bankAccount: '****1234',
-    requestedAt: '2026-04-27 12:00',
-  },
-  {
-    id: 'p2',
-    authorId: 'a2',
-    authorName: 'Author Two',
-    amount: 320.5,
-    status: 'approved',
-    bankAccount: '****5678',
-    requestedAt: '2026-04-26 10:00',
-  },
-  {
-    id: 'p3',
-    authorId: 'a3',
-    authorName: 'Author Three',
-    amount: 89.25,
-    status: 'pending',
-    bankAccount: '****9012',
-    requestedAt: '2026-04-25 16:30',
-  },
-  {
-    id: 'p4',
-    authorId: 'a4',
-    authorName: 'Author Four',
-    amount: 450.0,
-    status: 'paid',
-    bankAccount: '****3456',
-    requestedAt: '2026-04-24 11:00',
-    processedAt: '2026-04-25 09:00',
-  },
-  {
-    id: 'p5',
-    authorId: 'a5',
-    authorName: 'Author Five',
-    amount: 75.0,
-    status: 'rejected',
-    bankAccount: '****7890',
-    requestedAt: '2026-04-23 14:00',
-    processedAt: '2026-04-24 10:00',
-  },
-];
-
 const RevenuePage = () => {
+  const { user: admin } = useAuth();
+  const { transactions, setTransactions, setActivityLogs } = useData();
   const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'payouts'>('overview');
-  const [transactions] = useState<Transaction[]>(mockTransactions);
-  const [payoutRequests, setPayoutRequests] = useState<PayoutRequest[]>(mockPayoutRequests);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
-  const [selectedPayout, setSelectedPayout] = useState<PayoutRequest | null>(null);
+  const [selectedPayout, setSelectedPayout] = useState<Transaction | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
+  const completedPurchases = transactions.filter(
+    (transaction) => transaction.type === 'purchase' && transaction.status === 'completed',
+  );
+  const payoutRequests = transactions.filter((transaction) => transaction.type === 'payout');
+  const pendingPayouts = payoutRequests.filter((payout) => payout.status === 'pending');
   const stats = {
-    totalRevenue: 15680.5,
-    monthlyRevenue: 3250.0,
-    pendingPayouts: 539.75,
-    totalCoinsSold: 156805,
-    revenueGrowth: 12.5,
-    coinsGrowth: 8.3,
+    totalRevenue: completedPurchases.reduce((total, transaction) => total + transaction.amount, 0),
+    pendingPayouts: pendingPayouts.reduce((total, payout) => total + payout.amount, 0),
+    pendingPayoutCount: pendingPayouts.length,
+    totalCoinsSold: completedPurchases.reduce((total, transaction) => total + transaction.coins, 0),
   };
 
   const formatCurrency = (amount: number) => {
@@ -212,17 +57,14 @@ const RevenuePage = () => {
     return num.toString();
   };
 
-  const getStatusBadge = (status: Transaction['status'] | PayoutRequest['status']) => {
+  const getStatusBadge = (status: Transaction['status']) => {
     const styles: Record<string, string> = {
       completed: 'badge-success',
-      paid: 'badge-success',
       pending: 'badge-warning',
-      approved: 'badge-info',
       failed: 'badge-danger',
-      rejected: 'badge-danger',
-      cancelled: 'bg-gray-100 text-gray-800',
+      cancelled: 'bg-gray-100 text-fg',
     };
-    return styles[status] || 'bg-gray-100 text-gray-800';
+    return styles[status] || 'bg-gray-100 text-fg';
   };
 
   const getTypeIcon = (type: Transaction['type']) => {
@@ -249,23 +91,39 @@ const RevenuePage = () => {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const handlePayoutAction = (payoutId: string, action: 'approve' | 'reject' | 'pay') => {
-    setPayoutRequests((prev) =>
-      prev.map((p) =>
-        p.id === payoutId
+  const handlePayoutAction = (payoutId: string, action: 'approve' | 'reject') => {
+    const payout = payoutRequests.find((transaction) => transaction.id === payoutId);
+    if (!payout) return;
+
+    const status: Transaction['status'] = action === 'approve' ? 'completed' : 'cancelled';
+    setTransactions((prev) =>
+      prev.map((transaction) =>
+        transaction.id === payoutId
           ? {
-              ...p,
-              status: action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'paid',
-              processedAt: new Date().toISOString().split('T')[0],
+              ...transaction,
+              status,
+              description: {
+                en: `Payout ${action === 'approve' ? 'approved' : 'rejected'}`,
+                mm: `Payout ${action === 'approve' ? 'approved' : 'rejected'}`,
+              },
             }
-          : p,
+          : transaction,
       ),
     );
+    appendActivityLog(setActivityLogs, {
+      action: 'update',
+      targetType: 'transaction',
+      targetId: payout.id,
+      targetName: payout.userName,
+      details: `${action === 'approve' ? 'Approved' : 'Rejected'} payout of ${formatCurrency(payout.amount)}`,
+      admin,
+    });
     setIsPayoutModalOpen(false);
     setSelectedPayout(null);
+    setOpenMenuId(null);
   };
 
-  const openPayoutModal = (payout: PayoutRequest) => {
+  const openPayoutModal = (payout: Transaction) => {
     setSelectedPayout(payout);
     setIsPayoutModalOpen(true);
     setOpenMenuId(null);
@@ -302,8 +160,8 @@ const RevenuePage = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Revenue & Payments</h1>
-            <p className="mt-1 text-gray-500">Track revenue, manage transactions and payouts</p>
+            <h1 className="text-2xl font-bold text-fg">Revenue & Payments</h1>
+            <p className="mt-1 text-fg-muted">Track revenue, manage transactions and payouts</p>
           </div>
           <Button
             leftIcon={<Download className="h-4 w-4" />}
@@ -314,7 +172,7 @@ const RevenuePage = () => {
           </Button>
         </div>
 
-        <div className="flex gap-2 border-b border-gray-200">
+        <div className="flex gap-2 border-b border-line">
           {(['overview', 'transactions', 'payouts'] as const).map((tab) => (
             <button
               key={tab}
@@ -322,7 +180,7 @@ const RevenuePage = () => {
               className={`border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab
                   ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-fg-muted hover:text-fg-secondary'
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -336,14 +194,11 @@ const RevenuePage = () => {
               <Card className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">Total Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-fg-muted">Total Revenue</p>
+                    <p className="text-2xl font-bold text-fg">
                       {formatCurrency(stats.totalRevenue)}
                     </p>
-                    <div className="mt-1 flex items-center gap-1">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-green-600">+{stats.revenueGrowth}%</span>
-                    </div>
+                    <p className="mt-1 text-sm text-fg-muted">Completed purchases</p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
                     <DollarSign className="h-6 w-6 text-green-600" />
@@ -354,11 +209,9 @@ const RevenuePage = () => {
               <Card className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">Monthly Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {formatCurrency(stats.monthlyRevenue)}
-                    </p>
-                    <p className="mt-1 text-sm text-gray-500">This month</p>
+                    <p className="text-sm text-fg-muted">Completed Purchases</p>
+                    <p className="text-2xl font-bold text-fg">{completedPurchases.length}</p>
+                    <p className="mt-1 text-sm text-fg-muted">Successful transactions</p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
                     <CreditCard className="h-6 w-6 text-blue-600" />
@@ -369,11 +222,14 @@ const RevenuePage = () => {
               <Card className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">Pending Payouts</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-fg-muted">Pending Payouts</p>
+                    <p className="text-2xl font-bold text-fg">
                       {formatCurrency(stats.pendingPayouts)}
                     </p>
-                    <p className="mt-1 text-sm text-orange-600">3 requests pending</p>
+                    <p className="mt-1 text-sm text-orange-600">
+                      {stats.pendingPayoutCount}{' '}
+                      {stats.pendingPayoutCount === 1 ? 'request' : 'requests'} pending
+                    </p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100">
                     <Clock className="h-6 w-6 text-orange-600" />
@@ -384,14 +240,11 @@ const RevenuePage = () => {
               <Card className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">Coins Sold</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-fg-muted">Coins Sold</p>
+                    <p className="text-2xl font-bold text-fg">
                       {formatNumber(stats.totalCoinsSold)}
                     </p>
-                    <div className="mt-1 flex items-center gap-1">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-green-600">+{stats.coinsGrowth}%</span>
-                    </div>
+                    <p className="mt-1 text-sm text-fg-muted">From completed purchases</p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-burst-100">
                     <Coins className="h-6 w-6 text-burst-600" />
@@ -402,8 +255,8 @@ const RevenuePage = () => {
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <Card>
-                <div className="border-b border-gray-200 p-4">
-                  <h3 className="font-semibold text-gray-900">Recent Transactions</h3>
+                <div className="border-b border-line p-4">
+                  <h3 className="font-semibold text-fg">Recent Transactions</h3>
                 </div>
                 <div className="divide-y divide-gray-100">
                   {transactions.slice(0, 5).map((tx) => (
@@ -413,8 +266,8 @@ const RevenuePage = () => {
                           {getTypeIcon(tx.type)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{tx.userName.en}</p>
-                          <p className="text-sm text-gray-500">{tx.description.en}</p>
+                          <p className="font-medium text-fg">{tx.userName.en}</p>
+                          <p className="text-sm text-fg-muted">{tx.description.en}</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -424,12 +277,12 @@ const RevenuePage = () => {
                           {tx.type === 'purchase' || tx.type === 'deposit' ? '+' : '-'}
                           {formatCurrency(tx.amount)}
                         </p>
-                        <p className="text-xs text-gray-500">{tx.createdAt}</p>
+                        <p className="text-xs text-fg-muted">{tx.createdAt}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-gray-200 p-4">
+                <div className="border-t border-line p-4">
                   <Button
                     variant="ghost"
                     className="w-full"
@@ -441,8 +294,8 @@ const RevenuePage = () => {
               </Card>
 
               <Card>
-                <div className="border-b border-gray-200 p-4">
-                  <h3 className="font-semibold text-gray-900">Pending Payout Requests</h3>
+                <div className="border-b border-line p-4">
+                  <h3 className="font-semibold text-fg">Pending Payout Requests</h3>
                 </div>
                 <div className="divide-y divide-gray-100">
                   {payoutRequests
@@ -451,19 +304,19 @@ const RevenuePage = () => {
                     .map((payout) => (
                       <div key={payout.id} className="flex items-center justify-between p-4">
                         <div>
-                          <p className="font-medium text-gray-900">{payout.authorName}</p>
-                          <p className="text-sm text-gray-500">Bank: {payout.bankAccount}</p>
+                          <p className="font-medium text-fg">{payout.userName.en}</p>
+                          <p className="text-sm text-fg-muted">
+                            Payment: {payout.paymentMethod || 'Not provided'}
+                          </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium text-gray-900">
-                            {formatCurrency(payout.amount)}
-                          </p>
-                          <p className="text-xs text-gray-500">{payout.requestedAt}</p>
+                          <p className="font-medium text-fg">{formatCurrency(payout.amount)}</p>
+                          <p className="text-xs text-fg-muted">{payout.createdAt}</p>
                         </div>
                       </div>
                     ))}
                 </div>
-                <div className="border-t border-gray-200 p-4">
+                <div className="border-t border-line p-4">
                   <Button
                     variant="ghost"
                     className="w-full"
@@ -479,7 +332,7 @@ const RevenuePage = () => {
 
         {activeTab === 'transactions' && (
           <Card>
-            <div className="space-y-4 border-b border-gray-200 p-4">
+            <div className="space-y-4 border-b border-line p-4">
               <div className="flex flex-col gap-4 sm:flex-row">
                 <div className="flex-1">
                   <Input
@@ -490,12 +343,12 @@ const RevenuePage = () => {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Filter className="h-5 w-5 text-gray-400" />
+                  <Filter className="h-5 w-5 text-fg-muted" />
                   <select
                     aria-label="Filter by type"
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
-                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    className="rounded-lg border border-line-strong px-3 py-2 text-sm"
                   >
                     <option value="all">All Types</option>
                     <option value="purchase">Purchase</option>
@@ -507,7 +360,7 @@ const RevenuePage = () => {
                     aria-label="Filter by status"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    className="rounded-lg border border-line-strong px-3 py-2 text-sm"
                   >
                     <option value="all">All Status</option>
                     <option value="completed">Completed</option>
@@ -522,7 +375,7 @@ const RevenuePage = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
+                  <tr className="border-b border-line">
                     <th className="table-header">Transaction</th>
                     <th className="table-header">User</th>
                     <th className="table-header">Type</th>
@@ -532,13 +385,13 @@ const RevenuePage = () => {
                     <th className="table-header">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-line">
                   {filteredTransactions.map((tx) => (
                     <tr key={tx.id} className="hover:bg-gray-50">
                       <td className="table-cell">
                         <div className="flex items-center gap-2">
                           {getTypeIcon(tx.type)}
-                          <span className="font-medium text-gray-900">{tx.id}</span>
+                          <span className="font-medium text-fg">{tx.id}</span>
                         </div>
                       </td>
                       <td className="table-cell">{tx.userName.en}</td>
@@ -566,7 +419,7 @@ const RevenuePage = () => {
                       <td className="table-cell">
                         <span className={getStatusBadge(tx.status)}>{tx.status}</span>
                       </td>
-                      <td className="table-cell text-gray-500">{tx.createdAt}</td>
+                      <td className="table-cell text-fg-muted">{tx.createdAt}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -575,7 +428,7 @@ const RevenuePage = () => {
 
             {filteredTransactions.length === 0 && (
               <div className="py-12 text-center">
-                <p className="text-gray-500">No transactions found</p>
+                <p className="text-fg-muted">No transactions found</p>
               </div>
             )}
           </Card>
@@ -586,29 +439,29 @@ const RevenuePage = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
+                  <tr className="border-b border-line">
                     <th className="table-header">Author</th>
                     <th className="table-header">Amount</th>
-                    <th className="table-header">Bank Account</th>
+                    <th className="table-header">Payment Method</th>
                     <th className="table-header">Status</th>
                     <th className="table-header">Requested</th>
-                    <th className="table-header">Processed</th>
                     <th className="table-header text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-line">
                   {payoutRequests.map((payout) => (
                     <tr key={payout.id} className="hover:bg-gray-50">
-                      <td className="table-cell font-medium">{payout.authorName}</td>
-                      <td className="table-cell font-medium text-gray-900">
+                      <td className="table-cell font-medium">{payout.userName.en}</td>
+                      <td className="table-cell font-medium text-fg">
                         {formatCurrency(payout.amount)}
                       </td>
-                      <td className="table-cell text-gray-500">{payout.bankAccount}</td>
+                      <td className="table-cell text-fg-muted">
+                        {payout.paymentMethod || 'Not provided'}
+                      </td>
                       <td className="table-cell">
                         <span className={getStatusBadge(payout.status)}>{payout.status}</span>
                       </td>
-                      <td className="table-cell text-gray-500">{payout.requestedAt}</td>
-                      <td className="table-cell text-gray-500">{payout.processedAt || '-'}</td>
+                      <td className="table-cell text-fg-muted">{payout.createdAt}</td>
                       <td className="table-cell text-right">
                         {payout.status === 'pending' && (
                           <div className="relative inline-block">
@@ -618,16 +471,16 @@ const RevenuePage = () => {
                               onClick={() =>
                                 setOpenMenuId(openMenuId === payout.id ? null : payout.id)
                               }
-                              className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                              className="rounded-lg p-2 text-fg-muted hover:bg-gray-100 hover:text-fg-secondary"
                             >
                               <MoreVertical className="h-5 w-5" />
                             </button>
                             {openMenuId === payout.id && (
-                              <div className="absolute right-0 z-10 mt-2 w-40 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                              <div className="absolute right-0 z-10 mt-2 w-40 rounded-lg border border-line bg-white py-1 shadow-lg">
                                 <button
                                   type="button"
                                   onClick={() => openPayoutModal(payout)}
-                                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
                                 >
                                   <Eye className="h-4 w-4" />
                                   View Details
@@ -652,13 +505,8 @@ const RevenuePage = () => {
                             )}
                           </div>
                         )}
-                        {payout.status === 'approved' && (
-                          <Button size="sm" onClick={() => handlePayoutAction(payout.id, 'pay')}>
-                            Mark as Paid
-                          </Button>
-                        )}
-                        {payout.status !== 'pending' && payout.status !== 'approved' && (
-                          <span className="text-sm text-gray-400">-</span>
+                        {payout.status !== 'pending' && (
+                          <span className="text-sm text-fg-muted">-</span>
                         )}
                       </td>
                     </tr>
@@ -682,20 +530,20 @@ const RevenuePage = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">Author</p>
-                  <p className="font-medium">{selectedPayout.authorName}</p>
+                  <p className="text-sm text-fg-muted">Author</p>
+                  <p className="font-medium">{selectedPayout.userName.en}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Amount</p>
+                  <p className="text-sm text-fg-muted">Amount</p>
                   <p className="text-lg font-medium">{formatCurrency(selectedPayout.amount)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Bank Account</p>
-                  <p className="font-medium">{selectedPayout.bankAccount}</p>
+                  <p className="text-sm text-fg-muted">Payment Method</p>
+                  <p className="font-medium">{selectedPayout.paymentMethod || 'Not provided'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Requested</p>
-                  <p className="font-medium">{selectedPayout.requestedAt}</p>
+                  <p className="text-sm text-fg-muted">Requested</p>
+                  <p className="font-medium">{selectedPayout.createdAt}</p>
                 </div>
               </div>
 

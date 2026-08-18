@@ -6,14 +6,14 @@ alwaysApply: true
 
 # Documentation hygiene (always on)
 
-After completing implementation work (code changes, bugfix batch, new Impl phase, convention change), **without the user asking**:
+After completing implementation work (code changes, bugfix batch, new Impl, convention change), **without the user asking**:
 
 1. **Wiki** — follow wiki skill format:
-   - Update `wiki/architecture/implementation-phases.md` when a new Impl phase lands.
+   - Update `wiki/architecture/implementation-phases.md` when a new Impl lands.
    - Update touched `wiki/conventions/*.md` when UI/behavior conventions change.
    - Create or update `wiki/notes/YYYY-MM-DD-<slug>.md` with full YAML frontmatter (committed summary).
-2. **Session** — update `docs/sessions/YYYY-MM-DD-session-summary.md` (today's date or active work end date) with full detail: phases, key files, test count, QA notes. `docs/` is gitignored — local mirror only.
-3. **Index drift** — if phase/row counts change, update `wiki/README.md` and `wiki/02-workflow.md`.
+2. **Session** — update `docs/sessions/YYYY-MM-DD-session-summary.md` (today's date or active work end date) with full detail: Impls, key files, test count, QA notes. `docs/` is gitignored — local mirror only.
+3. **Index drift** — if Impl/row counts change, update `wiki/README.md` and `wiki/02-workflow.md`.
 4. **Confirm** briefly at end of task: which wiki + session paths were updated.
 5. **Lark** — always give the user a copy-pasteable **Title + Note gist** for manual Lark update. Use plain `-` bullets only (no `[x]` / `[ ]` checkboxes).
 
@@ -24,7 +24,7 @@ After completing implementation work (code changes, bugfix batch, new Impl phase
 | Rule | Value |
 | ---- | ----- |
 | Path | `docs/sessions/YYYY-MM-DD-session-summary.md` |
-| Date key | Primary work **end date**; multi-day batch → one file with dated `## Phase N (YYYY-MM-DD)` sections |
+| Date key | Primary work **end date**; multi-day batch → one file with dated `## Impl N (YYYY-MM-DD)` sections |
 | Git | `docs/` gitignored — local only |
 | Wiki mirror | Same batch → `wiki/notes/YYYY-MM-DD-<slug>.md` (committed) |
 
@@ -34,7 +34,7 @@ After completing implementation work (code changes, bugfix batch, new Impl phase
 ---
 title: Session summary YYYY-MM-DD
 date: YYYY-MM-DD
-phases: [<n>, ...]
+impls: [<n>, ...]
 wiki_mirror: wiki/notes/YYYY-MM-DD-<slug>.md
 ---
 ```

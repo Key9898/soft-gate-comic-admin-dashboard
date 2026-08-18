@@ -16,6 +16,8 @@ import {
 import { Card, Button, Input, Modal, PageSEO } from '../../components';
 import MediaPicker from '../../components/MediaPicker/MediaPicker';
 import type { MediaFile } from '../../components/MediaPicker/MediaPicker';
+import { useAuth } from '@/features/auth/useAuth';
+import { appendActivityLog } from '@/lib/activityLog';
 import { useData } from '@/lib/DataContext';
 import type { Episode } from '../../types';
 
@@ -26,7 +28,8 @@ interface EpisodeImage {
 }
 
 const EpisodesPage = () => {
-  const { episodes, setEpisodes, webtoons } = useData();
+  const { user } = useAuth();
+  const { episodes, setEpisodes, webtoons, setActivityLogs } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [webtoonFilter, setWebtoonFilter] = useState<string>('all');
@@ -79,7 +82,7 @@ const EpisodesPage = () => {
   const getStatusBadge = (status: Episode['status']) => {
     const styles = {
       published: 'badge-success',
-      draft: 'bg-gray-100 text-gray-800',
+      draft: 'bg-gray-100 text-fg',
       scheduled: 'badge-warning',
     };
     return styles[status];
@@ -186,6 +189,13 @@ const EpisodesPage = () => {
       updatedAt: new Date().toISOString().split('T')[0],
     };
     setEpisodes([newEpisode, ...episodes]);
+    appendActivityLog(setActivityLogs, {
+      action: 'create',
+      targetType: 'episode',
+      targetId: newEpisode.id,
+      targetName: newEpisode.title,
+      admin: user,
+    });
     setIsAddModalOpen(false);
     resetForm();
   };
@@ -210,6 +220,13 @@ const EpisodesPage = () => {
           : e,
       ),
     );
+    appendActivityLog(setActivityLogs, {
+      action: 'update',
+      targetType: 'episode',
+      targetId: selectedEpisode.id,
+      targetName: formData.title,
+      admin: user,
+    });
     setIsEditModalOpen(false);
     resetForm();
   };
@@ -217,6 +234,13 @@ const EpisodesPage = () => {
   const handleDeleteEpisode = () => {
     if (!selectedEpisode) return;
     setEpisodes(episodes.filter((e) => e.id !== selectedEpisode.id));
+    appendActivityLog(setActivityLogs, {
+      action: 'delete',
+      targetType: 'episode',
+      targetId: selectedEpisode.id,
+      targetName: selectedEpisode.title,
+      admin: user,
+    });
     setIsDeleteModalOpen(false);
     setSelectedEpisode(null);
   };
@@ -226,10 +250,12 @@ const EpisodesPage = () => {
 
     const webtoon = webtoons.find((w) => w.id === bulkUploadData.webtoonId);
     const currentEpisodes = episodes.filter((e) => e.webtoonId === bulkUploadData.webtoonId);
+    let createdCount = bulkUploadData.files.length;
 
     if (bulkUploadData.splitByPage && bulkUploadData.files.length === 1) {
       const totalPages = Math.ceil(bulkUploadData.files[0].size / 50000);
       const episodesToCreate = Math.ceil(totalPages / bulkUploadData.pagesPerEpisode);
+      createdCount = episodesToCreate;
 
       for (let i = 0; i < episodesToCreate; i++) {
         const newEpisode: Episode = {
@@ -278,6 +304,14 @@ const EpisodesPage = () => {
       });
     }
 
+    appendActivityLog(setActivityLogs, {
+      action: 'create',
+      targetType: 'episode',
+      targetId: bulkUploadData.webtoonId,
+      targetName: webtoon?.title || 'Bulk episodes',
+      details: `Bulk created ${createdCount} episode(s)`,
+      admin: user,
+    });
     setIsBulkUploadModalOpen(false);
     setBulkUploadData({
       webtoonId: '',
@@ -341,7 +375,7 @@ const EpisodesPage = () => {
         <div>
           <label
             htmlFor={`${isEdit ? 'edit' : 'add'}-webtoon`}
-            className="mb-1.5 block text-sm font-medium text-gray-700"
+            className="mb-1.5 block text-sm font-medium text-fg-secondary"
           >
             Webtoon
           </label>
@@ -372,7 +406,7 @@ const EpisodesPage = () => {
       <div>
         <label
           htmlFor={`${isEdit ? 'edit' : 'add'}-description`}
-          className="mb-1.5 block text-sm font-medium text-gray-700"
+          className="mb-1.5 block text-sm font-medium text-fg-secondary"
         >
           Description
         </label>
@@ -386,7 +420,7 @@ const EpisodesPage = () => {
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">Episode Images</label>
+        <label className="mb-1.5 block text-sm font-medium text-fg-secondary">Episode Images</label>
         <div className="space-y-3">
           <div className="flex gap-2">
             <Button
@@ -422,7 +456,7 @@ const EpisodesPage = () => {
 
           {formData.images.length > 0 && (
             <div className="max-h-60 overflow-y-auto rounded-lg border p-3">
-              <p className="mb-2 text-xs text-gray-500">{formData.images.length} images</p>
+              <p className="mb-2 text-xs text-fg-muted">{formData.images.length} images</p>
               <div className="grid grid-cols-4 gap-2">
                 {formData.images.map((image, index) => (
                   <div
@@ -472,7 +506,7 @@ const EpisodesPage = () => {
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">
+        <label className="mb-1.5 block text-sm font-medium text-fg-secondary">
           PDF File (Optional)
         </label>
         <div className="flex items-center gap-2">
@@ -508,12 +542,12 @@ const EpisodesPage = () => {
         {formData.pdfFile && (
           <div className="mt-2 flex items-center gap-2 rounded-lg bg-gray-50 p-2">
             <FileText className="h-5 w-5 text-red-500" />
-            <span className="text-sm text-gray-700">{formData.pdfFile.name}</span>
+            <span className="text-sm text-fg-secondary">{formData.pdfFile.name}</span>
             <button
               type="button"
               title="Remove PDF file"
               onClick={() => setFormData({ ...formData, pdfFile: null })}
-              className="ml-auto text-gray-400 hover:text-red-500"
+              className="ml-auto text-fg-muted hover:text-red-500"
             >
               <X className="h-4 w-4" />
             </button>
@@ -525,7 +559,7 @@ const EpisodesPage = () => {
         <div>
           <label
             htmlFor={`${isEdit ? 'edit' : 'add'}-status`}
-            className="mb-1.5 block text-sm font-medium text-gray-700"
+            className="mb-1.5 block text-sm font-medium text-fg-secondary"
           >
             Status
           </label>
@@ -546,7 +580,7 @@ const EpisodesPage = () => {
           <div>
             <label
               htmlFor={`${isEdit ? 'edit' : 'add'}-scheduled`}
-              className="mb-1.5 block text-sm font-medium text-gray-700"
+              className="mb-1.5 block text-sm font-medium text-fg-secondary"
             >
               Schedule Date
             </label>
@@ -573,11 +607,11 @@ const EpisodesPage = () => {
               coinPrice: e.target.checked ? 5 : 0,
             })
           }
-          className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+          className="h-4 w-4 rounded border-line-strong text-primary-600 focus:ring-primary-500"
         />
         <label
           htmlFor={`${isEdit ? 'edit' : 'add'}EpisodeIsPremium`}
-          className="text-sm text-gray-700"
+          className="text-sm text-fg-secondary"
         >
           Premium Content
         </label>
@@ -619,8 +653,8 @@ const EpisodesPage = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Episodes</h1>
-            <p className="mt-1 text-gray-500">Manage webtoon episodes</p>
+            <h1 className="text-2xl font-bold text-fg">Episodes</h1>
+            <p className="mt-1 text-fg-muted">Manage webtoon episodes</p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -647,12 +681,12 @@ const EpisodesPage = () => {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-gray-400" />
+              <Filter className="h-5 w-5 text-fg-muted" />
               <select
                 aria-label="Filter by webtoon"
                 value={webtoonFilter}
                 onChange={(e) => setWebtoonFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="rounded-lg border border-line-strong px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">All Webtoons</option>
                 {webtoons.map((webtoon) => (
@@ -665,7 +699,7 @@ const EpisodesPage = () => {
                 aria-label="Filter by status"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="rounded-lg border border-line-strong px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">All Status</option>
                 <option value="published">Published</option>
@@ -678,7 +712,7 @@ const EpisodesPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-line">
                   <th className="table-header">Episode</th>
                   <th className="table-header">Webtoon</th>
                   <th className="table-header">Images</th>
@@ -690,16 +724,16 @@ const EpisodesPage = () => {
                   <th className="table-header text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-line">
                 {filteredEpisodes.map((episode) => (
                   <tr key={episode.id} className="hover:bg-gray-50">
                     <td className="table-cell">
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-fg">
                           Ep. {episode.episodeNumber}: {episode.title.en}
                         </p>
                         {episode.description && (
-                          <p className="line-clamp-1 max-w-[200px] text-xs text-gray-500">
+                          <p className="line-clamp-1 max-w-[200px] text-xs text-fg-muted">
                             {episode.description.en}
                           </p>
                         )}
@@ -707,14 +741,14 @@ const EpisodesPage = () => {
                     </td>
                     <td className="table-cell">{episode.webtoonTitle.en}</td>
                     <td className="table-cell">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-fg-secondary">
                         {episode.images.length} {episode.images.length === 1 ? 'image' : 'images'}
                       </span>
                     </td>
                     <td className="table-cell">
                       <span className={getStatusBadge(episode.status)}>{episode.status}</span>
                       {episode.status === 'scheduled' && (
-                        <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                        <div className="mt-1 flex items-center gap-1 text-xs text-fg-muted">
                           <Clock className="h-3 w-3" />
                           <span>Scheduled</span>
                         </div>
@@ -724,12 +758,12 @@ const EpisodesPage = () => {
                       {episode.isPremium ? (
                         <span className="badge-primary">{episode.coinPrice} coins</span>
                       ) : (
-                        <span className="badge bg-gray-100 text-gray-600">Free</span>
+                        <span className="badge bg-gray-100 text-fg-secondary">Free</span>
                       )}
                     </td>
                     <td className="table-cell">{formatNumber(episode.viewCount)}</td>
                     <td className="table-cell">{formatNumber(episode.likeCount)}</td>
-                    <td className="table-cell text-gray-500">{episode.createdAt}</td>
+                    <td className="table-cell text-fg-muted">{episode.createdAt}</td>
                     <td className="table-cell text-right">
                       <div className="relative inline-block">
                         <button
@@ -739,15 +773,15 @@ const EpisodesPage = () => {
                           onClick={() =>
                             setOpenMenuId(openMenuId === episode.id ? null : episode.id)
                           }
-                          className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                          className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-gray-100 hover:text-fg-secondary"
                         >
                           <MoreVertical className="h-5 w-5" />
                         </button>
                         {openMenuId === episode.id && (
-                          <div className="absolute right-0 z-10 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                          <div className="absolute right-0 z-10 mt-2 w-48 rounded-lg border border-line bg-white py-1 shadow-lg">
                             <button
                               type="button"
-                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
                             >
                               <Eye className="h-4 w-4" />
                               View Details
@@ -755,7 +789,7 @@ const EpisodesPage = () => {
                             <button
                               type="button"
                               onClick={() => openEditModal(episode)}
-                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
                             >
                               <Edit className="h-4 w-4" />
                               Edit
@@ -780,7 +814,7 @@ const EpisodesPage = () => {
 
           {filteredEpisodes.length === 0 && (
             <div className="py-12 text-center">
-              <p className="text-gray-500">No episodes found</p>
+              <p className="text-fg-muted">No episodes found</p>
             </div>
           )}
         </Card>
@@ -819,7 +853,7 @@ const EpisodesPage = () => {
           size="sm"
         >
           <div className="space-y-4">
-            <p className="text-gray-600">
+            <p className="text-fg-secondary">
               Are you sure you want to delete <strong>{selectedEpisode?.title.en}</strong>? This
               action cannot be undone.
             </p>
@@ -858,7 +892,7 @@ const EpisodesPage = () => {
             <div>
               <label
                 htmlFor="bulk-webtoon"
-                className="mb-1.5 block text-sm font-medium text-gray-700"
+                className="mb-1.5 block text-sm font-medium text-fg-secondary"
               >
                 Select Webtoon
               </label>
@@ -883,9 +917,11 @@ const EpisodesPage = () => {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">Upload Files</label>
+              <label className="mb-1.5 block text-sm font-medium text-fg-secondary">
+                Upload Files
+              </label>
               <div
-                className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-8 text-center transition-colors hover:border-primary-400"
+                className="cursor-pointer rounded-lg border-2 border-dashed border-line-strong p-8 text-center transition-colors hover:border-primary-400"
                 onClick={() => {
                   const input = document.createElement('input');
                   input.type = 'file';
@@ -900,15 +936,15 @@ const EpisodesPage = () => {
                   input.click();
                 }}
               >
-                <Upload className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                <p className="mb-2 text-gray-600">Click to upload or drag and drop</p>
-                <p className="text-sm text-gray-400">Images (JPG, PNG) or PDF files</p>
+                <Upload className="mx-auto mb-4 h-12 w-12 text-fg-muted" />
+                <p className="mb-2 text-fg-secondary">Click to upload or drag and drop</p>
+                <p className="text-sm text-fg-muted">Images (JPG, PNG) or PDF files</p>
               </div>
             </div>
 
             {bulkUploadData.files.length > 0 && (
               <div className="rounded-lg border p-3">
-                <p className="mb-2 text-sm font-medium text-gray-700">
+                <p className="mb-2 text-sm font-medium text-fg-secondary">
                   {bulkUploadData.files.length} file(s) selected
                 </p>
                 <div className="max-h-40 space-y-2 overflow-y-auto">
@@ -919,8 +955,8 @@ const EpisodesPage = () => {
                       ) : (
                         <FileText className="h-4 w-4 text-red-500" />
                       )}
-                      <span className="text-gray-700">{file.name}</span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-fg-secondary">{file.name}</span>
+                      <span className="text-xs text-fg-muted">
                         ({(file.size / 1024).toFixed(1)} KB)
                       </span>
                     </div>
@@ -940,15 +976,18 @@ const EpisodesPage = () => {
                       onChange={(e) =>
                         setBulkUploadData({ ...bulkUploadData, splitByPage: e.target.checked })
                       }
-                      className="h-4 w-4 rounded border-gray-300 text-primary-600"
+                      className="h-4 w-4 rounded border-line-strong text-primary-600"
                     />
-                    <label htmlFor="splitByPage" className="text-sm text-gray-700">
+                    <label htmlFor="splitByPage" className="text-sm text-fg-secondary">
                       Split PDF into multiple episodes
                     </label>
                   </div>
                   {bulkUploadData.splitByPage && (
                     <div>
-                      <label htmlFor="pagesPerEpisode" className="mb-1 block text-sm text-gray-600">
+                      <label
+                        htmlFor="pagesPerEpisode"
+                        className="mb-1 block text-sm text-fg-secondary"
+                      >
                         Pages per episode
                       </label>
                       <input
@@ -963,7 +1002,7 @@ const EpisodesPage = () => {
                             pagesPerEpisode: parseInt(e.target.value) || 10,
                           })
                         }
-                        className="w-24 rounded-lg border px-3 py-2 text-sm"
+                        className="w-24 rounded-lg border border-line-strong px-3 py-2 text-sm"
                       />
                     </div>
                   )}

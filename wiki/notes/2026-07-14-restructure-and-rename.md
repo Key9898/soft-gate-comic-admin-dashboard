@@ -1,8 +1,8 @@
-# Restructure and Rename to Soft-Gate Comic
+# Restructure and Rename to SoftGate Comic
 
 ## Overview
 
-Reorganized the `webpad-admin-dashboard` to match `ai-poc-frontend` layout and renamed branding resources to **Soft-Gate Comic**.
+Reorganized the `webpad-admin-dashboard` to match the company scaffold layout and renamed branding resources to **SoftGate Comic**.
 
 ## Directory Setup
 

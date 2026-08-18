@@ -1,4 +1,5 @@
-export const APP_NAME = 'Soft-Gate Comic Admin';
+export const APP_NAME = 'SoftGate Comic';
+export const APP_TITLE = 'SoftGate Comic Admin';
 export const APP_VERSION = '0.0.1';
 
 export const SIDEBAR_ITEMS = [

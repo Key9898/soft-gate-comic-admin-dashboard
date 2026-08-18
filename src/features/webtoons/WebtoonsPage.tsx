@@ -14,6 +14,8 @@ import {
 import { Card, Button, Input, Modal, PageSEO } from '../../components';
 import MediaPicker from '../../components/MediaPicker/MediaPicker';
 import type { MediaFile } from '../../components/MediaPicker/MediaPicker';
+import { useAuth } from '@/features/auth/useAuth';
+import { appendActivityLog } from '@/lib/activityLog';
 import { useData } from '@/lib/DataContext';
 import type { Webtoon } from '../../types';
 
@@ -39,7 +41,8 @@ const popularTags = [
 ];
 
 const WebtoonsPage = () => {
-  const { webtoons, setWebtoons, authors, genres } = useData();
+  const { user } = useAuth();
+  const { webtoons, setWebtoons, authors, genres, setActivityLogs } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -82,7 +85,7 @@ const WebtoonsPage = () => {
       ongoing: 'badge-success',
       completed: 'badge-info',
       hiatus: 'badge-warning',
-      draft: 'bg-gray-100 text-gray-800',
+      draft: 'bg-gray-100 text-fg',
     };
     return styles[status];
   };
@@ -133,6 +136,13 @@ const WebtoonsPage = () => {
       updatedAt: new Date().toISOString().split('T')[0],
     };
     setWebtoons([newWebtoon, ...webtoons]);
+    appendActivityLog(setActivityLogs, {
+      action: 'create',
+      targetType: 'webtoon',
+      targetId: newWebtoon.id,
+      targetName: newWebtoon.title,
+      admin: user,
+    });
     setIsAddModalOpen(false);
     resetForm();
   };
@@ -158,6 +168,13 @@ const WebtoonsPage = () => {
           : w,
       ),
     );
+    appendActivityLog(setActivityLogs, {
+      action: 'update',
+      targetType: 'webtoon',
+      targetId: selectedWebtoon.id,
+      targetName: formData.title,
+      admin: user,
+    });
     setIsEditModalOpen(false);
     resetForm();
   };
@@ -165,6 +182,13 @@ const WebtoonsPage = () => {
   const handleDeleteWebtoon = () => {
     if (!selectedWebtoon) return;
     setWebtoons(webtoons.filter((w) => w.id !== selectedWebtoon.id));
+    appendActivityLog(setActivityLogs, {
+      action: 'delete',
+      targetType: 'webtoon',
+      targetId: selectedWebtoon.id,
+      targetName: selectedWebtoon.title,
+      admin: user,
+    });
     setIsDeleteModalOpen(false);
     setSelectedWebtoon(null);
   };
@@ -228,23 +252,23 @@ const WebtoonsPage = () => {
       className="space-y-4"
     >
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">Cover Image</label>
+        <label className="mb-1.5 block text-sm font-medium text-fg-secondary">Cover Image</label>
         <div className="flex items-start gap-4">
           <div
-            className="flex h-32 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-primary-400"
+            className="flex h-32 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-line-strong bg-gray-50 transition-colors hover:border-primary-400"
             onClick={() => setIsMediaPickerOpen(true)}
           >
             {formData.coverImage ? (
               <img src={formData.coverImage} alt="Cover" className="h-full w-full object-cover" />
             ) : (
               <div className="p-2 text-center">
-                <ImageIcon className="mx-auto h-8 w-8 text-gray-400" />
-                <p className="mt-1 text-xs text-gray-500">Click to upload</p>
+                <ImageIcon className="mx-auto h-8 w-8 text-fg-muted" />
+                <p className="mt-1 text-xs text-fg-muted">Click to upload</p>
               </div>
             )}
           </div>
           <div className="flex-1">
-            <p className="mb-2 text-sm text-gray-600">Recommended: 400x600px, JPG/PNG</p>
+            <p className="mb-2 text-sm text-fg-secondary">Recommended: 400x600px, JPG/PNG</p>
             <Button
               type="button"
               variant="outline"
@@ -277,7 +301,7 @@ const WebtoonsPage = () => {
       <div>
         <label
           htmlFor={`${isEdit ? 'edit' : 'add'}-description`}
-          className="mb-1.5 block text-sm font-medium text-gray-700"
+          className="mb-1.5 block text-sm font-medium text-fg-secondary"
         >
           Description
         </label>
@@ -293,7 +317,7 @@ const WebtoonsPage = () => {
       <div>
         <label
           htmlFor={`${isEdit ? 'edit' : 'add'}-author`}
-          className="mb-1.5 block text-sm font-medium text-gray-700"
+          className="mb-1.5 block text-sm font-medium text-fg-secondary"
         >
           Author
         </label>
@@ -313,7 +337,7 @@ const WebtoonsPage = () => {
         </select>
       </div>
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">Genres</label>
+        <label className="mb-1.5 block text-sm font-medium text-fg-secondary">Genres</label>
         <div className="flex flex-wrap gap-2">
           {genres.map((genre) => (
             <button
@@ -323,7 +347,7 @@ const WebtoonsPage = () => {
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 formData.genres.includes(genre.name.en)
                   ? 'bg-primary-100 text-primary-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 text-fg-secondary hover:bg-gray-200'
               }`}
             >
               {genre.name.en}
@@ -332,13 +356,13 @@ const WebtoonsPage = () => {
         </div>
       </div>
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">Tags</label>
+        <label className="mb-1.5 block text-sm font-medium text-fg-secondary">Tags</label>
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
             {formData.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-sm text-gray-700"
+                className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-sm text-fg-secondary"
               >
                 #{tag}
                 <button
@@ -359,11 +383,11 @@ const WebtoonsPage = () => {
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={handleTagKeyDown}
               placeholder="Type tag and press Enter..."
-              className="flex-1 rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
+              className="flex-1 rounded-lg border border-line-strong px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div className="flex flex-wrap gap-1">
-            <span className="mr-2 text-xs text-gray-500">Popular:</span>
+            <span className="mr-2 text-xs text-fg-muted">Popular:</span>
             {popularTags
               .filter((t) => !formData.tags.includes(t))
               .slice(0, 8)
@@ -372,7 +396,7 @@ const WebtoonsPage = () => {
                   key={tag}
                   type="button"
                   onClick={() => addTag(tag)}
-                  className="rounded bg-gray-50 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100"
+                  className="rounded bg-gray-50 px-2 py-0.5 text-xs text-fg-secondary hover:bg-gray-100"
                 >
                   #{tag}
                 </button>
@@ -383,7 +407,7 @@ const WebtoonsPage = () => {
       <div>
         <label
           htmlFor={`${isEdit ? 'edit' : 'add'}-status`}
-          className="mb-1.5 block text-sm font-medium text-gray-700"
+          className="mb-1.5 block text-sm font-medium text-fg-secondary"
         >
           Status
         </label>
@@ -407,9 +431,12 @@ const WebtoonsPage = () => {
           id={`${isEdit ? 'edit' : 'add'}IsPremium`}
           checked={formData.isPremium}
           onChange={(e) => setFormData({ ...formData, isPremium: e.target.checked })}
-          className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+          className="h-4 w-4 rounded border-line-strong text-primary-600 focus:ring-primary-500"
         />
-        <label htmlFor={`${isEdit ? 'edit' : 'add'}IsPremium`} className="text-sm text-gray-700">
+        <label
+          htmlFor={`${isEdit ? 'edit' : 'add'}IsPremium`}
+          className="text-sm text-fg-secondary"
+        >
           Premium Content
         </label>
       </div>
@@ -441,8 +468,8 @@ const WebtoonsPage = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Webtoons</h1>
-            <p className="mt-1 text-gray-500">Manage your webtoon collection</p>
+            <h1 className="text-2xl font-bold text-fg">Webtoons</h1>
+            <p className="mt-1 text-fg-muted">Manage your webtoon collection</p>
           </div>
           <Button leftIcon={<Plus className="h-4 w-4" />} onClick={() => setIsAddModalOpen(true)}>
             Add Webtoon
@@ -460,12 +487,12 @@ const WebtoonsPage = () => {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-gray-400" />
+              <Filter className="h-5 w-5 text-fg-muted" />
               <select
                 aria-label="Filter by status"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="rounded-lg border border-line-strong px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">All Status</option>
                 <option value="ongoing">Ongoing</option>
@@ -479,7 +506,7 @@ const WebtoonsPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-line">
                   <th className="table-header">Webtoon</th>
                   <th className="table-header">Author</th>
                   <th className="table-header">Genres</th>
@@ -491,7 +518,7 @@ const WebtoonsPage = () => {
                   <th className="table-header text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-line">
                 {filteredWebtoons.map((webtoon) => (
                   <tr key={webtoon.id} className="hover:bg-gray-50">
                     <td className="table-cell">
@@ -508,8 +535,8 @@ const WebtoonsPage = () => {
                           />
                         )}
                         <div>
-                          <p className="font-medium text-gray-900">{webtoon.title.en}</p>
-                          <p className="line-clamp-1 max-w-[200px] text-xs text-gray-500">
+                          <p className="font-medium text-fg">{webtoon.title.en}</p>
+                          <p className="line-clamp-1 max-w-[200px] text-xs text-fg-muted">
                             {webtoon.description.en}
                           </p>
                         </div>
@@ -524,7 +551,7 @@ const WebtoonsPage = () => {
                           </span>
                         ))}
                         {webtoon.genres.length > 2 && (
-                          <span className="badge bg-gray-100 text-gray-600">
+                          <span className="badge bg-gray-100 text-fg-secondary">
                             +{webtoon.genres.length - 2}
                           </span>
                         )}
@@ -533,12 +560,12 @@ const WebtoonsPage = () => {
                     <td className="table-cell">
                       <div className="flex flex-wrap gap-1">
                         {(webtoon.tags || []).slice(0, 2).map((tag) => (
-                          <span key={tag} className="text-xs text-gray-500">
+                          <span key={tag} className="text-xs text-fg-muted">
                             #{tag}
                           </span>
                         ))}
                         {(webtoon.tags || []).length > 2 && (
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-fg-muted">
                             +{(webtoon.tags || []).length - 2}
                           </span>
                         )}
@@ -564,15 +591,15 @@ const WebtoonsPage = () => {
                           onClick={() =>
                             setOpenMenuId(openMenuId === webtoon.id ? null : webtoon.id)
                           }
-                          className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                          className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-gray-100 hover:text-fg-secondary"
                         >
                           <MoreVertical className="h-5 w-5" />
                         </button>
                         {openMenuId === webtoon.id && (
-                          <div className="absolute right-0 z-10 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                          <div className="absolute right-0 z-10 mt-2 w-48 rounded-lg border border-line bg-white py-1 shadow-lg">
                             <button
                               type="button"
-                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
                             >
                               <Eye className="h-4 w-4" />
                               View Details
@@ -580,7 +607,7 @@ const WebtoonsPage = () => {
                             <button
                               type="button"
                               onClick={() => openEditModal(webtoon)}
-                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
                             >
                               <Edit className="h-4 w-4" />
                               Edit
@@ -605,7 +632,7 @@ const WebtoonsPage = () => {
 
           {filteredWebtoons.length === 0 && (
             <div className="py-12 text-center">
-              <p className="text-gray-500">No webtoons found</p>
+              <p className="text-fg-muted">No webtoons found</p>
             </div>
           )}
         </Card>
@@ -644,7 +671,7 @@ const WebtoonsPage = () => {
           size="sm"
         >
           <div className="space-y-4">
-            <p className="text-gray-600">
+            <p className="text-fg-secondary">
               Are you sure you want to delete <strong>{selectedWebtoon?.title.en}</strong>? This
               action cannot be undone.
             </p>

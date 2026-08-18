@@ -1,18 +1,9 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Upload, X, Image as ImageIcon, FileText } from 'lucide-react';
+import type { MediaFile } from '@softgate/shared';
 import Button from '../Button/Button';
-
-interface MediaFile {
-  id: string;
-  name: string;
-  type: 'image' | 'pdf';
-  url: string;
-  size: number;
-  dimensions?: { width: number; height: number };
-  pageCount?: number;
-  uploadedAt: string;
-  category: string;
-}
+import { useData } from '@/lib/DataContext';
+import { MediaUploadError, readFileAsMediaFile } from '@/lib/mediaUpload';
 
 interface MediaPickerProps {
   isOpen: boolean;
@@ -22,49 +13,6 @@ interface MediaPickerProps {
   accept?: 'image' | 'pdf' | 'all';
 }
 
-const mockMediaFiles: MediaFile[] = [
-  {
-    id: '1',
-    name: 'webtoon-cover-1.jpg',
-    type: 'image',
-    url: 'https://picsum.photos/seed/1/400/600',
-    size: 245000,
-    dimensions: { width: 400, height: 600 },
-    uploadedAt: '2026-04-27',
-    category: 'covers',
-  },
-  {
-    id: '2',
-    name: 'webtoon-cover-2.jpg',
-    type: 'image',
-    url: 'https://picsum.photos/seed/2/400/600',
-    size: 312000,
-    dimensions: { width: 400, height: 600 },
-    uploadedAt: '2026-04-26',
-    category: 'covers',
-  },
-  {
-    id: '3',
-    name: 'episode-1-page-1.jpg',
-    type: 'image',
-    url: 'https://picsum.photos/seed/3/800/1200',
-    size: 456000,
-    dimensions: { width: 800, height: 1200 },
-    uploadedAt: '2026-04-25',
-    category: 'episodes',
-  },
-  {
-    id: '4',
-    name: 'chapter-1.pdf',
-    type: 'pdf',
-    url: '/uploads/chapter-1.pdf',
-    size: 2500000,
-    pageCount: 15,
-    uploadedAt: '2026-04-24',
-    category: 'pdfs',
-  },
-];
-
 const MediaPicker = ({
   isOpen,
   onClose,
@@ -72,16 +20,17 @@ const MediaPicker = ({
   multiple = false,
   accept = 'all',
 }: MediaPickerProps) => {
-  const [files, setFiles] = useState<MediaFile[]>(mockMediaFiles);
+  const { mediaFiles, setMediaFiles } = useData();
   const [selectedFiles, setSelectedFiles] = useState<MediaFile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'image' | 'pdf'>('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [uploadError, setUploadError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
-  const filteredFiles = files.filter((file) => {
+  const filteredFiles = mediaFiles.filter((file) => {
     const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === 'all' || file.type === filterType;
     const matchesCategory = filterCategory === 'all' || file.category === filterCategory;
@@ -99,21 +48,21 @@ const MediaPicker = ({
     }
   };
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFiles = e.target.files;
-    if (uploadedFiles) {
-      Array.from(uploadedFiles).forEach((file) => {
-        const newFile: MediaFile = {
-          id: Math.random().toString(36).substring(2, 11),
-          name: file.name,
-          type: file.type.startsWith('image/') ? 'image' : 'pdf',
-          url: URL.createObjectURL(file),
-          size: file.size,
-          uploadedAt: new Date().toISOString().split('T')[0],
-          category: 'general',
-        };
-        setFiles((prev) => [newFile, ...prev]);
-      });
+    if (!uploadedFiles?.length) return;
+    setUploadError('');
+    try {
+      const next: MediaFile[] = [];
+      for (const file of Array.from(uploadedFiles)) {
+        next.push(await readFileAsMediaFile(file, 'general'));
+      }
+      setMediaFiles((prev) => [...next, ...prev]);
+      setSelectedFiles((prev) => (multiple ? [...next, ...prev] : next.slice(0, 1)));
+    } catch (err) {
+      setUploadError(err instanceof MediaUploadError ? err.message : 'Upload failed');
+    } finally {
+      e.target.value = '';
     }
   };
 
@@ -132,20 +81,20 @@ const MediaPicker = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative mx-4 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b p-4">
-          <h2 className="text-lg font-semibold text-gray-900">Select Media</h2>
+      <div className="relative mx-4 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl bg-surface shadow-xl">
+        <div className="flex items-center justify-between border-b border-line p-4">
+          <h2 className="text-lg font-semibold text-fg">Select Media</h2>
           <button
             type="button"
             title="Close"
             onClick={onClose}
-            className="rounded-lg p-2 hover:bg-gray-100"
+            className="rounded-lg p-2 text-fg-muted hover:bg-sg-hover hover:text-fg-secondary"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="space-y-4 border-b p-4">
+        <div className="space-y-4 border-b border-line p-4">
           <div className="flex gap-4">
             <div className="relative flex-1">
               <input
@@ -154,14 +103,14 @@ const MediaPicker = ({
                 aria-label="Search files"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-primary-500"
+                className="w-full rounded-lg border border-line-strong px-4 py-2 focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <select
               aria-label="Filter by file type"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as 'all' | 'image' | 'pdf')}
-              className="rounded-lg border px-4 py-2"
+              className="rounded-lg border border-line-strong px-4 py-2"
             >
               <option value="all">All Types</option>
               <option value="image">Images</option>
@@ -171,11 +120,12 @@ const MediaPicker = ({
               aria-label="Filter by category"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="rounded-lg border px-4 py-2"
+              className="rounded-lg border border-line-strong px-4 py-2"
             >
               <option value="all">All Categories</option>
               <option value="covers">Covers</option>
               <option value="episodes">Episodes</option>
+              <option value="avatars">Avatars</option>
               <option value="pdfs">PDFs</option>
               <option value="general">General</option>
             </select>
@@ -196,8 +146,9 @@ const MediaPicker = ({
               Upload New
             </Button>
             {selectedFiles.length > 0 && (
-              <span className="text-sm text-gray-500">{selectedFiles.length} selected</span>
+              <span className="text-sm text-fg-muted">{selectedFiles.length} selected</span>
             )}
+            {uploadError && <span className="text-sm text-red-600">{uploadError}</span>}
           </div>
         </div>
 
@@ -210,19 +161,19 @@ const MediaPicker = ({
                 className={`relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${
                   selectedFiles.find((f) => f.id === file.id)
                     ? 'border-primary-500 ring-2 ring-primary-200'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-line hover:border-line-strong'
                 }`}
               >
                 {file.type === 'image' ? (
                   <img src={file.url} alt={file.name} className="h-32 w-full object-cover" />
                 ) : (
                   <div className="flex h-32 w-full items-center justify-center bg-gray-100">
-                    <FileText className="h-12 w-12 text-gray-400" />
+                    <FileText className="h-12 w-12 text-fg-muted" />
                   </div>
                 )}
                 <div className="p-2">
-                  <p className="truncate text-xs font-medium text-gray-900">{file.name}</p>
-                  <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                  <p className="truncate text-xs font-medium text-fg">{file.name}</p>
+                  <p className="text-xs text-fg-muted">{formatFileSize(file.size)}</p>
                 </div>
                 {selectedFiles.find((f) => f.id === file.id) && (
                   <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary-500">
@@ -246,14 +197,14 @@ const MediaPicker = ({
           </div>
 
           {filteredFiles.length === 0 && (
-            <div className="py-12 text-center text-gray-500">
-              <ImageIcon className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+            <div className="py-12 text-center text-fg-muted">
+              <ImageIcon className="mx-auto mb-4 h-12 w-12 text-fg-muted" />
               <p>No files found</p>
             </div>
           )}
         </div>
 
-        <div className="flex justify-end gap-3 border-t p-4">
+        <div className="flex justify-end gap-3 border-t border-line p-4">
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>

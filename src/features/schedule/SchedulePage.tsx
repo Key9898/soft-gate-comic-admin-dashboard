@@ -1,71 +1,16 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Plus, Edit, Trash2, List, Grid } from 'lucide-react';
 import { Card, Button, Modal, Input, PageSEO } from '../../components';
-import { mockWebtoons } from '@/data';
+import { useAuth } from '@/features/auth/useAuth';
+import { appendActivityLog } from '@/lib/activityLog';
+import { useData } from '@/lib/DataContext';
 
 import type { ScheduledEpisode } from '../../types';
 
-const mockScheduledEpisodes: ScheduledEpisode[] = [
-  {
-    id: '1',
-    webtoonId: 'w1',
-    webtoonTitle: { en: 'Fantasy World', mm: 'စိတ်ကူးယဉ်ကမ္ဘာ' },
-    episodeNumber: 25,
-    title: { en: 'The Final Battle', mm: 'နောက်ဆုံးတိုက်ပွဲ' },
-    scheduledAt: '2026-04-28T10:00:00',
-    status: 'scheduled',
-  },
-  {
-    id: '2',
-    webtoonId: 'w2',
-    webtoonTitle: { en: 'Romance Story', mm: 'အချစ်ဇာတ်လမ်း' },
-    episodeNumber: 18,
-    title: { en: 'Confession', mm: 'ဝန်ခံချက်' },
-    scheduledAt: '2026-04-28T14:00:00',
-    status: 'scheduled',
-  },
-  {
-    id: '3',
-    webtoonId: 'w1',
-    webtoonTitle: { en: 'Fantasy World', mm: 'စိတ်ကူးယဉ်ကမ္ဘာ' },
-    episodeNumber: 26,
-    title: { en: 'Aftermath', mm: 'နောက်ဆက်တွဲ' },
-    scheduledAt: '2026-04-30T10:00:00',
-    status: 'scheduled',
-  },
-  {
-    id: '4',
-    webtoonId: 'w3',
-    webtoonTitle: { en: 'Mystery Tales', mm: 'လျှို့ဝှက်ဆန်းကြယ်ပုံပြင်များ' },
-    episodeNumber: 10,
-    title: { en: 'The Clue', mm: 'သဲလွန်စ' },
-    scheduledAt: '2026-05-01T12:00:00',
-    status: 'scheduled',
-  },
-  {
-    id: '5',
-    webtoonId: 'w2',
-    webtoonTitle: { en: 'Romance Story', mm: 'အချစ်ဇာတ်လမ်း' },
-    episodeNumber: 19,
-    title: { en: 'New Beginnings', mm: 'အစပျိုးခြင်းအသစ်' },
-    scheduledAt: '2026-05-02T14:00:00',
-    status: 'scheduled',
-  },
-  {
-    id: '6',
-    webtoonId: 'w4',
-    webtoonTitle: { en: 'Adventure Quest', mm: 'စွန့်စားခန်းခရီး' },
-    episodeNumber: 30,
-    title: { en: 'The Journey Ends', mm: 'ခရီးစဉ်အဆုံးသတ်' },
-    scheduledAt: '2026-04-27T10:00:00',
-    status: 'published',
-  },
-];
-
 const SchedulePage = () => {
+  const { user } = useAuth();
+  const { scheduledEpisodes, setScheduledEpisodes, webtoons, setActivityLogs } = useData();
   const [currentDate, setCurrentDate] = useState(new Date('2026-04-27'));
-  const [scheduledEpisodes, setScheduledEpisodes] =
-    useState<ScheduledEpisode[]>(mockScheduledEpisodes);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -114,7 +59,7 @@ const SchedulePage = () => {
   };
 
   const handleAddSchedule = () => {
-    const webtoon = mockWebtoons.find((w) => w.id === formData.webtoonId);
+    const webtoon = webtoons.find((w) => w.id === formData.webtoonId);
     const newEpisode: ScheduledEpisode = {
       id: `${Date.now()}`,
       webtoonId: formData.webtoonId,
@@ -124,30 +69,59 @@ const SchedulePage = () => {
       scheduledAt: `${formData.scheduledDate}T${formData.scheduledTime}:00`,
       status: 'scheduled',
     };
-    setScheduledEpisodes([...scheduledEpisodes, newEpisode]);
+    setScheduledEpisodes((prev) => [...prev, newEpisode]);
+    appendActivityLog(setActivityLogs, {
+      action: 'create',
+      targetType: 'schedule',
+      targetId: newEpisode.id,
+      targetName: newEpisode.title,
+      details: `Scheduled ${newEpisode.webtoonTitle.en} episode ${newEpisode.episodeNumber}`,
+      admin: user,
+    });
     setIsAddModalOpen(false);
     resetForm();
   };
 
   const handleEditSchedule = () => {
     if (!selectedEpisode) return;
+    const updatedTitle = { en: formData.title, mm: formData.title };
+    const updatedScheduledAt = `${formData.scheduledDate}T${formData.scheduledTime}:00`;
     setScheduledEpisodes((prev) =>
       prev.map((ep) =>
         ep.id === selectedEpisode.id
           ? {
               ...ep,
-              title: { en: formData.title, mm: formData.title },
-              scheduledAt: `${formData.scheduledDate}T${formData.scheduledTime}:00`,
+              title: updatedTitle,
+              scheduledAt: updatedScheduledAt,
             }
           : ep,
       ),
     );
+    appendActivityLog(setActivityLogs, {
+      action: 'update',
+      targetType: 'schedule',
+      targetId: selectedEpisode.id,
+      targetName: updatedTitle,
+      details: `Rescheduled ${selectedEpisode.webtoonTitle.en} episode ${selectedEpisode.episodeNumber}`,
+      admin: user,
+    });
     setIsEditModalOpen(false);
     resetForm();
   };
 
   const handleDeleteSchedule = (id: string) => {
+    const episode = scheduledEpisodes.find((item) => item.id === id);
     setScheduledEpisodes((prev) => prev.filter((ep) => ep.id !== id));
+    if (episode) {
+      appendActivityLog(setActivityLogs, {
+        action: 'delete',
+        targetType: 'schedule',
+        targetId: episode.id,
+        targetName: episode.title,
+        details: `Deleted schedule for ${episode.webtoonTitle.en} episode ${episode.episodeNumber}`,
+        admin: user,
+      });
+    }
   };
 
   const openEditModal = (episode: ScheduledEpisode) => {
@@ -203,8 +177,8 @@ const SchedulePage = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Content Schedule</h1>
-            <p className="mt-1 text-gray-500">Manage scheduled episode releases</p>
+            <h1 className="text-2xl font-bold text-fg">Content Schedule</h1>
+            <p className="mt-1 text-fg-muted">Manage scheduled episode releases</p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -226,17 +200,17 @@ const SchedulePage = () => {
         </div>
 
         <Card>
-          <div className="border-b border-gray-200 p-4">
+          <div className="border-b border-line p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <select
                   aria-label="Filter by webtoon"
                   value={filterWebtoon}
                   onChange={(e) => setFilterWebtoon(e.target.value)}
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  className="rounded-lg border border-line-strong px-3 py-2 text-sm"
                 >
                   <option value="all">All Webtoons</option>
-                  {mockWebtoons.map((w) => (
+                  {webtoons.map((w) => (
                     <option key={w.id} value={w.id}>
                       {w.title.en}
                     </option>
@@ -253,7 +227,7 @@ const SchedulePage = () => {
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
-                  <h2 className="min-w-[160px] text-center text-lg font-semibold text-gray-900">
+                  <h2 className="min-w-[160px] text-center text-lg font-semibold text-fg">
                     {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                   </h2>
                   <button
@@ -273,7 +247,7 @@ const SchedulePage = () => {
             <div className="p-4">
               <div className="mb-2 grid grid-cols-7 gap-1">
                 {weekDays.map((day) => (
-                  <div key={day} className="py-2 text-center text-sm font-medium text-gray-500">
+                  <div key={day} className="py-2 text-center text-sm font-medium text-fg-muted">
                     {day}
                   </div>
                 ))}
@@ -294,11 +268,11 @@ const SchedulePage = () => {
                     <div
                       key={day}
                       className={`h-24 overflow-hidden rounded-lg border p-1 ${
-                        isToday ? 'border-primary-500 bg-primary-50' : 'border-gray-200'
+                        isToday ? 'border-primary-500 bg-primary-50' : 'border-line'
                       }`}
                     >
                       <div
-                        className={`mb-1 text-sm font-medium ${isToday ? 'text-primary-600' : 'text-gray-900'}`}
+                        className={`mb-1 text-sm font-medium ${isToday ? 'text-primary-600' : 'text-fg'}`}
                       >
                         {day}
                       </div>
@@ -308,8 +282,8 @@ const SchedulePage = () => {
                             key={ep.id}
                             className={`cursor-pointer truncate rounded px-1 py-0.5 text-xs ${
                               ep.status === 'published'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-blue-100 text-blue-700'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-blue-100 text-blue-800'
                             }`}
                             onClick={() => openEditModal(ep)}
                           >
@@ -317,7 +291,7 @@ const SchedulePage = () => {
                           </div>
                         ))}
                         {episodes.length > 2 && (
-                          <div className="px-1 text-xs text-gray-500">
+                          <div className="px-1 text-xs text-fg-muted">
                             +{episodes.length - 2} more
                           </div>
                         )}
@@ -349,18 +323,18 @@ const SchedulePage = () => {
                           />
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">
+                          <h3 className="font-medium text-fg">
                             Ep. {episode.episodeNumber}: {episode.title.en}
                           </h3>
-                          <p className="text-sm text-gray-500">{episode.webtoonTitle.en}</p>
+                          <p className="text-sm text-fg-muted">{episode.webtoonTitle.en}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="text-sm font-medium text-gray-900">
+                          <p className="text-sm font-medium text-fg">
                             {new Date(episode.scheduledAt).toLocaleDateString()}
                           </p>
-                          <p className="text-sm text-gray-500">{formatTime(episode.scheduledAt)}</p>
+                          <p className="text-sm text-fg-muted">{formatTime(episode.scheduledAt)}</p>
                         </div>
                         <span
                           className={`badge ${
@@ -374,7 +348,7 @@ const SchedulePage = () => {
                             type="button"
                             title="Edit schedule"
                             onClick={() => openEditModal(episode)}
-                            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                            className="rounded-lg p-2 text-fg-muted hover:bg-gray-100 hover:text-fg-secondary"
                           >
                             <Edit className="h-4 w-4" />
                           </button>
@@ -382,7 +356,7 @@ const SchedulePage = () => {
                             type="button"
                             title="Delete schedule"
                             onClick={() => handleDeleteSchedule(episode.id)}
-                            className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                            className="rounded-lg p-2 text-fg-muted hover:bg-red-50 hover:text-red-500"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -393,8 +367,8 @@ const SchedulePage = () => {
                 ))}
               {filteredEpisodes.length === 0 && (
                 <div className="py-12 text-center">
-                  <Calendar className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-                  <p className="text-gray-500">No scheduled episodes</p>
+                  <Calendar className="mx-auto mb-4 h-12 w-12 text-fg-muted" />
+                  <p className="text-fg-muted">No scheduled episodes</p>
                 </div>
               )}
             </div>
@@ -420,7 +394,7 @@ const SchedulePage = () => {
             <div>
               <label
                 htmlFor="schedule-webtoon"
-                className="mb-1.5 block text-sm font-medium text-gray-700"
+                className="mb-1.5 block text-sm font-medium text-fg-secondary"
               >
                 Webtoon
               </label>
@@ -432,7 +406,7 @@ const SchedulePage = () => {
                 required
               >
                 <option value="">Select webtoon</option>
-                {mockWebtoons
+                {webtoons
                   .filter((w) => w.status !== 'draft')
                   .map((w) => (
                     <option key={w.id} value={w.id}>
@@ -461,7 +435,7 @@ const SchedulePage = () => {
               <div>
                 <label
                   htmlFor="schedule-date"
-                  className="mb-1.5 block text-sm font-medium text-gray-700"
+                  className="mb-1.5 block text-sm font-medium text-fg-secondary"
                 >
                   Date
                 </label>
@@ -477,7 +451,7 @@ const SchedulePage = () => {
               <div>
                 <label
                   htmlFor="schedule-time"
-                  className="mb-1.5 block text-sm font-medium text-gray-700"
+                  className="mb-1.5 block text-sm font-medium text-fg-secondary"
                 >
                   Time
                 </label>
@@ -529,12 +503,12 @@ const SchedulePage = () => {
             className="space-y-4"
           >
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">Webtoon</label>
-              <p className="text-gray-900">{selectedEpisode?.webtoonTitle.en}</p>
+              <label className="mb-1.5 block text-sm font-medium text-fg-secondary">Webtoon</label>
+              <p className="text-fg">{selectedEpisode?.webtoonTitle.en}</p>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">Episode</label>
-              <p className="text-gray-900">Episode {selectedEpisode?.episodeNumber}</p>
+              <label className="mb-1.5 block text-sm font-medium text-fg-secondary">Episode</label>
+              <p className="text-fg">Episode {selectedEpisode?.episodeNumber}</p>
             </div>
             <Input
               label="Episode Title"
@@ -546,7 +520,7 @@ const SchedulePage = () => {
               <div>
                 <label
                   htmlFor="edit-schedule-date"
-                  className="mb-1.5 block text-sm font-medium text-gray-700"
+                  className="mb-1.5 block text-sm font-medium text-fg-secondary"
                 >
                   Date
                 </label>
@@ -562,7 +536,7 @@ const SchedulePage = () => {
               <div>
                 <label
                   htmlFor="edit-schedule-time"
-                  className="mb-1.5 block text-sm font-medium text-gray-700"
+                  className="mb-1.5 block text-sm font-medium text-fg-secondary"
                 >
                   Time
                 </label>

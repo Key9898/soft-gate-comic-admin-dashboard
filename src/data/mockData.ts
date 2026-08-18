@@ -14,4 +14,5 @@ export {
   mockReports,
   mockTransactions,
   mockScheduledEpisodes,
+  mockNotifications,
 } from '@softgate/shared';

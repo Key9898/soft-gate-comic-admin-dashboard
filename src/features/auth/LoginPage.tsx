@@ -35,7 +35,7 @@ const LoginPage = () => {
   return (
     <>
       <PageSEO.Login />
-      <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -44,15 +44,15 @@ const LoginPage = () => {
           <Card className="w-full max-w-md">
             <div className="mb-8 text-center">
               <img
-                src="/logo/logo.jpg"
-                alt="Logo"
-                className="mx-auto mb-4 h-16 w-16 rounded-full object-cover shadow-md"
+                src="/logo/logo.svg"
+                alt="SoftGate Comic"
+                className="mx-auto mb-4 h-16 w-16 rounded-full object-contain shadow-md"
               />
               <motion.h1
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className="mb-2 text-2xl font-bold text-gray-900"
+                className="mb-2 text-2xl font-bold text-fg"
               >
                 {APP_NAME}
               </motion.h1>
@@ -60,7 +60,7 @@ const LoginPage = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3, delay: 0.15 }}
-                className="text-gray-500"
+                className="text-fg-muted"
               >
                 Sign in to your admin account
               </motion.p>
@@ -137,7 +137,7 @@ const LoginPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.35 }}
-              className="mt-6 border-t border-gray-200 pt-6 text-center text-sm text-gray-500"
+              className="mt-6 border-t border-line pt-6 text-center text-sm text-fg-muted"
             >
               <p>Demo credentials: any email and password</p>
             </motion.div>

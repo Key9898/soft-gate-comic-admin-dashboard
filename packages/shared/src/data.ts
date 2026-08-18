@@ -15,6 +15,7 @@ import type {
   Transaction,
   ScheduledEpisode,
   SharedData,
+  Notification,
 } from './types';
 
 export const mockDashboardStats: DashboardStats = {
@@ -644,6 +645,105 @@ export const mockTransactions: Transaction[] = [
     createdAt: '2026-04-27 14:30',
     paymentMethod: 'Credit Card',
   },
+  {
+    id: 't2',
+    type: 'purchase',
+    userId: 'u2',
+    userName: { mm: 'မဂျိန်း', en: 'jane_smith' },
+    amount: 19.99,
+    coins: 220,
+    status: 'completed',
+    description: { mm: 'ဒင်္ဂါးဝယ်ယူမှု - ၂၂၀ ဒင်္ဂါး', en: 'Coin purchase - 220 coins' },
+    createdAt: '2026-04-27 13:15',
+    paymentMethod: 'PayPal',
+  },
+  {
+    id: 't3',
+    type: 'payout',
+    userId: 'a1',
+    userName: { mm: 'စာရေးသူ တစ်ဦး', en: 'Author One' },
+    amount: 150.0,
+    coins: 1500,
+    status: 'pending',
+    description: { mm: 'ငွေထုတ်ယူရန် တောင်းဆိုချက်', en: 'Payout request' },
+    createdAt: '2026-04-27 12:00',
+  },
+  {
+    id: 't4',
+    type: 'payout',
+    userId: 'a2',
+    userName: { mm: 'စာရေးသူ နှစ်ဦး', en: 'Author Two' },
+    amount: 89.5,
+    coins: 895,
+    status: 'pending',
+    description: { mm: 'ငွေထုတ်ယူရန် တောင်းဆိုချက်', en: 'Payout request' },
+    createdAt: '2026-04-26 09:00',
+  },
+  {
+    id: 't5',
+    type: 'refund',
+    userId: 'u3',
+    userName: { mm: 'အသုံးပြုသူ ၁၂၃', en: 'user_123' },
+    amount: 4.99,
+    coins: 50,
+    status: 'completed',
+    description: {
+      mm: 'ထပ်နေသော ဝယ်ယူမှုအတွက် ငွေပြန်အမ်းခြင်း',
+      en: 'Refund for duplicate purchase',
+    },
+    createdAt: '2026-04-26 16:00',
+  },
+];
+
+export const mockNotifications: Notification[] = [
+  {
+    id: 'n1',
+    type: 'report',
+    title: { en: 'New Report Submitted', mm: 'အစီရင်ခံစာသစ် တင်သွင်းပြီး' },
+    message: {
+      en: 'A user has reported inappropriate content',
+      mm: 'အသုံးပြုသူတစ်ဦးမှ မသင့်လျော်သော အကြောင်းအရာများကို အစီရင်ခံထားပါသည်',
+    },
+    isRead: false,
+    createdAt: '2026-04-27 14:30',
+    actionUrl: '/reports',
+  },
+  {
+    id: 'n2',
+    type: 'payment',
+    title: { en: 'Payout Request', mm: 'ငွေထုတ်ယူရန် တောင်းဆိုချက်' },
+    message: {
+      en: 'An author has requested a payout of $150.00',
+      mm: 'စာရေးသူမှ ဒေါ်လာ ၁၅၀.၀၀ ထုတ်ယူရန် တောင်းဆိုထားပါသည်',
+    },
+    isRead: false,
+    createdAt: '2026-04-27 12:00',
+    actionUrl: '/revenue',
+  },
+  {
+    id: 'n3',
+    type: 'content',
+    title: { en: 'New Episode Published', mm: 'အပိုင်းသစ် ထုတ်ဝေပြီး' },
+    message: {
+      en: 'A scheduled episode was published',
+      mm: 'အစီအစဉ်တင်ထားသော အပိုင်းကို ထုတ်ဝေပြီးပါပြီ',
+    },
+    isRead: true,
+    createdAt: '2026-04-26 10:00',
+    actionUrl: '/episodes',
+  },
+  {
+    id: 'n4',
+    type: 'system',
+    title: { en: 'System Maintenance', mm: 'စနစ် ထိန်းသိမ်းမှု' },
+    message: {
+      en: 'Scheduled maintenance window this weekend',
+      mm: 'ဤစနေ၊ တနင်္ဂနွေတွင် စီစဉ်ထားသော ထိန်းသိမ်းမှု',
+    },
+    isRead: true,
+    createdAt: '2026-04-25 08:00',
+    actionUrl: '/settings',
+  },
 ];
 
 export const mockScheduledEpisodes: ScheduledEpisode[] = [
@@ -674,6 +774,7 @@ export const getSharedData = (): SharedData => ({
   reports: mockReports,
   transactions: mockTransactions,
   scheduledEpisodes: mockScheduledEpisodes,
+  notifications: mockNotifications,
 });
 
 export const exportToJSON = (data: SharedData): string => {

@@ -26,11 +26,11 @@ const EmptyState = ({ icon, title, description, action, className = '' }: EmptyS
       transition={{ duration: 0.3, delay: 0.1 }}
       className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100"
     >
-      {icon || <FileQuestion className="h-8 w-8 text-gray-400" />}
+      {icon || <FileQuestion className="h-8 w-8 text-fg-muted" />}
     </motion.div>
-    <h3 className="mb-2 text-lg font-medium text-gray-900">{title}</h3>
+    <h3 className="mb-2 text-lg font-medium text-fg">{title}</h3>
     {description && (
-      <p className="mb-4 max-w-sm text-center text-sm text-gray-500">{description}</p>
+      <p className="mb-4 max-w-sm text-center text-sm text-fg-muted">{description}</p>
     )}
     {action && (
       <motion.div
@@ -46,7 +46,7 @@ const EmptyState = ({ icon, title, description, action, className = '' }: EmptyS
 
 export const NoWebtoons = ({ onAdd }: { onAdd?: () => void }) => (
   <EmptyState
-    icon={<BookOpen className="h-8 w-8 text-gray-400" />}
+    icon={<BookOpen className="h-8 w-8 text-fg-muted" />}
     title="No webtoons yet"
     description="Get started by creating your first webtoon."
     action={onAdd ? { label: 'Add Webtoon', onClick: onAdd } : undefined}
@@ -55,7 +55,7 @@ export const NoWebtoons = ({ onAdd }: { onAdd?: () => void }) => (
 
 export const NoEpisodes = ({ onAdd }: { onAdd?: () => void }) => (
   <EmptyState
-    icon={<FolderOpen className="h-8 w-8 text-gray-400" />}
+    icon={<FolderOpen className="h-8 w-8 text-fg-muted" />}
     title="No episodes yet"
     description="Add your first episode to this webtoon."
     action={onAdd ? { label: 'Add Episode', onClick: onAdd } : undefined}
@@ -64,7 +64,7 @@ export const NoEpisodes = ({ onAdd }: { onAdd?: () => void }) => (
 
 export const NoUsers = ({ onClear }: { onClear?: () => void }) => (
   <EmptyState
-    icon={<Users className="h-8 w-8 text-gray-400" />}
+    icon={<Users className="h-8 w-8 text-fg-muted" />}
     title="No users found"
     description="Try adjusting your search or filter criteria."
     action={onClear ? { label: 'Clear Filters', onClick: onClear } : undefined}
@@ -73,7 +73,7 @@ export const NoUsers = ({ onClear }: { onClear?: () => void }) => (
 
 export const NoComments = () => (
   <EmptyState
-    icon={<MessageSquare className="h-8 w-8 text-gray-400" />}
+    icon={<MessageSquare className="h-8 w-8 text-fg-muted" />}
     title="No comments found"
     description="There are no comments matching your criteria."
   />
@@ -81,7 +81,7 @@ export const NoComments = () => (
 
 export const NoSearchResults = ({ query, onClear }: { query?: string; onClear?: () => void }) => (
   <EmptyState
-    icon={<Search className="h-8 w-8 text-gray-400" />}
+    icon={<Search className="h-8 w-8 text-fg-muted" />}
     title="No results found"
     description={
       query
@@ -94,7 +94,7 @@ export const NoSearchResults = ({ query, onClear }: { query?: string; onClear?: 
 
 export const NoMedia = ({ onUpload }: { onUpload?: () => void }) => (
   <EmptyState
-    icon={<FolderOpen className="h-8 w-8 text-gray-400" />}
+    icon={<FolderOpen className="h-8 w-8 text-fg-muted" />}
     title="No media files"
     description="Upload your first image or PDF to get started."
     action={onUpload ? { label: 'Upload Files', onClick: onUpload } : undefined}

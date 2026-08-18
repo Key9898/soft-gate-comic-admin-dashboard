@@ -17,7 +17,7 @@ const AdminLayoutContent = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-canvas text-fg">
       <Sidebar />
       <div
         className={isReady ? 'transition-[margin] duration-150 ease-out' : ''}

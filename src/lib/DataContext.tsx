@@ -24,6 +24,7 @@ import {
   Report,
   Transaction,
   ScheduledEpisode,
+  Notification,
 } from '@softgate/shared';
 import {
   loadFromLocalStorage,
@@ -43,6 +44,7 @@ import {
   mockReports,
   mockTransactions,
   mockScheduledEpisodes,
+  mockNotifications,
 } from '@/data';
 
 export interface PlatformSettings {
@@ -53,7 +55,6 @@ export interface PlatformSettings {
   allowRegistration: boolean;
   requireEmailVerification: boolean;
   defaultLanguage: string;
-  defaultTheme: string;
   notifications: {
     newUser: boolean;
     newWebtoon: boolean;
@@ -63,14 +64,13 @@ export interface PlatformSettings {
 }
 
 const defaultSettings: PlatformSettings = {
-  siteName: 'Soft-Gate Comic',
+  siteName: 'SoftGate Comic',
   siteDescription: 'Your gateway to amazing webtoons',
   contactEmail: 'admin@softgatecomic.com',
   maintenanceMode: false,
   allowRegistration: true,
   requireEmailVerification: true,
   defaultLanguage: 'en',
-  defaultTheme: 'light',
   notifications: {
     newUser: true,
     newWebtoon: true,
@@ -110,6 +110,8 @@ interface DataContextType {
   setTransactions: Dispatch<SetStateAction<Transaction[]>>;
   scheduledEpisodes: ScheduledEpisode[];
   setScheduledEpisodes: Dispatch<SetStateAction<ScheduledEpisode[]>>;
+  notifications: Notification[];
+  setNotifications: Dispatch<SetStateAction<Notification[]>>;
   settings: PlatformSettings;
   setSettings: Dispatch<SetStateAction<PlatformSettings>>;
 }
@@ -119,8 +121,7 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [db, setDb] = useState<SharedData>(() => {
     const loaded = loadFromLocalStorage();
-    if (loaded) return loaded;
-    return {
+    const base = loaded || {
       dashboardStats: mockDashboardStats,
       revenueData: mockRevenueData,
       userGrowthData: mockUserGrowthData,
@@ -136,6 +137,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       reports: mockReports,
       transactions: mockTransactions,
       scheduledEpisodes: mockScheduledEpisodes,
+      notifications: mockNotifications,
+    };
+    return {
+      ...base,
+      notifications: base.notifications ?? mockNotifications,
+      transactions: base.transactions?.length ? base.transactions : mockTransactions,
     };
   });
 
@@ -143,7 +150,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     const stored = localStorage.getItem('softgate_admin_settings');
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored) as Record<string, unknown>;
+        delete parsed.defaultTheme;
+        delete parsed.primaryColor;
+        return { ...defaultSettings, ...(parsed as Partial<PlatformSettings>) };
       } catch {
         return defaultSettings;
       }
@@ -322,6 +332,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const setNotifications = (val: SetStateAction<Notification[]>) => {
+    setDb((prev) => ({
+      ...prev,
+      notifications: typeof val === 'function' ? val(prev.notifications ?? []) : val,
+    }));
+  };
+
   const contextValue: DataContextType = {
     webtoons: db.webtoons,
     setWebtoons,
@@ -353,6 +370,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setTransactions,
     scheduledEpisodes: db.scheduledEpisodes,
     setScheduledEpisodes,
+    notifications: db.notifications ?? [],
+    setNotifications,
     settings,
     setSettings,
   };

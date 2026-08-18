@@ -9,7 +9,7 @@ tags: [ui-ux, react-context, animations]
 
 ## Overview
 
-Implemented global data persistence and visual branding polish across the Soft-Gate Comic Admin Dashboard workspace.
+Implemented global data persistence and visual branding polish across the SoftGate Comic Admin Dashboard workspace.
 
 ## Details
 

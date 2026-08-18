@@ -25,8 +25,8 @@ const Toggle = ({
   return (
     <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
       <div>
-        <p className="font-medium text-gray-900">{label}</p>
-        {description && <p className="text-sm text-gray-500">{description}</p>}
+        <p className="font-medium text-fg">{label}</p>
+        {description && <p className="text-sm text-fg-muted">{description}</p>}
       </div>
       <button
         type="button"

@@ -1,12 +1,12 @@
 ---
-description: Project overview, entry points, and core commands for the Soft-Gate Comic Admin Dashboard. Always attached as base context.
+description: Project overview, entry points, and core commands for the SoftGate Comic Admin Dashboard. Always attached as base context.
 globs: []
 alwaysApply: true
 ---
 
 # Project: soft-gate-comic-admin-dashboard
 
-Soft-Gate Comic Admin Dashboard — production-grade React dashboard for managing webtoons, episodes, comments, users, and analytics.
+SoftGate Comic Admin Dashboard — production-grade React dashboard for managing webtoons, episodes, comments, users, and analytics.
 
 ## Stack at a glance
 
@@ -45,6 +45,7 @@ npm run check        # lint + format:check + test:run + build  ← runs in pre-p
 | App source | `src/` |
 | Tests | `src/test/` or next to source files |
 | Wiki (AI knowledge base) | `wiki/` |
+| Agent operating contract | `AGENTS.md` (root) + `.agents/AGENTS.md` (Antigravity mirror) |
 | Project rules (Cursor) | `.cursor/rules/` |
 | Project skills (Cursor) | `.cursor/skills/` |
 | Project skills (Trae) | `.trae/skills/` |

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Aligned the configuration of the dashboard workspace with the structure of `ai-poc-frontend` by introducing git hooks, formatting standards, recommended IDE extensions, and agent-specific rules and skills.
+Aligned the configuration of the dashboard workspace with the company scaffold standard by introducing git hooks, formatting standards, recommended IDE extensions, and agent-specific rules and skills.
 
 ## Configuration Updates
 

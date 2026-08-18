@@ -1,24 +1,53 @@
-import { useState } from 'react';
-import { User, Mail, Shield, Calendar, Camera, Save, Key } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { User, Mail, Calendar, Camera, Save, Key } from 'lucide-react';
 import { Card, Button, Input, PageSEO } from '../../components';
-import { useAuth } from '@/features/auth/useAuth';
+import { useAuth, hashPassword, verifyPassword } from '@/features/auth/useAuth';
 import { useToast } from '../../components/Toast/Toast';
+import { appendActivityLog } from '@/lib/activityLog';
+import { useData } from '@/lib/DataContext';
+import { formatAdminRole } from '@/lib/format';
+import { MediaUploadError, readImageAsMediaFile } from '@/lib/mediaUpload';
 
 const ProfilePage = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  const { setMediaFiles, setActivityLogs } = useData();
   const { addToast } = useToast();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [email, setEmail] = useState(user?.email || '');
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [passwords, setPasswords] = useState({
     current: '',
     new: '',
     confirm: '',
   });
 
+  useEffect(() => {
+    if (!isEditing && user) {
+      setDisplayName(user.displayName || '');
+      setEmail(user.email || '');
+    }
+  }, [user, isEditing]);
+
   const handleSaveProfile = () => {
+    updateUser({ displayName: displayName.trim(), email: email.trim() });
+    appendActivityLog(setActivityLogs, {
+      action: 'update',
+      targetType: 'auth',
+      targetId: user?.id || 'admin',
+      targetName: displayName.trim() || user?.displayName || 'Admin',
+      details: 'Profile information updated',
+      admin: user,
+    });
     addToast('Profile updated successfully', 'success');
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setDisplayName(user?.displayName || '');
+    setEmail(user?.email || '');
     setIsEditing(false);
   };
 
@@ -31,9 +60,45 @@ const ProfilePage = () => {
       addToast('Password must be at least 6 characters', 'error');
       return;
     }
+    if (user?.passwordHash && !passwords.current) {
+      addToast('Current password is required', 'error');
+      return;
+    }
+    if (user?.passwordHash && !verifyPassword(passwords.current, user.passwordHash)) {
+      addToast('Current password is incorrect', 'error');
+      return;
+    }
+    updateUser({ passwordHash: hashPassword(passwords.new) });
     addToast('Password changed successfully', 'success');
     setShowPasswordForm(false);
     setPasswords({ current: '', new: '', confirm: '' });
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const mediaFile = await readImageAsMediaFile(file, 'avatars');
+      setMediaFiles((prev) => [mediaFile, ...prev]);
+      updateUser({ avatar: mediaFile.url });
+      appendActivityLog(setActivityLogs, {
+        action: 'create',
+        targetType: 'media',
+        targetId: mediaFile.id,
+        targetName: mediaFile.name,
+        details: 'Profile avatar uploaded',
+        admin: user,
+      });
+      addToast('Avatar updated and saved to Media Library', 'success');
+    } catch (err) {
+      const message = err instanceof MediaUploadError ? err.message : 'Avatar upload failed';
+      addToast(message, 'error');
+    } finally {
+      setIsUploadingAvatar(false);
+      e.target.value = '';
+    }
   };
 
   const getPasswordStrength = (password: string) => {
@@ -58,14 +123,14 @@ const ProfilePage = () => {
 
   return (
     <>
-      <PageSEO.Settings />
+      <PageSEO.Profile />
       <div className="mx-auto max-w-4xl space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Profile</h1>
+        <h1 className="text-2xl font-bold text-fg">My Profile</h1>
 
         <Card className="p-6">
           <div className="flex items-start gap-6">
             <div className="relative">
-              <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary-100 dark:bg-primary-900">
+              <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary-100">
                 {user?.avatar ? (
                   <img
                     src={user.avatar}
@@ -73,39 +138,43 @@ const ProfilePage = () => {
                     className="h-24 w-24 object-cover"
                   />
                 ) : (
-                  <User className="h-12 w-12 text-primary-600 dark:text-primary-400" />
+                  <User className="h-12 w-12 text-primary-600" />
                 )}
               </div>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                aria-label="Upload avatar"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
               <button
                 type="button"
                 title="Change avatar"
-                className="absolute bottom-0 right-0 rounded-full bg-primary-600 p-2 text-white transition-colors hover:bg-primary-700"
+                disabled={isUploadingAvatar}
+                onClick={() => avatarInputRef.current?.click()}
+                className="absolute bottom-0 right-0 rounded-full bg-primary-600 p-2 text-white transition-colors hover:bg-primary-700 disabled:opacity-60"
               >
                 <Camera className="h-4 w-4" />
               </button>
             </div>
 
             <div className="flex-1">
-              <div className="mb-4 flex items-center gap-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {user?.displayName || 'Admin'}
-                </h2>
-                <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-medium capitalize text-primary-700 dark:bg-primary-900 dark:text-primary-300">
-                  {user?.role || 'admin'}
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                <h2 className="text-xl font-semibold text-fg">{user?.displayName || 'Admin'}</h2>
+                <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-medium text-primary-700">
+                  {formatAdminRole(user?.role)}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <Mail className="h-4 w-4" />
-                  {user?.email || 'admin@example.com'}
+              <div className="flex flex-col gap-3 text-sm text-fg-secondary sm:flex-row sm:gap-6">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 shrink-0" />
+                  {user?.email || 'admin@softgatecomic.com'}
                 </div>
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <Shield className="h-4 w-4" />
-                  <span className="capitalize">{user?.role || 'admin'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <Calendar className="h-4 w-4" />
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 shrink-0" />
                   Joined {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                 </div>
               </div>
@@ -115,11 +184,9 @@ const ProfilePage = () => {
 
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Profile Information
-            </h3>
+            <h3 className="text-lg font-semibold text-fg">Profile Information</h3>
             {!isEditing && (
-              <Button variant="ghost" onClick={() => setIsEditing(true)}>
+              <Button variant="outline" onClick={() => setIsEditing(true)}>
                 Edit
               </Button>
             )}
@@ -146,7 +213,7 @@ const ProfilePage = () => {
                   <Save className="mr-2 h-4 w-4" />
                   Save Changes
                 </Button>
-                <Button variant="ghost" onClick={() => setIsEditing(false)}>
+                <Button variant="outline" onClick={handleCancelEdit}>
                   Cancel
                 </Button>
               </div>
@@ -155,17 +222,21 @@ const ProfilePage = () => {
         </Card>
 
         <Card className="p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h3>
+          <div className="mb-2 flex items-center justify-between gap-4">
+            <h3 className="text-lg font-semibold text-fg">Change Password</h3>
             {!showPasswordForm && (
-              <Button variant="ghost" onClick={() => setShowPasswordForm(true)}>
+              <Button variant="outline" onClick={() => setShowPasswordForm(true)}>
                 Change
               </Button>
             )}
           </div>
 
+          {!showPasswordForm && (
+            <p className="text-sm text-fg-muted">Update the password for this admin account.</p>
+          )}
+
           {showPasswordForm && (
-            <div className="space-y-4">
+            <div className="mt-4 space-y-4">
               <Input
                 label="Current Password"
                 type="password"
@@ -193,7 +264,7 @@ const ProfilePage = () => {
                         />
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-fg-muted">
                       Strength:{' '}
                       {passwordStrength > 0 ? strengthLabels[passwordStrength - 1] : 'Very Weak'}
                     </p>
@@ -212,7 +283,7 @@ const ProfilePage = () => {
                   <Key className="mr-2 h-4 w-4" />
                   Change Password
                 </Button>
-                <Button variant="ghost" onClick={() => setShowPasswordForm(false)}>
+                <Button variant="outline" onClick={() => setShowPasswordForm(false)}>
                   Cancel
                 </Button>
               </div>

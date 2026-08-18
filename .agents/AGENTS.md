@@ -1,8 +1,10 @@
-# Soft-Gate Comic Admin — Antigravity Agent Rules
+# SoftGate Comic Admin — Antigravity Agent Rules
+
+> Canonical operating contract: root [`AGENTS.md`](../AGENTS.md). Keep this file aligned with it.
 
 ## Project Context
 
-Soft-Gate Comic Admin Dashboard — production-grade React dashboard for managing webtoons, episodes, comments, users, and analytics.
+SoftGate Comic Admin Dashboard — production-grade React dashboard for managing webtoons, episodes, comments, users, and analytics.
 
 ## Technical Stack
 
@@ -18,10 +20,15 @@ After completing implementation work:
 
 1. **Wiki**: Update `wiki/architecture/implementation-phases.md` and create/update `wiki/notes/YYYY-MM-DD-<slug>.md`.
 2. **Session**: Update `docs/sessions/YYYY-MM-DD-session-summary.md` (gitignored).
-3. **Index drift**: If phase counts change, update `wiki/README.md` and `wiki/02-workflow.md`.
+3. **Index drift**: If Impl counts change, update `wiki/README.md` and `wiki/02-workflow.md`.
 4. **Confirm**: Confirm which wiki + session paths were updated at the end of the task.
 5. **Lark**: Always give the user a copy-pasteable **Title + Note gist** for manual Lark task update (no `[x]` / `[ ]` checkboxes — use plain `-` bullets).
 
 ## Lark Checklist Formatting
 
 - When providing a copy-pasteable checklist summary for Lark manual update, do NOT include checkmark indicators like `[x]` or `[ ]` in the markdown list items. Instead, provide a clean list structure (e.g. using regular bullet points `-`) so the user can easily copy and track it manually.
+
+## Quality
+
+- `npm run check` must pass before done.
+- Never push or amend unless the user explicitly asks.

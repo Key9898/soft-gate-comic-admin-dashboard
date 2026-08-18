@@ -1,20 +1,28 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Search, Upload, Trash2, Eye, Copy, FileText, Image as ImageIcon } from 'lucide-react';
 import { Card, Button, Input, PageSEO } from '../../components';
 import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog';
-import { mockMediaFiles } from '@/data';
+import { useAuth } from '@/features/auth/useAuth';
+import { appendActivityLog } from '@/lib/activityLog';
+import { useData } from '@/lib/DataContext';
+import { MediaUploadError, readFileAsMediaFile } from '@/lib/mediaUpload';
+import { useToast } from '../../components/Toast/Toast';
 import type { MediaFile } from '@softgate/shared';
 
 const MediaLibraryPage = () => {
-  const [files, setFiles] = useState<MediaFile[]>(mockMediaFiles);
+  const { user } = useAuth();
+  const { mediaFiles, setMediaFiles, setActivityLogs } = useData();
+  const { addToast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'image' | 'pdf'>('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, fileIds: [] as string[] });
-  const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
+  const [previewFile, setPreviewFile] = useState<(typeof mediaFiles)[number] | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const filteredFiles = files.filter((file) => {
+  const filteredFiles = mediaFiles.filter((file) => {
     const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === 'all' || file.type === filterType;
     const matchesCategory = filterCategory === 'all' || file.category === filterCategory;
@@ -36,9 +44,56 @@ const MediaLibraryPage = () => {
   };
 
   const handleDelete = () => {
-    setFiles((prev) => prev.filter((f) => !deleteDialog.fileIds.includes(f.id)));
+    const deletedFiles = mediaFiles.filter((file) => deleteDialog.fileIds.includes(file.id));
+    setMediaFiles((prev) => prev.filter((f) => !deleteDialog.fileIds.includes(f.id)));
+    deletedFiles.forEach((file) => {
+      appendActivityLog(setActivityLogs, {
+        action: 'delete',
+        targetType: 'media',
+        targetId: file.id,
+        targetName: file.name,
+        admin: user,
+      });
+    });
     setSelectedFiles([]);
     setDeleteDialog({ isOpen: false, fileIds: [] });
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const uploaded = e.target.files;
+    if (!uploaded?.length) return;
+
+    setIsUploading(true);
+    try {
+      const nextFiles: MediaFile[] = [];
+      for (const file of Array.from(uploaded)) {
+        const mediaFile = await readFileAsMediaFile(file, 'general');
+        nextFiles.push(mediaFile);
+        if (mediaFile.type === 'pdf') {
+          addToast('PDF uploaded — preview may not survive a full page refresh', 'info');
+        }
+      }
+      setMediaFiles((prev) => [...nextFiles, ...prev]);
+      nextFiles.forEach((file) => {
+        appendActivityLog(setActivityLogs, {
+          action: 'create',
+          targetType: 'media',
+          targetId: file.id,
+          targetName: file.name,
+          admin: user,
+        });
+      });
+      addToast(
+        nextFiles.length === 1 ? 'File uploaded' : `${nextFiles.length} files uploaded`,
+        'success',
+      );
+    } catch (err) {
+      const message = err instanceof MediaUploadError ? err.message : 'Upload failed';
+      addToast(message, 'error');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
   };
 
   return (
@@ -47,19 +102,30 @@ const MediaLibraryPage = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Media Library</h1>
-            <p className="mt-1 text-gray-500">Manage your media files</p>
+            <h1 className="text-2xl font-bold text-fg">Media Library</h1>
+            <p className="mt-1 text-fg-muted">Manage your media files</p>
           </div>
-          <Button>
-            <Upload className="mr-2 h-4 w-4" />
-            Upload
-          </Button>
+          <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.pdf,application/pdf"
+              multiple
+              aria-label="Upload media files"
+              className="hidden"
+              onChange={handleUpload}
+            />
+            <Button disabled={isUploading} onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-2 h-4 w-4" />
+              {isUploading ? 'Uploading…' : 'Upload'}
+            </Button>
+          </div>
         </div>
 
         <Card>
           <div className="mb-6 flex flex-col gap-4 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-muted" />
               <Input
                 placeholder="Search files..."
                 value={searchQuery}
@@ -71,7 +137,7 @@ const MediaLibraryPage = () => {
               aria-label="Filter by file type"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as 'all' | 'image' | 'pdf')}
-              className="rounded-lg border px-4 py-2"
+              className="rounded-lg border border-line-strong px-4 py-2"
             >
               <option value="all">All Types</option>
               <option value="image">Images</option>
@@ -81,7 +147,7 @@ const MediaLibraryPage = () => {
               aria-label="Filter by category"
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="rounded-lg border px-4 py-2"
+              className="rounded-lg border border-line-strong px-4 py-2"
             >
               <option value="all">All Categories</option>
               <option value="covers">Covers</option>
@@ -94,7 +160,7 @@ const MediaLibraryPage = () => {
 
           {selectedFiles.length > 0 && (
             <div className="mb-4 flex items-center gap-4 rounded-lg bg-gray-50 p-3">
-              <span className="text-sm text-gray-600">{selectedFiles.length} selected</span>
+              <span className="text-sm text-fg-secondary">{selectedFiles.length} selected</span>
               <Button
                 variant="danger"
                 size="sm"
@@ -114,7 +180,7 @@ const MediaLibraryPage = () => {
               <div
                 key={file.id}
                 className={`group relative overflow-hidden rounded-lg border ${
-                  selectedFiles.includes(file.id) ? 'border-primary-500' : 'border-gray-200'
+                  selectedFiles.includes(file.id) ? 'border-primary-500' : 'border-line'
                 }`}
               >
                 <div className="relative">
@@ -122,7 +188,7 @@ const MediaLibraryPage = () => {
                     <img src={file.url} alt={file.name} className="h-32 w-full object-cover" />
                   ) : (
                     <div className="flex h-32 w-full items-center justify-center bg-gray-100">
-                      <FileText className="h-12 w-12 text-gray-400" />
+                      <FileText className="h-12 w-12 text-fg-muted" />
                     </div>
                   )}
                   <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
@@ -153,23 +219,23 @@ const MediaLibraryPage = () => {
                   </div>
                 </div>
                 <div className="p-2">
-                  <p className="truncate text-xs font-medium text-gray-900">{file.name}</p>
-                  <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                  <p className="truncate text-xs font-medium text-fg">{file.name}</p>
+                  <p className="text-xs text-fg-muted">{formatFileSize(file.size)}</p>
                 </div>
                 <input
                   type="checkbox"
                   aria-label={`Select ${file.name}`}
                   checked={selectedFiles.includes(file.id)}
                   onChange={() => toggleSelect(file.id)}
-                  className="absolute left-2 top-2 rounded border-gray-300"
+                  className="absolute left-2 top-2 rounded border-line-strong"
                 />
               </div>
             ))}
           </div>
 
           {filteredFiles.length === 0 && (
-            <div className="py-12 text-center text-gray-500">
-              <ImageIcon className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+            <div className="py-12 text-center text-fg-muted">
+              <ImageIcon className="mx-auto mb-4 h-12 w-12 text-fg-muted" />
               <p>No files found</p>
             </div>
           )}
@@ -210,18 +276,18 @@ const MediaLibraryPage = () => {
                 <img src={previewFile.url} alt={previewFile.name} className="w-full rounded-lg" />
               ) : (
                 <div className="flex h-64 items-center justify-center rounded-lg bg-gray-100">
-                  <FileText className="h-16 w-16 text-gray-400" />
+                  <FileText className="h-16 w-16 text-fg-muted" />
                 </div>
               )}
               <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-500">Size:</span> {formatFileSize(previewFile.size)}
+                  <span className="text-fg-muted">Size:</span> {formatFileSize(previewFile.size)}
                 </div>
                 <div>
-                  <span className="text-gray-500">Type:</span> {previewFile.type.toUpperCase()}
+                  <span className="text-fg-muted">Type:</span> {previewFile.type.toUpperCase()}
                 </div>
                 <div>
-                  <span className="text-gray-500">Uploaded:</span> {previewFile.uploadedAt}
+                  <span className="text-fg-muted">Uploaded:</span> {previewFile.uploadedAt}
                 </div>
               </div>
             </div>

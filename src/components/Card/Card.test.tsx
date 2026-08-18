@@ -11,7 +11,7 @@ describe('Card', () => {
   it('applies default variant styles', () => {
     render(<Card data-testid="card">Content</Card>);
     const card = screen.getByTestId('card');
-    expect(card).toHaveClass('bg-white');
+    expect(card).toHaveClass('bg-surface');
     expect(card).toHaveClass('rounded-xl');
     expect(card).toHaveClass('shadow-sm');
   });
@@ -24,7 +24,7 @@ describe('Card', () => {
     );
     const card = screen.getByTestId('card');
     expect(card).toHaveClass('hover:shadow-md');
-    expect(card).toHaveClass('hover:border-gray-300');
+    expect(card).toHaveClass('hover:border-line-strong');
   });
 
   it('applies interactive variant styles', () => {

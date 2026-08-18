@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { Search, Filter, MoreVertical, UserX, UserCheck, Eye, Coins } from 'lucide-react';
 import { Card, Button, Input, Modal, PageSEO } from '../../components';
+import { useAuth } from '@/features/auth/useAuth';
+import { appendActivityLog } from '@/lib/activityLog';
 import { useData } from '@/lib/DataContext';
 import type { User } from '../../types';
 
 const UsersPage = () => {
-  const { users, setUsers } = useData();
+  const { user: admin } = useAuth();
+  const { users, setUsers, setActivityLogs } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -33,23 +36,34 @@ const UsersPage = () => {
 
   const handleBanUser = () => {
     if (!selectedUser) return;
+    const isUnban = selectedUser.status === 'banned';
     setUsers(
       users.map((u) =>
-        u.id === selectedUser.id
-          ? { ...u, status: u.status === 'banned' ? 'active' : 'banned' }
-          : u,
+        u.id === selectedUser.id ? { ...u, status: isUnban ? 'active' : 'banned' } : u,
       ),
     );
+    appendActivityLog(setActivityLogs, {
+      action: isUnban ? 'unban' : 'ban',
+      targetType: 'user',
+      targetId: selectedUser.id,
+      targetName: selectedUser.displayName,
+      admin,
+    });
     setIsBanModalOpen(false);
     setSelectedUser(null);
   };
 
   const handleSuspendUser = (user: User) => {
-    setUsers(
-      users.map((u) =>
-        u.id === user.id ? { ...u, status: u.status === 'suspended' ? 'active' : 'suspended' } : u,
-      ),
-    );
+    const nextStatus = user.status === 'suspended' ? 'active' : 'suspended';
+    setUsers(users.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u)));
+    appendActivityLog(setActivityLogs, {
+      action: 'update',
+      targetType: 'user',
+      targetId: user.id,
+      targetName: user.displayName,
+      details: `Status updated to ${nextStatus}`,
+      admin,
+    });
     setOpenMenuId(null);
   };
 
@@ -71,8 +85,8 @@ const UsersPage = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-            <p className="mt-1 text-gray-500">Manage platform users</p>
+            <h1 className="text-2xl font-bold text-fg">Users</h1>
+            <p className="mt-1 text-fg-muted">Manage platform users</p>
           </div>
         </div>
 
@@ -83,8 +97,8 @@ const UsersPage = () => {
                 <UserCheck className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Active Users</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-fg-muted">Active Users</p>
+                <p className="text-2xl font-bold text-fg">
                   {users.filter((u) => u.status === 'active').length}
                 </p>
               </div>
@@ -96,8 +110,8 @@ const UsersPage = () => {
                 <UserX className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Banned Users</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-fg-muted">Banned Users</p>
+                <p className="text-2xl font-bold text-fg">
                   {users.filter((u) => u.status === 'banned').length}
                 </p>
               </div>
@@ -109,8 +123,8 @@ const UsersPage = () => {
                 <UserX className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Suspended Users</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-fg-muted">Suspended Users</p>
+                <p className="text-2xl font-bold text-fg">
                   {users.filter((u) => u.status === 'suspended').length}
                 </p>
               </div>
@@ -129,12 +143,12 @@ const UsersPage = () => {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-gray-400" />
+              <Filter className="h-5 w-5 text-fg-muted" />
               <select
                 aria-label="Filter by status"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="rounded-lg border border-line-strong px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -147,7 +161,7 @@ const UsersPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-line">
                   <th className="table-header">User</th>
                   <th className="table-header">Email</th>
                   <th className="table-header">Status</th>
@@ -157,7 +171,7 @@ const UsersPage = () => {
                   <th className="table-header text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-line">
                 {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="table-cell">
@@ -170,18 +184,18 @@ const UsersPage = () => {
                               className="h-10 w-10 rounded-full object-cover"
                             />
                           ) : (
-                            <span className="font-medium text-primary-600">
+                            <span className="font-medium text-primary-700">
                               {user.displayName.charAt(0).toUpperCase()}
                             </span>
                           )}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{user.displayName}</p>
-                          <p className="text-xs text-gray-500">@{user.username}</p>
+                          <p className="font-medium text-fg">{user.displayName}</p>
+                          <p className="text-xs text-fg-muted">@{user.username}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="table-cell text-gray-500">{user.email}</td>
+                    <td className="table-cell text-fg-muted">{user.email}</td>
                     <td className="table-cell">
                       <span className={getStatusBadge(user.status)}>{user.status}</span>
                     </td>
@@ -191,8 +205,8 @@ const UsersPage = () => {
                         {user.coinBalance}
                       </div>
                     </td>
-                    <td className="table-cell text-gray-500">{user.createdAt}</td>
-                    <td className="table-cell text-gray-500">{user.lastLoginAt || 'Never'}</td>
+                    <td className="table-cell text-fg-muted">{user.createdAt}</td>
+                    <td className="table-cell text-fg-muted">{user.lastLoginAt || 'Never'}</td>
                     <td className="table-cell text-right">
                       <div className="relative inline-block">
                         <button
@@ -200,16 +214,16 @@ const UsersPage = () => {
                           title="User actions"
                           aria-label="User actions menu"
                           onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
-                          className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                          className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-gray-100 hover:text-fg-secondary"
                         >
                           <MoreVertical className="h-5 w-5" />
                         </button>
                         {openMenuId === user.id && (
-                          <div className="absolute right-0 z-10 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                          <div className="absolute right-0 z-10 mt-2 w-48 rounded-lg border border-line bg-white py-1 shadow-lg">
                             <button
                               type="button"
                               onClick={() => openDetailModal(user)}
-                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
                             >
                               <Eye className="h-4 w-4" />
                               View Details
@@ -244,7 +258,7 @@ const UsersPage = () => {
 
           {filteredUsers.length === 0 && (
             <div className="py-12 text-center">
-              <p className="text-gray-500">No users found</p>
+              <p className="text-fg-muted">No users found</p>
             </div>
           )}
         </Card>
@@ -269,46 +283,44 @@ const UsersPage = () => {
                       className="h-16 w-16 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="text-xl font-bold text-primary-600">
+                    <span className="text-xl font-bold text-primary-700">
                       {selectedUser.displayName.charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {selectedUser.displayName}
-                  </h3>
-                  <p className="text-gray-500">@{selectedUser.username}</p>
+                  <h3 className="text-lg font-semibold text-fg">{selectedUser.displayName}</h3>
+                  <p className="text-fg-muted">@{selectedUser.username}</p>
                   <span className={getStatusBadge(selectedUser.status)}>{selectedUser.status}</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-lg bg-gray-50 p-4">
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-medium text-gray-900">{selectedUser.email}</p>
+                  <p className="text-sm text-fg-muted">Email</p>
+                  <p className="font-medium text-fg">{selectedUser.email}</p>
                 </div>
                 <div className="rounded-lg bg-gray-50 p-4">
-                  <p className="text-sm text-gray-500">Coin Balance</p>
-                  <p className="flex items-center gap-1 font-medium text-gray-900">
+                  <p className="text-sm text-fg-muted">Coin Balance</p>
+                  <p className="flex items-center gap-1 font-medium text-fg">
                     <Coins className="h-4 w-4 text-yellow-500" />
                     {selectedUser.coinBalance}
                   </p>
                 </div>
                 <div className="rounded-lg bg-gray-50 p-4">
-                  <p className="text-sm text-gray-500">Joined</p>
-                  <p className="font-medium text-gray-900">{selectedUser.createdAt}</p>
+                  <p className="text-sm text-fg-muted">Joined</p>
+                  <p className="font-medium text-fg">{selectedUser.createdAt}</p>
                 </div>
                 <div className="rounded-lg bg-gray-50 p-4">
-                  <p className="text-sm text-gray-500">Last Login</p>
-                  <p className="font-medium text-gray-900">{selectedUser.lastLoginAt || 'Never'}</p>
+                  <p className="text-sm text-fg-muted">Last Login</p>
+                  <p className="font-medium text-fg">{selectedUser.lastLoginAt || 'Never'}</p>
                 </div>
               </div>
 
               {selectedUser.bio && (
                 <div className="rounded-lg bg-gray-50 p-4">
-                  <p className="mb-1 text-sm text-gray-500">Bio</p>
-                  <p className="text-gray-900">{selectedUser.bio}</p>
+                  <p className="mb-1 text-sm text-fg-muted">Bio</p>
+                  <p className="text-fg">{selectedUser.bio}</p>
                 </div>
               )}
 
@@ -346,7 +358,7 @@ const UsersPage = () => {
           size="sm"
         >
           <div className="space-y-4">
-            <p className="text-gray-600">
+            <p className="text-fg-secondary">
               {selectedUser?.status === 'banned' ? (
                 <>
                   Are you sure you want to unban <strong>{selectedUser?.displayName}</strong>?

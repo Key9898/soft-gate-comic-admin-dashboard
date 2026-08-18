@@ -21,6 +21,7 @@ import {
 import { motion } from 'framer-motion';
 import { useAuth } from '@/features/auth/useAuth';
 import { useSidebar } from '@/lib/SidebarContext';
+import { useData } from '@/lib/DataContext';
 import { APP_NAME, SIDEBAR_ITEMS } from '@/config';
 import { ComponentType } from 'react';
 
@@ -44,7 +45,9 @@ const Sidebar = () => {
   const [isReady, setIsReady] = useState(false);
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { logout } = useAuth();
+  const { settings } = useData();
   const location = useLocation();
+  const brandName = settings.siteName?.trim() || APP_NAME;
 
   useEffect(() => {
     const timer = requestAnimationFrame(() => {
@@ -65,32 +68,32 @@ const Sidebar = () => {
       initial={false}
       animate={{ width: isCollapsed ? 80 : 256 }}
       transition={{ duration: isReady ? 0.15 : 0 }}
-      className="fixed left-0 top-0 z-30 h-screen border-r border-gray-200 bg-white"
+      className="fixed left-0 top-0 z-30 h-screen border-r border-line bg-surface"
     >
       <div className="flex h-full flex-col">
-        <div className="relative flex h-16 items-center border-b border-gray-200 px-4">
+        <div className="relative flex h-16 items-center border-b border-line px-4">
           {isCollapsed ? (
             <div className="absolute left-6 flex items-center justify-center">
               <img
-                src="/logo/logo.jpg"
-                alt="Logo"
-                className="h-8 w-8 rounded-full object-cover shadow-sm"
+                src="/logo/logo.svg"
+                alt={brandName}
+                className="h-8 w-8 rounded-full object-contain shadow-sm"
               />
             </div>
           ) : (
             <div className="absolute left-4 flex items-center gap-2">
               <img
-                src="/logo/logo.jpg"
-                alt="Logo"
-                className="h-8 w-8 rounded-full object-cover shadow-sm"
+                src="/logo/logo.svg"
+                alt={brandName}
+                className="h-8 w-8 rounded-full object-contain shadow-sm"
               />
-              <span className="text-base font-bold text-gray-900">{APP_NAME}</span>
+              <span className="text-base font-bold text-fg">{brandName}</span>
             </div>
           )}
           <button
             type="button"
             onClick={toggleSidebar}
-            className="absolute right-4 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="absolute right-4 rounded-lg p-2 text-fg-muted transition-colors hover:bg-sg-hover hover:text-fg-secondary"
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <motion.div
@@ -115,15 +118,21 @@ const Sidebar = () => {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
+                className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium ${
                   isReady ? 'transition-all duration-150' : ''
                 } ${
                   active
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-gray-600 hover:translate-x-1 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-nav-active text-nav-active-fg'
+                    : 'text-fg-secondary hover:translate-x-1 hover:bg-sg-hover hover:text-fg'
                 }`}
                 title={isCollapsed ? item.title : undefined}
               >
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute bottom-1.5 left-0 top-1.5 w-1 rounded-full bg-nav-active-bar"
+                  />
+                )}
                 {IconComponent && (
                   <IconComponent
                     className={`h-5 w-5 ${isReady ? 'transition-transform duration-150 group-hover:scale-110' : ''}`}
@@ -135,11 +144,11 @@ const Sidebar = () => {
           })}
         </nav>
 
-        <div className="border-t border-gray-200 px-3 py-4">
+        <div className="border-t border-line px-3 py-4">
           <button
             type="button"
             onClick={logout}
-            className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 ${
+            className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 ${
               isReady ? 'transition-all duration-150 hover:translate-x-1' : ''
             }`}
             title={isCollapsed ? 'Logout' : undefined}

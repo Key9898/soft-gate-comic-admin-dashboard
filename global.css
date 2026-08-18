@@ -3,8 +3,29 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* Primary = logo "SOFT GATE" letter fill (teal/cyan). Anchor: #64c8c8 at 400. */
+  /*
+   * Theme surfaces via CSS variables only.
+   * Light values live on :root / html.light — no dark:* alternate in the light cascade.
+   * html.dark overrides the same vars. Chrome Auto Dark cannot harvest unused dark: paint.
+   */
+  :root,
+  html.light {
+    color-scheme: only light;
+    --sg-canvas: #f3f4f6;
+    --sg-surface: #ffffff;
+    --sg-surface-muted: #f3f4f6;
+    --sg-border: #d1d5db;
+    --sg-border-strong: #6b7280;
+    --sg-text: #111827;
+    --sg-text-secondary: #374151;
+    --sg-text-muted: #4b5563;
+    --sg-hover: #f3f4f6;
+    --sg-primary: #0e9494;
+    /* Light nav active = logo teal primary-400 (visible on white; not near-black pill) */
+    --sg-nav-active-bg: #64c8c8;
+    --sg-nav-active-fg: #042d2d;
+    --sg-nav-active-bar: #0e9494;
+    /* Brand channel tokens (legacy) */
     --color-primary-50: 240 253 253;
     --color-primary-100: 204 251 250;
     --color-primary-200: 153 246 243;
@@ -16,7 +37,6 @@
     --color-primary-800: 17 94 94;
     --color-primary-900: 19 78 78;
     --color-primary-950: 4 45 45;
-    /* Burst = logo magenta starburst. Anchor: #e63264 at 600. */
     --color-burst-50: 255 241 245;
     --color-burst-100: 255 224 234;
     --color-burst-500: 250 50 110;
@@ -24,26 +44,88 @@
     --color-burst-700: 190 40 80;
   }
 
+  html.dark {
+    color-scheme: dark;
+    --sg-canvas: #030712;
+    --sg-surface: #111827;
+    --sg-surface-muted: #1f2937;
+    --sg-border: #374151;
+    --sg-border-strong: #4b5563;
+    --sg-text: #f3f4f6;
+    --sg-text-secondary: #d1d5db;
+    --sg-text-muted: #9ca3af;
+    --sg-hover: #1f2937;
+    --sg-nav-active-bg: #042d2d;
+    --sg-nav-active-fg: #5eeae6;
+    --sg-nav-active-bar: #64c8c8;
+  }
+
   * {
     box-sizing: border-box;
   }
 
-  body {
-    @apply bg-gray-100 text-gray-900 antialiased;
-  }
-
   html {
     @apply scroll-smooth;
+    background-color: var(--sg-canvas);
+  }
+
+  body {
+    @apply antialiased;
+    background-color: var(--sg-canvas);
+    color: var(--sg-text);
+  }
+
+  /*
+   * Bridge: common light-mode Tailwind classes remapped under html.dark
+   * so feature pages keep working without dark:* surface pairs on every node.
+   */
+  html.dark .bg-white {
+    background-color: var(--sg-surface);
+  }
+  html.dark .bg-gray-50,
+  html.dark .bg-gray-100 {
+    background-color: var(--sg-surface-muted);
+  }
+  html.dark .text-gray-900,
+  html.dark .text-gray-800 {
+    color: var(--sg-text);
+  }
+  html.dark .text-gray-700,
+  html.dark .text-gray-600 {
+    color: var(--sg-text-secondary);
+  }
+  html.dark .text-gray-500,
+  html.dark .text-gray-400 {
+    color: var(--sg-text-muted);
+  }
+  html.dark .border-gray-100,
+  html.dark .border-gray-200,
+  html.dark .border-gray-300 {
+    border-color: var(--sg-border);
+  }
+  html.dark .hover\:bg-gray-50:hover,
+  html.dark .hover\:bg-gray-100:hover {
+    background-color: var(--sg-hover);
   }
 }
 
 @layer components {
+  /*
+   * Semantic theme colors use var(--sg-*) here (not @apply border-line / text-fg).
+   * @apply of custom CSS-variable colors can fail in Vite PostCSS even when
+   * the same utilities work as className strings.
+   */
   .btn-primary {
     @apply rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors duration-200 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
   .btn-secondary {
-    @apply rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition-colors duration-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+    @apply rounded-lg border px-4 py-2 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+    border-color: var(--sg-border);
+    color: var(--sg-text-secondary);
+  }
+  .btn-secondary:hover {
+    background-color: var(--sg-hover);
   }
 
   .btn-danger {
@@ -51,31 +133,56 @@
   }
 
   .input-base {
-    @apply w-full rounded-lg border border-gray-300 px-4 py-2 transition-colors duration-200 placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500;
+    @apply w-full rounded-lg border px-4 py-2 transition-colors duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500;
+    border-color: var(--sg-border-strong);
+    background-color: var(--sg-surface);
+    color: var(--sg-text);
+  }
+  .input-base::placeholder {
+    color: var(--sg-text-muted);
   }
 
   .card {
-    @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+    @apply rounded-xl border shadow-sm;
+    border-color: var(--sg-border);
+    background-color: var(--sg-surface);
   }
 
   .card-hover {
-    @apply card transition-all duration-200 hover:border-gray-300 hover:shadow-md;
+    @apply card transition-all duration-200 hover:shadow-md;
+  }
+  .card-hover:hover {
+    border-color: var(--sg-border-strong);
   }
 
   .sidebar-link {
-    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900;
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors;
+    color: var(--sg-text-secondary);
+  }
+  .sidebar-link:hover {
+    background-color: var(--sg-hover);
+    color: var(--sg-text);
   }
 
   .sidebar-link-active {
-    @apply flex items-center gap-3 rounded-lg bg-primary-50 px-3 py-2 text-sm font-medium text-primary-700;
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium;
+    background-color: var(--sg-nav-active-bg);
+    color: var(--sg-nav-active-fg);
+  }
+
+  html.dark .sidebar-link-active {
+    background-color: var(--sg-nav-active-bg);
+    color: var(--sg-nav-active-fg);
   }
 
   .table-header {
-    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500;
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider;
+    color: var(--sg-text-muted);
   }
 
   .table-cell {
-    @apply px-4 py-3 text-sm text-gray-900;
+    @apply px-4 py-3 text-sm;
+    color: var(--sg-text);
   }
 
   .badge {
@@ -146,10 +253,159 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
+    background: var(--sg-border);
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #cbd5e1;
+    background: var(--sg-border-strong);
+  }
+
+  /*
+   * Impl 14 — Dark pastel chrome bridges.
+   * Remap Light *-50/100 washes under html.dark so feature pages stay readable
+   * without adding dark:* pairs (those re-arm Chrome Auto Dark on Light).
+   * Raw colors only — do not @apply border-line / bg-canvas here.
+   */
+  html.dark .bg-primary-50 {
+    background-color: #134e4e;
+  }
+  html.dark .bg-primary-100 {
+    background-color: #115e5e;
+  }
+  html.dark .text-primary-700 {
+    color: #99f6f3;
+  }
+  html.dark .text-primary-800 {
+    color: #99f6f3;
+  }
+
+  html.dark .bg-blue-50 {
+    background-color: #1e3a8a;
+  }
+  html.dark .bg-blue-100 {
+    background-color: #1e40af;
+  }
+  html.dark .text-blue-700,
+  html.dark .text-blue-800 {
+    color: #bfdbfe;
+  }
+
+  html.dark .bg-green-50 {
+    background-color: #14532d;
+  }
+  html.dark .bg-green-100 {
+    background-color: #166534;
+  }
+  html.dark .text-green-700,
+  html.dark .text-green-800 {
+    color: #bbf7d0;
+  }
+
+  html.dark .bg-yellow-50 {
+    background-color: #713f12;
+  }
+  html.dark .bg-yellow-100 {
+    background-color: #854d0e;
+  }
+  html.dark .text-yellow-700,
+  html.dark .text-yellow-800 {
+    color: #fde68a;
+  }
+
+  html.dark .bg-red-50 {
+    background-color: #7f1d1d;
+  }
+  html.dark .bg-red-100 {
+    background-color: #991b1b;
+  }
+  html.dark .text-red-700,
+  html.dark .text-red-800 {
+    color: #fecaca;
+  }
+
+  html.dark .bg-orange-50 {
+    background-color: #7c2d12;
+  }
+  html.dark .bg-orange-100 {
+    background-color: #9a3412;
+  }
+  html.dark .text-orange-700,
+  html.dark .text-orange-800 {
+    color: #fed7aa;
+  }
+
+  html.dark .bg-burst-100 {
+    background-color: #9d174d;
+  }
+  html.dark .text-burst-700 {
+    color: #fecdd3;
+  }
+
+  html.dark .bg-gray-200 {
+    background-color: var(--sg-border);
+  }
+  html.dark .bg-gray-300 {
+    background-color: var(--sg-border-strong);
+  }
+
+  html.dark .ring-primary-200 {
+    --tw-ring-color: #0e9494;
+  }
+
+  html.dark .border-green-200 {
+    border-color: #166534;
+  }
+  html.dark .border-red-200 {
+    border-color: #991b1b;
+  }
+  html.dark .border-yellow-200 {
+    border-color: #854d0e;
+  }
+  html.dark .border-blue-200 {
+    border-color: #1e40af;
+  }
+
+  html.dark .hover\:bg-primary-50:hover {
+    background-color: #134e4e;
+  }
+  html.dark .hover\:bg-primary-100:hover {
+    background-color: #115e5e;
+  }
+  html.dark .hover\:bg-red-50:hover {
+    background-color: #7f1d1d;
+  }
+  html.dark .hover\:bg-yellow-50:hover {
+    background-color: #713f12;
+  }
+  html.dark .hover\:bg-green-50:hover {
+    background-color: #14532d;
+  }
+  html.dark .hover\:bg-gray-200:hover {
+    background-color: var(--sg-border);
+  }
+
+  html.dark .badge-success {
+    background-color: #166534;
+    color: #bbf7d0;
+  }
+  html.dark .badge-warning {
+    background-color: #854d0e;
+    color: #fde68a;
+  }
+  html.dark .badge-danger {
+    background-color: #991b1b;
+    color: #fecaca;
+  }
+  html.dark .badge-info {
+    background-color: #1e40af;
+    color: #bfdbfe;
+  }
+  html.dark .badge-primary {
+    background-color: #115e5e;
+    color: #99f6f3;
+  }
+  html.dark .badge-burst {
+    background-color: #9d174d;
+    color: #fecdd3;
   }
 }

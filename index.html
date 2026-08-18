@@ -2,31 +2,84 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Theme FOUC must run before color-scheme meta so Chrome Auto Dark never sees "light dark" first -->
+    <script>
+      (function () {
+        try {
+          var key = 'softgate_admin_theme_preference';
+          var legacy = 'softgate_admin_theme';
+          var v2 = 'softgate_admin_theme_pref_v2';
+          var pref;
+          if (localStorage.getItem(v2) !== '1') {
+            pref = 'system';
+            localStorage.setItem(key, 'system');
+            localStorage.removeItem(legacy);
+            localStorage.setItem(v2, '1');
+          } else {
+            pref = localStorage.getItem(key);
+            if (pref !== 'light' && pref !== 'dark' && pref !== 'system') {
+              pref = 'system';
+            }
+            localStorage.removeItem(legacy);
+          }
+          var dark =
+            pref === 'dark' ||
+            (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var root = document.documentElement;
+          root.classList.remove('light', 'dark');
+          root.classList.add(dark ? 'dark' : 'light');
+          root.style.colorScheme = dark ? 'dark' : 'only light';
+          var meta = document.querySelector('meta[name="color-scheme"]');
+          if (!meta) {
+            meta = document.createElement('meta');
+            meta.setAttribute('name', 'color-scheme');
+            document.head.appendChild(meta);
+          }
+          meta.setAttribute('content', dark ? 'dark' : 'only light');
+          if (!dark) {
+            root.style.setProperty('background-color', '#f3f4f6', 'important');
+          } else {
+            root.style.removeProperty('background-color');
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Soft-Gate Comic Admin - Dashboard for managing webtoons, users, and analytics" />
-    <meta name="keywords" content="soft-gate, comic, admin, dashboard, webtoon, management, analytics" />
-    <meta name="author" content="Soft-Gate Comic" />
+    <meta
+      name="description"
+      content="SoftGate Comic Admin - Dashboard for managing webtoons, users, and analytics"
+    />
+    <meta
+      name="keywords"
+      content="softgate, comic, admin, dashboard, webtoon, management, analytics"
+    />
+    <meta name="author" content="SoftGate Comic" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="theme-color" content="#9333EA" />
-    
-    <meta property="og:title" content="Soft-Gate Comic Admin Dashboard" />
-    <meta property="og:description" content="Admin dashboard for managing Soft-Gate Comic platform" />
+    <meta name="theme-color" content="#0E9494" />
+
+    <meta property="og:title" content="SoftGate Comic Admin Dashboard" />
+    <meta property="og:description" content="Admin dashboard for managing SoftGate Comic platform" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/og-image.png" />
-    
+
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Soft-Gate Comic Admin Dashboard" />
-    <meta name="twitter:description" content="Admin dashboard for managing Soft-Gate Comic platform" />
+    <meta name="twitter:title" content="SoftGate Comic Admin Dashboard" />
+    <meta name="twitter:description" content="Admin dashboard for managing SoftGate Comic platform" />
     <meta name="twitter:image" content="/og-image.png" />
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="canonical" href="https://admin.softgatecomic.com" />
-    
-    <title>Soft-Gate Comic Admin</title>
+
+    <title>SoftGate Comic Admin</title>
   </head>
   <body>
     <div id="root"></div>

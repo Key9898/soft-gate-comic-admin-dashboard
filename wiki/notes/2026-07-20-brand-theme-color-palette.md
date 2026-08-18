@@ -1,15 +1,15 @@
 ---
-title: Brand logo theme alignment (Admin Phase 6)
+title: Brand logo theme alignment (Admin Impl 5)
 type: note
 date: 2026-07-20
 tags: [brand, theme, tailwind, colors, logo, burst]
 ---
 
-# Brand Logo Theme Alignment — Phase 6
+# Brand Logo Theme Alignment — Impl 5
 
 ## Context
 
-Admin Dashboard used `logo-v2.jpg` and a **purple** primary scale — misaligned with Soft-Gate Comic website brand. Phase 6 aligns Admin to the **website logo** [`public/logo/logo.jpg`](../../public/logo/logo.jpg): teal letter fill + magenta burst, pop-art comic vibe, with Tailwind-safe token names.
+Admin Dashboard used `logo-v2.jpg` and a **purple** primary scale — misaligned with SoftGate Comic website brand. Impl 5 aligns Admin to the **website logo** [`public/logo/logo.jpg`](../../public/logo/logo.jpg): teal letter fill + magenta burst, pop-art comic vibe, with Tailwind-safe token names.
 
 ## Logo color anchors
 
@@ -45,5 +45,5 @@ Theme vibe: **pop-art comic burst** — high contrast, playful.
 
 ## Related
 
-- Phases: [implementation-phases.md](../architecture/implementation-phases.md)
+- Impl track: [implementation-phases.md](../architecture/implementation-phases.md)
 - Asset: `public/logo/logo.jpg` (active); `logo-v2.jpg` unused in Admin `src/`

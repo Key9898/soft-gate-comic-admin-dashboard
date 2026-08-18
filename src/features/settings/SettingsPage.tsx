@@ -2,14 +2,26 @@ import { useState } from 'react';
 import { Save, Bell, Shield, Globe, Palette } from 'lucide-react';
 import { Card, Button, Input, Toggle, PageSEO } from '../../components';
 
+import { useAuth } from '@/features/auth/useAuth';
+import { appendActivityLog } from '@/lib/activityLog';
 import { useData } from '@/lib/DataContext';
+import { ThemePreference, useTheme } from '@/lib/theme';
 
 const SettingsPage = () => {
-  const { settings: initialSettings, setSettings: saveSettings } = useData();
+  const { user } = useAuth();
+  const { preference, resolvedTheme, setPreference } = useTheme();
+  const { settings: initialSettings, setSettings: saveSettings, setActivityLogs } = useData();
   const [settings, setSettings] = useState(initialSettings);
 
   const handleSave = () => {
     saveSettings(settings);
+    appendActivityLog(setActivityLogs, {
+      action: 'update',
+      targetType: 'settings',
+      targetId: 'platform-settings',
+      targetName: 'Platform settings',
+      admin: user,
+    });
     alert('Settings saved successfully!');
   };
 
@@ -19,8 +31,8 @@ const SettingsPage = () => {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-            <p className="mt-1 text-gray-500">Manage platform settings</p>
+            <h1 className="text-2xl font-bold text-fg">Settings</h1>
+            <p className="mt-1 text-fg-secondary">Manage platform settings</p>
           </div>
           <Button leftIcon={<Save className="h-4 w-4" />} onClick={handleSave}>
             Save Changes
@@ -30,10 +42,10 @@ const SettingsPage = () => {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
             <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-lg bg-primary-50 p-2 text-primary-600">
+              <div className="rounded-lg bg-primary-50 p-2 text-primary-600 dark:bg-primary-950 dark:text-primary-300">
                 <Globe className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">General Settings</h3>
+              <h3 className="text-lg font-semibold text-fg">General Settings</h3>
             </div>
             <div className="space-y-4">
               <Input
@@ -44,7 +56,7 @@ const SettingsPage = () => {
               <div>
                 <label
                   htmlFor="site-description"
-                  className="mb-1.5 block text-sm font-medium text-gray-700"
+                  className="mb-1.5 block text-sm font-medium text-fg-secondary"
                 >
                   Site Description
                 </label>
@@ -65,7 +77,7 @@ const SettingsPage = () => {
               <div>
                 <label
                   htmlFor="default-language"
-                  className="mb-1.5 block text-sm font-medium text-gray-700"
+                  className="mb-1.5 block text-sm font-medium text-fg-secondary"
                 >
                   Default Language
                 </label>
@@ -84,10 +96,10 @@ const SettingsPage = () => {
 
           <Card>
             <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-lg bg-green-50 p-2 text-green-600">
+              <div className="rounded-lg bg-primary-50 p-2 text-primary-600 dark:bg-primary-950 dark:text-primary-300">
                 <Shield className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Security Settings</h3>
+              <h3 className="text-lg font-semibold text-fg">Security Settings</h3>
             </div>
             <div className="space-y-4">
               <Toggle
@@ -116,10 +128,10 @@ const SettingsPage = () => {
 
           <Card>
             <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
+              <div className="rounded-lg bg-primary-50 p-2 text-primary-600 dark:bg-primary-950 dark:text-primary-300">
                 <Bell className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
+              <h3 className="text-lg font-semibold text-fg">Notification Settings</h3>
             </div>
             <div className="space-y-3">
               {Object.entries(settings.notifications).map(([key, value]) => (
@@ -141,51 +153,34 @@ const SettingsPage = () => {
 
           <Card>
             <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-lg bg-yellow-50 p-2 text-yellow-600">
+              <div className="rounded-lg bg-primary-50 p-2 text-primary-600 dark:bg-primary-950 dark:text-primary-300">
                 <Palette className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Appearance Settings</h3>
+              <h3 className="text-lg font-semibold text-fg">Appearance Settings</h3>
             </div>
             <div className="space-y-4">
               <div>
                 <label
-                  htmlFor="default-theme"
-                  className="mb-1.5 block text-sm font-medium text-gray-700"
+                  htmlFor="theme-preference"
+                  className="mb-1.5 block text-sm font-medium text-fg-secondary"
                 >
-                  Default Theme
+                  Theme
                 </label>
                 <select
-                  id="default-theme"
-                  value={settings.defaultTheme}
-                  onChange={(e) => setSettings({ ...settings, defaultTheme: e.target.value })}
+                  id="theme-preference"
+                  value={preference}
+                  onChange={(e) => setPreference(e.target.value as ThemePreference)}
                   className="input-base"
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>
                   <option value="system">System</option>
                 </select>
-              </div>
-              <div className="rounded-lg bg-gray-50 p-4">
-                <p className="mb-2 text-sm font-medium text-gray-700">Primary Color</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="h-8 w-8 rounded-full bg-primary-600 ring-2 ring-primary-600 ring-offset-2"
-                    title="Teal"
-                  />
-                  <button type="button" className="h-8 w-8 rounded-full bg-blue-600" title="Blue" />
-                  <button
-                    type="button"
-                    className="h-8 w-8 rounded-full bg-green-600"
-                    title="Green"
-                  />
-                  <button type="button" className="h-8 w-8 rounded-full bg-red-600" title="Red" />
-                  <button
-                    type="button"
-                    className="h-8 w-8 rounded-full bg-orange-600"
-                    title="Orange"
-                  />
-                </div>
+                <p className="mt-1.5 text-xs text-fg-secondary">
+                  {preference === 'system'
+                    ? `Following device (currently ${resolvedTheme === 'dark' ? 'Dark' : 'Light'}). Changes apply immediately.`
+                    : `Active appearance: ${resolvedTheme === 'dark' ? 'Dark' : 'Light'}. Changes apply immediately.`}
+                </p>
               </div>
             </div>
           </Card>

@@ -1,15 +1,15 @@
-# Soft-Gate Comic Shared Package - Soft-Gate Comic Website အတွက် ညွှန်ကြားချက်များ
+# SoftGate Comic Shared Package - SoftGate Comic Website အတွက် ညွှန်ကြားချက်များ
 
 ## အကျဉ်းချုပ်
 
-Admin Dashboard နှင့် Soft-Gate Comic Website နှစ်ခုလုံးက တူညီသော mock data ကို အသုံးပြုနိုင်ရန် `@Soft-Gate Comic/shared` package ကို ဖန်တီးထားပါသည်။
+Admin Dashboard နှင့် SoftGate Comic Website နှစ်ခုလုံးက တူညီသော mock data ကို အသုံးပြုနိုင်ရန် `@SoftGate Comic/shared` package ကို ဖန်တီးထားပါသည်။
 
 ---
 
 ## 📁 Package တည်နေရာ
 
 ```
-Soft-Gate Comic-admin-dashboard/
+SoftGate Comic-admin-dashboard/
 └── packages/
     └── shared/
         ├── package.json
@@ -22,20 +22,20 @@ Soft-Gate Comic-admin-dashboard/
 
 ---
 
-## 🔧 Soft-Gate Comic Website မှာ လုပ်ရမည့်အရာများ
+## 🔧 SoftGate Comic Website မှာ လုပ်ရမည့်အရာများ
 
 ### 1. Shared Package ကို Copy လုပ်ရန်
 
 ```bash
-# Soft-Gate Comic project folder ထဲသို့ သွားပါ
-cd c:\Users\keych\Development\Projects\Personal\Soft-Gate Comic
+# SoftGate Comic project folder ထဲသို့ သွားပါ
+cd c:\Users\keych\Development\Projects\Personal\SoftGate Comic
 
 # packages/shared folder ကို copy လုပ်ပါ
 # Admin Dashboard မှ:
-# Soft-Gate Comic-admin-dashboard/packages/shared → Soft-Gate Comic/packages/shared
+# SoftGate Comic-admin-dashboard/packages/shared → SoftGate Comic/packages/shared
 
 # public/webtoon-covers folder ကိုလည်း copy လုပ်ပါ
-# Soft-Gate Comic-admin-dashboard/public/webtoon-covers → Soft-Gate Comic/public/webtoon-covers
+# SoftGate Comic-admin-dashboard/public/webtoon-covers → SoftGate Comic/public/webtoon-covers
 ```
 
 ### 2. tsconfig.json တွင် Path Alias ထည့်ရန်
@@ -46,7 +46,7 @@ cd c:\Users\keych\Development\Projects\Personal\Soft-Gate Comic
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@Soft-Gate Comic/shared": ["./packages/shared/src"]
+      "@SoftGate Comic/shared": ["./packages/shared/src"]
     }
   },
   "include": ["src", "packages/shared/src"]
@@ -65,7 +65,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@Soft-Gate Comic/shared': path.resolve(__dirname, './packages/shared/src'),
+      '@SoftGate Comic/shared': path.resolve(__dirname, './packages/shared/src'),
     },
   },
 });
@@ -75,7 +75,7 @@ export default defineConfig({
 
 ```typescript
 // Types import လုပ်ရန်
-import type { Webtoon, Episode, User, Author, Genre } from '@Soft-Gate Comic/shared'
+import type { Webtoon, Episode, User, Author, Genre } from '@SoftGate Comic/shared'
 
 // Mock data import လုပ်ရန်
 import {
@@ -86,7 +86,7 @@ import {
   mockGenres,
   getSharedData,
   loadFromLocalStorage,
-} from '@Soft-Gate Comic/shared'
+} from '@SoftGate Comic/shared'
 
 // ဥပမာ - Webtoon List Page
 const WebtoonListPage = () => {
@@ -116,7 +116,7 @@ Admin Dashboard နှင့် Website နှစ်ခုလုံး `localhos
 #### Admin Dashboard တွင် Data သိမ်းခြင်း
 
 ```typescript
-import { saveToLocalStorage, getSharedData } from '@Soft-Gate Comic/shared';
+import { saveToLocalStorage, getSharedData } from '@SoftGate Comic/shared';
 
 // Data ပြောင်းလဲပြီးတိုင်း save လုပ်ရန်
 const handleSaveWebtoon = (webtoon: Webtoon) => {
@@ -130,7 +130,7 @@ const handleSaveWebtoon = (webtoon: Webtoon) => {
 #### Website တွင် Data ဖတ်ခြင်း
 
 ```typescript
-import { loadFromLocalStorage, mockWebtoons } from '@Soft-Gate Comic/shared'
+import { loadFromLocalStorage, mockWebtoons } from '@SoftGate Comic/shared'
 
 const WebtoonListPage = () => {
   // LocalStorage မှ data ဖတ်ရန် (Admin က save လုပ်ထားတာ)
@@ -215,8 +215,8 @@ export {
 ### Webtoon Detail Page
 
 ```typescript
-import { mockWebtoons, mockEpisodes } from '@Soft-Gate Comic/shared'
-import type { Webtoon, Episode } from '@Soft-Gate Comic/shared'
+import { mockWebtoons, mockEpisodes } from '@SoftGate Comic/shared'
+import type { Webtoon, Episode } from '@SoftGate Comic/shared'
 
 const WebtoonDetailPage = ({ webtoonId }: { webtoonId: string }) => {
   const webtoon = mockWebtoons.find((w) => w.id === webtoonId)
@@ -243,7 +243,7 @@ const WebtoonDetailPage = ({ webtoonId }: { webtoonId: string }) => {
 ### Episode Reader Page
 
 ```typescript
-import { mockEpisodes } from '@Soft-Gate Comic/shared'
+import { mockEpisodes } from '@SoftGate Comic/shared'
 
 const EpisodeReaderPage = ({ episodeId }: { episodeId: string }) => {
   const episode = mockEpisodes.find((e) => e.id === episodeId)
@@ -280,5 +280,5 @@ Production အတွက် Backend API တည်ဆောက်ပြီး အ�
 ```
 Admin Dashboard → Backend API → Database
                     ↓
-Soft-Gate Comic Website ← Backend API ← Database
+SoftGate Comic Website ← Backend API ← Database
 ```

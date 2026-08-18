@@ -38,8 +38,8 @@ const SessionTimeoutDialog = ({
                 <AlertTriangle className="h-6 w-6 text-orange-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Session Timeout Warning</h2>
-                <p className="text-sm text-gray-500">Your session is about to expire</p>
+                <h2 className="text-lg font-semibold text-fg">Session Timeout Warning</h2>
+                <p className="text-sm text-fg-muted">Your session is about to expire</p>
               </div>
             </div>
 
@@ -53,7 +53,7 @@ const SessionTimeoutDialog = ({
               </p>
             </div>
 
-            <p className="mb-4 text-sm text-gray-600">
+            <p className="mb-4 text-sm text-fg-secondary">
               Would you like to extend your session? For security, you'll be logged out
               automatically if no action is taken.
             </p>

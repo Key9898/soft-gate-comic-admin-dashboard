@@ -1,6 +1,6 @@
-# Soft-Gate Comic — Admin Dashboard
+# SoftGate Comic — Admin Dashboard
 
-React SPA for the Soft-Gate Comic administrative dashboard: management of webtoons, episodes, comments, user accounts, and system analytics.
+React SPA for the SoftGate Comic administrative dashboard: management of webtoons, episodes, comments, user accounts, and system analytics.
 
 **Stack:** React 18 · TypeScript · Vite 5 · Tailwind CSS v3 · Recharts · Vitest
 

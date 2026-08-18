@@ -9,7 +9,7 @@ tags: [package, configuration, metadata, renaming]
 
 ## Overview
 
-Renamed the shared package namespace and static XML details from "WebPad" to "Soft-Gate Comic" across the repository configurations.
+Renamed the shared package namespace and static XML details from "WebPad" to "SoftGate Comic" across the repository configurations.
 
 ## Details
 
