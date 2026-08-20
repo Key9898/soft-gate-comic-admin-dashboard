@@ -70,4 +70,4 @@ After implementation work: update **both** tracks + give the user a Lark Title +
 
 ## Current implementation status
 
-Impls **1–14** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 14 = Dark/System pastel chrome bridges. Labels use **Impl N** (not Phase).
+Impls **1–16** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 16 = favicon/OG head alignment with website. Labels use **Impl N** (not Phase).

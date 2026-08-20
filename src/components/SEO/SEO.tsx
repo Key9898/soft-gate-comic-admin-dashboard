@@ -16,7 +16,7 @@ const defaultMeta = {
   description:
     'Admin dashboard for managing SoftGate Comic platform - manage webtoons, episodes, users, and analytics',
   keywords: 'softgate, comic, admin, dashboard, webtoon, management, analytics',
-  ogImage: '/og-image.png',
+  ogImage: '/logo/logo.png',
 };
 
 export const SEO = ({

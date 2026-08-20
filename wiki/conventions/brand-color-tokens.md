@@ -38,4 +38,5 @@ Source of truth: website logo [`public/logo/logo.svg`](../../public/logo/logo.sv
 - Do not replace focus rings or nav active states with burst.
 - Do not `@apply` opacity-modifier utilities (e.g. `bg-*/15`) in `global.css`.
 - Semantic red/danger and chart secondary hues may remain.
-- Do not use `logo-v2.jpg` / `logo.jpg` in Admin UI — active mark is `logo.svg`.
+- Do not use `logo-v2.jpg` / `logo.jpg` in Admin UI — active UI mark is `logo.svg`.
+- Favicon/OG follow the website head: `favicon.svg` + `favicon-32.png` + `apple-touch-icon`; social image is `/logo/logo.png`. Do not put `icon-512.png` in `<head>`.

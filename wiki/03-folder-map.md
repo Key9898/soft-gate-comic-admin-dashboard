@@ -35,7 +35,8 @@ soft-gate-comic-admin-dashboard/
 ├── packages/
 │   └── shared/               # @softgate/shared types + mocks (path alias)
 ├── public/
-│   ├── logo/                 # logo.svg (active), logo.jpg / logo-v2.jpg unused in UI
+│   ├── logo/                 # logo.svg (UI), logo.png (OG)
+│   ├── favicon/              # favicon.svg, favicon-32.png, apple-touch-icon.png (head); icon-512.png press-only
 │   ├── banner/
 │   └── webtoon-covers/
 ├── e2e/                      # Playwright specs

@@ -69,7 +69,7 @@ Never skip the Lark block. The user pastes it into Lark manually.
 - Features: `src/features/<name>/` (webtoons, episodes, users, comments, …).
 - Shared mocks/types: `@softgate/shared` → `packages/shared/src`.
 - Data: `DataContext` + localStorage mock (optional real API via `VITE_USE_MOCK_API=false`).
-- Brand mark: `public/logo/logo.svg` (website logo; transparent SVG).
+- Brand mark: `public/logo/logo.svg` (UI). Favicon head: `public/favicon/favicon.svg` + `favicon-32.png` + `apple-touch-icon.png`. OG: `public/logo/logo.png`.
 
 ## Verification commands
 

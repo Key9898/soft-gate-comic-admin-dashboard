@@ -91,7 +91,7 @@
 
 ## Impl 10 — Theme preference (Light / Dark / System)
 
-- [x] Single ThemeProvider preference store (`light` | `dark` | `system`, default system) (2026-08-11)
+- [x] Single ThemeProvider preference store (`light` | `dark` | `system`; first-run default was system — superseded by Impl 15 Light) (2026-08-11)
 - [x] Settings + Profile both control same preference (live sync) (2026-08-11)
 - [x] OS `prefers-color-scheme` + change listener when System (2026-08-11)
 - [x] Remove Settings Primary Color; brand stays logo tokens (2026-08-11)
@@ -137,3 +137,15 @@
 - [x] `@layer utilities` `html.dark` bridges for `*-50/100` washes, badge classes, `gray-200/300`, hovers, rings, toast borders (2026-08-11)
 - [x] Notifications unread `bg-blue-50/50` → `bg-blue-50` (bridgeable) (2026-08-11)
 - [x] Sidebar / `--sg-nav-active-*` unchanged (2026-08-11)
+
+## Impl 15 — Default theme preference Light
+
+- [x] First-run + invalid/missing preference fallback `'system'` → `'light'` in `theme.ts` + `index.html` FOUC (2026-08-19)
+- [x] Keep Light/Dark/System options; keep stored `light`/`dark`/`system` when v2 is set (2026-08-19)
+- [x] Theme tests + dual-track docs (2026-08-19)
+
+## Impl 16 — Favicon and OG head alignment
+
+- [x] Head icons match website: `favicon.svg` + `favicon-32.png` + `apple-touch-icon` (2026-08-19)
+- [x] OG/Twitter image → `/logo/logo.png` (2026-08-19)
+- [x] No `icon-512` in head; Sidebar/Login `logo.svg` unchanged (2026-08-19)

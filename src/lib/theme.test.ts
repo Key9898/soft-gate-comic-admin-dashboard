@@ -62,14 +62,14 @@ describe('migrateThemePreferenceV2', () => {
     // no-op; each test uses its own memory storage
   });
 
-  it('forces system once, clears legacy, and sets v2 flag', () => {
+  it('forces light once, clears legacy, and sets v2 flag', () => {
     const storage = createMemoryStorage({
       [THEME_LEGACY_KEY]: 'dark',
       [THEME_PREFERENCE_KEY]: 'dark',
     });
 
-    expect(migrateThemePreferenceV2(storage)).toBe('system');
-    expect(storage.getItem(THEME_PREFERENCE_KEY)).toBe('system');
+    expect(migrateThemePreferenceV2(storage)).toBe('light');
+    expect(storage.getItem(THEME_PREFERENCE_KEY)).toBe('light');
     expect(storage.getItem(THEME_LEGACY_KEY)).toBeNull();
     expect(storage.getItem(THEME_PREF_V2_KEY)).toBe('1');
   });
@@ -84,11 +84,11 @@ describe('migrateThemePreferenceV2', () => {
     expect(storage.getItem(THEME_PREFERENCE_KEY)).toBe('light');
   });
 
-  it('defaults to system when v2 set but preference missing/invalid', () => {
+  it('defaults to light when v2 set but preference missing/invalid', () => {
     const storage = createMemoryStorage({
       [THEME_PREF_V2_KEY]: '1',
     });
 
-    expect(migrateThemePreferenceV2(storage)).toBe('system');
+    expect(migrateThemePreferenceV2(storage)).toBe('light');
   });
 });

@@ -10,7 +10,7 @@ tags: [theme, dark-mode, settings, profile, prefers-color-scheme]
 ## Decision
 
 - Brand colors stay fixed to SoftGate logo tokens (`primary-*` / `burst-*`). Settings **Primary Color** removed.
-- Theme preference is a single store: `light` | `dark` | `system` (default **system**).
+- Theme preference is a single store: `light` | `dark` | `system` (default **light**; Impl 15). System remains an option.
 - Settings Appearance select and Profile Theme options both call `setPreference` — change either updates both UIs and the live `html` class.
 - System mode uses `matchMedia('(prefers-color-scheme: dark)')` and listens for OS changes.
 
