@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
-import { AuthProvider, useAuth, migrateLegacyEmail, hashPassword } from './useAuth';
+import { AuthProvider, useAuth, migrateLegacyEmail } from './useAuth';
+import { hashPassword } from '@/lib/auth';
 
 const wrapper = ({ children }: { children: ReactNode }) => <AuthProvider>{children}</AuthProvider>;
 
@@ -57,6 +58,7 @@ describe('useAuth', () => {
 
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.user).toBeNull();
+    expect(result.current.hasStaffAccount).toBe(false);
   });
 
   it('loads user from localStorage on mount', async () => {
@@ -66,6 +68,7 @@ describe('useAuth', () => {
       username: 'admin',
       displayName: 'Admin',
       role: 'super_admin' as const,
+      passwordHash: hashPassword('secret12'),
     };
 
     localStorage.setItem('softgate_admin_user', JSON.stringify(storedUser));
@@ -77,7 +80,8 @@ describe('useAuth', () => {
     });
 
     expect(result.current.isAuthenticated).toBe(true);
-    expect(result.current.user).toEqual(storedUser);
+    expect(result.current.user?.email).toBe('admin@test.com');
+    expect(result.current.hasStaffAccount).toBe(true);
   });
 
   it('migrates legacy webpad email when loading from localStorage', async () => {
@@ -89,6 +93,7 @@ describe('useAuth', () => {
         username: 'admin',
         displayName: 'Admin',
         role: 'super_admin',
+        passwordHash: hashPassword('secret12'),
       }),
     );
 
@@ -104,7 +109,7 @@ describe('useAuth', () => {
     );
   });
 
-  it('logs in successfully', async () => {
+  it('register then login sets user as super_admin', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await waitFor(() => {
@@ -112,12 +117,187 @@ describe('useAuth', () => {
     });
 
     await act(async () => {
-      await result.current.login('admin@test.com', 'password');
+      await result.current.register({
+        username: 'admin',
+        displayName: 'Admin',
+        email: 'admin@test.com',
+        password: 'password1',
+      });
     });
 
     expect(result.current.isAuthenticated).toBe(true);
-    expect(result.current.user).not.toBeNull();
+    expect(result.current.user?.role).toBe('super_admin');
+    expect(result.current.user?.id).toBe('1');
+    expect(result.current.hasStaffAccount).toBe(true);
+
+    act(() => {
+      result.current.logout();
+    });
+
+    await act(async () => {
+      await result.current.login('admin@test.com', 'password1');
+    });
     expect(result.current.user?.email).toBe('admin@test.com');
+  });
+
+  it('rejects login for unknown email', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await expect(
+      act(async () => {
+        await result.current.login('nobody@test.com', 'password1');
+      }),
+    ).rejects.toThrow('INVALID_CREDENTIALS');
+  });
+
+  it('rejects a second register', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.register({
+        username: 'admin',
+        displayName: 'Admin',
+        email: 'admin@test.com',
+        password: 'password1',
+      });
+    });
+
+    act(() => {
+      result.current.logout();
+    });
+
+    await expect(
+      act(async () => {
+        await result.current.register({
+          username: 'other',
+          displayName: 'Other',
+          email: 'other@test.com',
+          password: 'password1',
+        });
+      }),
+    ).rejects.toThrow('STAFF_LOCKED');
+  });
+
+  it('acceptInvite creates an admin and keeps public register locked', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.register({
+        username: 'admin',
+        displayName: 'Admin',
+        email: 'admin@test.com',
+        password: 'password1',
+      });
+    });
+
+    const { createInvite } = await import('@/lib/auth');
+    const { rawToken } = createInvite({
+      email: 'editor@test.com',
+      inviterId: '1',
+      actorRole: 'super_admin',
+    });
+
+    act(() => {
+      result.current.logout();
+    });
+
+    await act(async () => {
+      await result.current.acceptInvite(rawToken, {
+        username: 'editor',
+        displayName: 'Editor',
+        password: 'password1',
+      });
+    });
+
+    expect(result.current.user?.role).toBe('admin');
+    expect(result.current.user?.email).toBe('editor@test.com');
+    expect(result.current.user?.id).toBe('2');
+
+    act(() => {
+      result.current.logout();
+    });
+
+    await expect(
+      act(async () => {
+        await result.current.register({
+          username: 'third',
+          displayName: 'Third',
+          email: 'third@test.com',
+          password: 'password1',
+        });
+      }),
+    ).rejects.toThrow('STAFF_LOCKED');
+  });
+
+  it('acceptInvite persists the invited role', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.register({
+        username: 'admin',
+        displayName: 'Admin',
+        email: 'admin@test.com',
+        password: 'password1',
+      });
+    });
+
+    const { createInvite } = await import('@/lib/auth');
+    const { rawToken } = createInvite({
+      email: 'member@test.com',
+      inviterId: '1',
+      actorRole: 'super_admin',
+      role: 'member',
+    });
+
+    act(() => {
+      result.current.logout();
+    });
+
+    await act(async () => {
+      await result.current.acceptInvite(rawToken, {
+        username: 'member',
+        displayName: 'Member',
+        password: 'password1',
+      });
+    });
+
+    expect(result.current.user?.role).toBe('member');
+    expect(result.current.user?.email).toBe('member@test.com');
+  });
+
+  it('rejects register passwords shorter than 8 characters', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await expect(
+      act(async () => {
+        await result.current.register({
+          username: 'admin',
+          displayName: 'Admin',
+          email: 'admin@test.com',
+          password: 'short',
+        });
+      }),
+    ).rejects.toThrow('PASSWORD_TOO_SHORT');
   });
 
   it('normalizes webpad email on login', async () => {
@@ -128,13 +308,26 @@ describe('useAuth', () => {
     });
 
     await act(async () => {
-      await result.current.login('admin@webpad.com', 'password');
+      await result.current.register({
+        username: 'admin',
+        displayName: 'Admin',
+        email: 'admin@webpad.com',
+        password: 'password1',
+      });
+    });
+
+    act(() => {
+      result.current.logout();
+    });
+
+    await act(async () => {
+      await result.current.login('admin@webpad.com', 'password1');
     });
 
     expect(result.current.user?.email).toBe('admin@softgatecomic.com');
   });
 
-  it('updates user and persists to localStorage', async () => {
+  it('rejects login when password is wrong', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await waitFor(() => {
@@ -142,36 +335,12 @@ describe('useAuth', () => {
     });
 
     await act(async () => {
-      await result.current.login('admin@softgatecomic.com', 'password');
-    });
-
-    act(() => {
-      result.current.updateUser({
-        displayName: 'SoftGate Admin',
-        avatar: 'data:image/png;base64,abc',
+      await result.current.register({
+        username: 'admin',
+        displayName: 'Admin',
+        email: 'admin@softgatecomic.com',
+        password: 'secret123',
       });
-    });
-
-    expect(result.current.user?.displayName).toBe('SoftGate Admin');
-    expect(result.current.user?.avatar).toBe('data:image/png;base64,abc');
-    expect(JSON.parse(localStorage.getItem('softgate_admin_user') || '{}').displayName).toBe(
-      'SoftGate Admin',
-    );
-  });
-
-  it('rejects login when passwordHash is set and password is wrong', async () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    await act(async () => {
-      await result.current.login('admin@softgatecomic.com', 'password');
-    });
-
-    act(() => {
-      result.current.updateUser({ passwordHash: hashPassword('secret123') });
     });
 
     act(() => {
@@ -180,9 +349,9 @@ describe('useAuth', () => {
 
     await expect(
       act(async () => {
-        await result.current.login('admin@softgatecomic.com', 'wrong');
+        await result.current.login('admin@softgatecomic.com', 'wrongpass');
       }),
-    ).rejects.toThrow('Invalid credentials');
+    ).rejects.toThrow('INVALID_CREDENTIALS');
   });
 
   it('logs out successfully', async () => {
@@ -193,10 +362,13 @@ describe('useAuth', () => {
     });
 
     await act(async () => {
-      await result.current.login('admin@test.com', 'password');
+      await result.current.register({
+        username: 'admin',
+        displayName: 'Admin',
+        email: 'admin@test.com',
+        password: 'password1',
+      });
     });
-
-    expect(result.current.isAuthenticated).toBe(true);
 
     act(() => {
       result.current.logout();
@@ -204,13 +376,5 @@ describe('useAuth', () => {
 
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.user).toBeNull();
-  });
-
-  it('sets isLoading to false after checking localStorage', async () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
   });
 });

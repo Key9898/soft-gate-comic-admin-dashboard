@@ -7,6 +7,7 @@ import type {
   Episode,
   Author,
   Genre,
+  CoinPackage,
   Comment,
   PopularWebtoon,
   MediaFile,
@@ -16,6 +17,8 @@ import type {
   ScheduledEpisode,
   SharedData,
   Notification,
+  PortalSettings,
+  PortalLanguage,
 } from './types';
 
 export const mockDashboardStats: DashboardStats = {
@@ -57,21 +60,21 @@ export const mockUserGrowthData: UserGrowthData[] = [
 export const mockPopularWebtoons: PopularWebtoon[] = [
   {
     id: '1',
-    title: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    title: { mm: 'The Last Horizon', en: 'The Last Horizon' },
     views: 2500000,
     likes: 125000,
     revenue: 12500,
   },
   {
     id: '3',
-    title: { mm: 'အမှောင်သူရဲကောင်း', en: 'Dark Hero' },
+    title: { mm: 'Shadow Knight', en: 'Shadow Knight' },
     views: 3200000,
     likes: 156000,
     revenue: 15600,
   },
   {
     id: '2',
-    title: { mm: 'ရန်ကုန်မြို့မှာ ချစ်ခြင်းတရား', en: 'Love in Yangon' },
+    title: { mm: 'ဆိုးလ်မြို့က ချစ်ခြင်းတရား', en: 'Love in Seoul' },
     views: 1800000,
     likes: 98000,
     revenue: 9800,
@@ -85,7 +88,7 @@ export const mockPopularWebtoons: PopularWebtoon[] = [
   },
   {
     id: '8',
-    title: { mm: 'ဆိုက်ဘာအိပ်မက်', en: 'Cyber Dream' },
+    title: { mm: 'Cyber Dreams', en: 'Cyber Dreams' },
     views: 980000,
     likes: 72000,
     revenue: 7200,
@@ -214,7 +217,7 @@ export const mockGenres: Genre[] = [
 export const mockWebtoons: Webtoon[] = [
   {
     id: '1',
-    title: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    title: { mm: 'The Last Horizon', en: 'The Last Horizon' },
     description: {
       mm: 'မှော်နှင့် နည်းပညာတို့ တိုက်ခိုက်ရသော ကမ္ဘာတစ်ခုတွင် သူရဲကောင်းတစ်ဦးသည် လူသားမျိုးနွယ်ကို ပျက်စီးခြင်းမှ ကယ်တင်ရန် ထွန်းလင်းတောက်ပရမည်။',
       en: 'In a world where magic and technology clash, a hero must rise to save humanity from destruction.',
@@ -230,33 +233,41 @@ export const mockWebtoons: Webtoon[] = [
     likeCount: 125000,
     episodeCount: 85,
     rating: 4.9,
-    createdAt: '2024-01-15',
-    updatedAt: '2026-04-20',
+    contentRating: '13',
+    spotlight: true,
+    spotlightOrder: 1,
+    weeklyViewCount: 35000,
+    createdAt: '2024-01-15T00:00:00.000Z',
+    updatedAt: '2026-04-20T00:00:00.000Z',
   },
   {
     id: '2',
-    title: { mm: 'ရန်ကုန်မြို့မှာ ချစ်ခြင်းတရား', en: 'Love in Yangon' },
+    title: { mm: 'ဆိုးလ်မြို့က ချစ်ခြင်းတရား', en: 'Love in Seoul' },
     description: {
-      mm: 'ရန်ကုန်မြို့၏ လူစည်ကားသော လမ်းမကြီးများတွင် ဖြစ်ပွားသော နွေးထွေးလှသည့် အချစ်ဇာတ်လမ်းတစ်ပုဒ်။',
-      en: 'A heartwarming love story set in the bustling streets of Yangon.',
+      mm: 'ဆိုးလ်မြို့၏ လူစည်ကားသော လမ်းမကြီးများတွင် ဖြစ်ပွားသော နွေးထွေးလှသည့် အချစ်ဇာတ်လမ်းတစ်ပုဒ်။',
+      en: 'A heartwarming love story set in the bustling streets of Seoul.',
     },
     coverImage: '/webtoon-covers/love-in-seoul.png',
     coverColor: 'bg-gradient-to-br from-pink-400 to-rose-600',
     author: mockAuthors[1],
     genres: ['အချစ်ဇာတ်လမ်း', 'ဒရမ်မာ'],
-    tags: ['အချစ်', 'ရန်ကုန်', 'နေ့စဉ်ဘဝ'],
+    tags: ['အချစ်', 'ဆိုးလ်', 'နေ့စဉ်ဘဝ'],
     status: 'ongoing',
     isPremium: false,
     viewCount: 1800000,
     likeCount: 98000,
     episodeCount: 62,
     rating: 4.7,
-    createdAt: '2024-03-20',
-    updatedAt: '2026-04-22',
+    contentRating: '13',
+    spotlight: true,
+    spotlightOrder: 2,
+    weeklyViewCount: 80000,
+    createdAt: '2024-03-20T00:00:00.000Z',
+    updatedAt: '2026-04-22T00:00:00.000Z',
   },
   {
     id: '3',
-    title: { mm: 'အမှောင်သူရဲကောင်း', en: 'Dark Hero' },
+    title: { mm: 'Shadow Knight', en: 'Shadow Knight' },
     description: {
       mm: 'နိုင်ငံတော်ကို ကာကွယ်ရန် အမှောင်ထဲမှ ထွက်ပေါ်လာသော ထူးချွန်သည့် စစ်သည်တော်တစ်ဦး။',
       en: 'An elite soldier emerges from the shadows to protect the nation.',
@@ -272,12 +283,16 @@ export const mockWebtoons: Webtoon[] = [
     likeCount: 156000,
     episodeCount: 120,
     rating: 4.8,
-    createdAt: '2023-06-10',
-    updatedAt: '2026-04-25',
+    contentRating: '16',
+    spotlight: true,
+    spotlightOrder: 3,
+    weeklyViewCount: 120000,
+    createdAt: '2023-06-10T00:00:00.000Z',
+    updatedAt: '2026-04-25T00:00:00.000Z',
   },
   {
     id: '4',
-    title: { mm: 'ပင်လယ်ပြင်၏အိပ်မက်များ', en: 'Dreams of the Sea' },
+    title: { mm: 'Ocean Dreams', en: 'Ocean Dreams' },
     description: {
       mm: 'ပင်လယ်ခုနစ်စင်းကို ဖြတ်ကျော်သော စွန့်စားမှုဇာတ်လမ်း။',
       en: 'An adventure story crossing the seven seas.',
@@ -293,12 +308,14 @@ export const mockWebtoons: Webtoon[] = [
     likeCount: 67000,
     episodeCount: 45,
     rating: 4.6,
-    createdAt: '2024-08-05',
-    updatedAt: '2026-04-18',
+    contentRating: 'all',
+    weeklyViewCount: 12000,
+    createdAt: '2024-08-05T00:00:00.000Z',
+    updatedAt: '2026-04-18T00:00:00.000Z',
   },
   {
     id: '5',
-    title: { mm: 'ရွှေခေတ်', en: 'Golden Era' },
+    title: { mm: 'ရွှေခေတ်', en: 'Golden Age' },
     description: {
       mm: 'ရှေးခေတ်တွင် ဖြစ်ပွားသော သမိုင်းဝင် ဇာတ်လမ်းကြီးတစ်ပုဒ်။',
       en: 'An epic historical saga set in ancient times.',
@@ -314,12 +331,14 @@ export const mockWebtoons: Webtoon[] = [
     likeCount: 89000,
     episodeCount: 100,
     rating: 4.8,
-    createdAt: '2023-01-15',
-    updatedAt: '2025-12-20',
+    contentRating: '13',
+    weeklyViewCount: 5000,
+    createdAt: '2023-01-15T00:00:00.000Z',
+    updatedAt: '2025-12-20T00:00:00.000Z',
   },
   {
     id: '6',
-    title: { mm: 'တောင်တန်းစောင့်နတ်', en: 'Mountain Spirit' },
+    title: { mm: 'Forest Spirit', en: 'Forest Spirit' },
     description: {
       mm: 'စုန်းအင်းတောများကို ဖြတ်ကျော်သော မှော်ဆန်သည့် ခရီးစဉ်။',
       en: 'A magical journey through enchanted forests.',
@@ -335,8 +354,10 @@ export const mockWebtoons: Webtoon[] = [
     likeCount: 54000,
     episodeCount: 38,
     rating: 4.5,
-    createdAt: '2024-11-10',
-    updatedAt: '2026-04-24',
+    contentRating: 'all',
+    weeklyViewCount: 95000,
+    createdAt: '2024-11-10T00:00:00.000Z',
+    updatedAt: '2026-04-24T00:00:00.000Z',
   },
   {
     id: '7',
@@ -356,12 +377,16 @@ export const mockWebtoons: Webtoon[] = [
     likeCount: 78000,
     episodeCount: 55,
     rating: 4.7,
-    createdAt: '2024-05-20',
-    updatedAt: '2026-04-23',
+    contentRating: '18',
+    spotlight: true,
+    spotlightOrder: 4,
+    weeklyViewCount: 20000,
+    createdAt: '2024-05-20T00:00:00.000Z',
+    updatedAt: '2026-04-23T00:00:00.000Z',
   },
   {
     id: '8',
-    title: { mm: 'ဆိုက်ဘာအိပ်မက်', en: 'Cyber Dream' },
+    title: { mm: 'Cyber Dreams', en: 'Cyber Dreams' },
     description: {
       mm: 'ဆိုက်ဘာပန့်ကမ္ဘာတွင် သိပ္ပံစိတ်ကူးယဉ် စွန့်စားမှု။',
       en: 'A sci-fi adventure in a cyberpunk world.',
@@ -377,8 +402,12 @@ export const mockWebtoons: Webtoon[] = [
     likeCount: 72000,
     episodeCount: 42,
     rating: 4.6,
-    createdAt: '2024-07-15',
-    updatedAt: '2026-04-21',
+    contentRating: '16',
+    spotlight: true,
+    spotlightOrder: 5,
+    weeklyViewCount: 40000,
+    createdAt: '2024-07-15T00:00:00.000Z',
+    updatedAt: '2026-04-21T00:00:00.000Z',
   },
   {
     id: '9',
@@ -398,8 +427,10 @@ export const mockWebtoons: Webtoon[] = [
     likeCount: 48000,
     episodeCount: 30,
     rating: 4.4,
-    createdAt: '2024-09-01',
-    updatedAt: '2026-04-19',
+    contentRating: '13',
+    weeklyViewCount: 15000,
+    createdAt: '2024-09-01T00:00:00.000Z',
+    updatedAt: '2026-04-19T00:00:00.000Z',
   },
 ];
 
@@ -407,7 +438,7 @@ export const mockEpisodes: Episode[] = [
   {
     id: '1',
     webtoonId: '1',
-    webtoonTitle: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    webtoonTitle: { mm: 'The Last Horizon', en: 'The Last Horizon' },
     title: { mm: 'အစပြုခြင်း', en: 'The Beginning' },
     description: { mm: 'ခရီးစဉ် ဤနေရာမှ စတင်သည်...', en: 'The journey starts here...' },
     images: [],
@@ -417,13 +448,13 @@ export const mockEpisodes: Episode[] = [
     likeCount: 8500,
     episodeNumber: 1,
     status: 'published',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-01-15',
+    createdAt: '2024-01-15T00:00:00.000Z',
+    updatedAt: '2024-01-15T00:00:00.000Z',
   },
   {
     id: '2',
     webtoonId: '1',
-    webtoonTitle: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    webtoonTitle: { mm: 'The Last Horizon', en: 'The Last Horizon' },
     title: { mm: 'နိုးထခြင်း', en: 'Awakening' },
     description: { mm: 'စွမ်းအားများ စတင်ထွက်ပေါ်လာသည်...', en: 'Powers begin to emerge...' },
     images: [],
@@ -433,13 +464,13 @@ export const mockEpisodes: Episode[] = [
     likeCount: 7200,
     episodeNumber: 2,
     status: 'published',
-    createdAt: '2024-01-22',
-    updatedAt: '2024-01-22',
+    createdAt: '2024-01-22T00:00:00.000Z',
+    updatedAt: '2024-01-22T00:00:00.000Z',
   },
   {
     id: '3',
     webtoonId: '1',
-    webtoonTitle: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    webtoonTitle: { mm: 'The Last Horizon', en: 'The Last Horizon' },
     title: { mm: 'ပထမဆုံးတိုက်ပွဲ', en: 'First Battle' },
     description: { mm: 'ပထမဆုံး စိန်ခေါ်မှု ပေါ်လာသည်...', en: 'The first challenge appears...' },
     images: [],
@@ -449,13 +480,13 @@ export const mockEpisodes: Episode[] = [
     likeCount: 6100,
     episodeNumber: 3,
     status: 'published',
-    createdAt: '2024-01-29',
-    updatedAt: '2024-01-29',
+    createdAt: '2024-01-29T00:00:00.000Z',
+    updatedAt: '2024-01-29T00:00:00.000Z',
   },
   {
     id: '4',
     webtoonId: '1',
-    webtoonTitle: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    webtoonTitle: { mm: 'The Last Horizon', en: 'The Last Horizon' },
     title: { mm: 'လေ့ကျင့်ခန်း', en: 'Training' },
     description: {
       mm: 'စွမ်းအားကို ထိန်းချုပ်တတ်အောင် သင်ယူခြင်း...',
@@ -468,13 +499,14 @@ export const mockEpisodes: Episode[] = [
     likeCount: 5300,
     episodeNumber: 4,
     status: 'published',
-    createdAt: '2024-02-05',
-    updatedAt: '2024-02-05',
+    createdAt: '2024-02-05T00:00:00.000Z',
+    updatedAt: '2024-02-05T00:00:00.000Z',
+    freeAt: '2026-08-26T05:00:00.000Z',
   },
   {
     id: '5',
     webtoonId: '1',
-    webtoonTitle: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    webtoonTitle: { mm: 'The Last Horizon', en: 'The Last Horizon' },
     title: { mm: 'အမှောင်လျှို့ဝှက်ချက်များ', en: 'Dark Secrets' },
     description: {
       mm: 'ဖုံးကွယ်ထားသော အမှန်တရားများ ထွက်ပေါ်လာသည်...',
@@ -487,8 +519,25 @@ export const mockEpisodes: Episode[] = [
     likeCount: 4800,
     episodeNumber: 5,
     status: 'published',
-    createdAt: '2024-02-12',
-    updatedAt: '2024-02-12',
+    createdAt: '2024-02-12T00:00:00.000Z',
+    updatedAt: '2024-02-12T00:00:00.000Z',
+  },
+  {
+    id: '6',
+    webtoonId: '1',
+    webtoonTitle: { mm: 'The Last Horizon', en: 'The Last Horizon' },
+    title: { mm: 'နောက်ဆုံးတိုက်ပွဲ', en: 'The Final Battle' },
+    description: { mm: 'စီစဉ်ထားသော နောက်ထပ်အပိုင်း', en: 'The next scheduled chapter' },
+    images: [],
+    isPremium: false,
+    coinPrice: 0,
+    viewCount: 0,
+    likeCount: 0,
+    episodeNumber: 6,
+    status: 'scheduled',
+    createdAt: '2026-08-20T00:00:00.000Z',
+    updatedAt: '2026-08-20T00:00:00.000Z',
+    scheduledAt: '2026-08-24T03:30:00.000Z',
   },
 ];
 
@@ -607,7 +656,7 @@ export const mockActivityLogs: ActivityLog[] = [
     action: 'create',
     targetType: 'webtoon',
     targetId: '1',
-    targetName: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    targetName: { mm: 'The Last Horizon', en: 'The Last Horizon' },
     details: { mm: 'ဝက်ဘ်တွန်းအသစ် ဖန်တီးခဲ့သည်', en: 'Created new webtoon' },
     createdAt: '2026-04-27T10:00:00Z',
   },
@@ -750,12 +799,21 @@ export const mockScheduledEpisodes: ScheduledEpisode[] = [
   {
     id: 's1',
     webtoonId: '1',
-    webtoonTitle: { mm: 'နောက်ဆုံးမြောက်တိမ်တိုက်', en: 'The Last Cloud' },
+    webtoonTitle: { mm: 'The Last Horizon', en: 'The Last Horizon' },
     episodeNumber: 86,
     title: { mm: 'နောက်ဆုံးတိုက်ပွဲ', en: 'The Final Battle' },
     scheduledAt: '2026-04-28T10:00:00',
     status: 'scheduled',
   },
+];
+
+export const mockCoinPackages: CoinPackage[] = [
+  { id: '1', coins: 50, price: 1000 },
+  { id: '2', coins: 120, price: 2000, bonus: 10 },
+  { id: '3', coins: 300, price: 5000, bonus: 30, popular: true },
+  { id: '4', coins: 650, price: 10000, bonus: 80 },
+  { id: '5', coins: 1400, price: 20000, bonus: 200, bestValue: true },
+  { id: '6', coins: 3000, price: 40000, bonus: 500 },
 ];
 
 export const getSharedData = (): SharedData => ({
@@ -765,6 +823,7 @@ export const getSharedData = (): SharedData => ({
   popularWebtoons: mockPopularWebtoons,
   authors: mockAuthors,
   genres: mockGenres,
+  coinPackages: mockCoinPackages,
   webtoons: mockWebtoons,
   episodes: mockEpisodes,
   users: mockUsers,
@@ -800,18 +859,131 @@ export const downloadJSON = (data: SharedData, filename: string = 'softgate-comi
   URL.revokeObjectURL(url);
 };
 
+export const SHARED_DATA_STORAGE_KEY = 'softgate-shared-data';
+export const LEGACY_SHARED_DATA_STORAGE_KEY = 'softgate-comic-shared-data';
+export const ADMIN_SETTINGS_STORAGE_KEY = 'softgate_admin_settings';
+export const SHARED_DATA_SCHEMA_VERSION = 14;
+
+const defaultPortalSettings: PortalSettings = {
+  maintenanceMode: false,
+  allowRegistration: true,
+  contactEmail: 'admin@softgatecomic.com',
+  defaultLanguage: 'en',
+};
+
+export const normalizePortalLanguage = (value: unknown): PortalLanguage => {
+  if (value === 'mm' || value === 'my') return 'mm';
+  return 'en';
+};
+
+export const toPortalSettings = (input: {
+  maintenanceMode?: boolean;
+  allowRegistration?: boolean;
+  contactEmail?: string;
+  defaultLanguage?: string;
+}): PortalSettings => ({
+  maintenanceMode: Boolean(input.maintenanceMode),
+  allowRegistration: input.allowRegistration !== false,
+  contactEmail: typeof input.contactEmail === 'string' ? input.contactEmail : '',
+  defaultLanguage: normalizePortalLanguage(input.defaultLanguage),
+});
+
+const readAdminPortalSettings = (): PortalSettings | null => {
+  const stored = localStorage.getItem(ADMIN_SETTINGS_STORAGE_KEY);
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored) as Record<string, unknown>;
+    return toPortalSettings({
+      maintenanceMode: Boolean(parsed.maintenanceMode),
+      allowRegistration: parsed.allowRegistration !== false,
+      contactEmail: typeof parsed.contactEmail === 'string' ? parsed.contactEmail : undefined,
+      defaultLanguage:
+        typeof parsed.defaultLanguage === 'string' ? parsed.defaultLanguage : undefined,
+    });
+  } catch {
+    return null;
+  }
+};
+
+export const ensurePortalSettings = (data: SharedData): SharedData => {
+  const fromAdmin = readAdminPortalSettings();
+  const settings = toPortalSettings({
+    ...defaultPortalSettings,
+    ...fromAdmin,
+    ...data.settings,
+  });
+  return { ...data, settings };
+};
+
+export const ensureCoinPackages = (data: SharedData): SharedData => {
+  if (Array.isArray(data.coinPackages)) return data;
+  return { ...data, coinPackages: mockCoinPackages };
+};
+
+const parsePortalBlob = (raw: string): SharedData | null => {
+  try {
+    const parsed = JSON.parse(raw) as {
+      schemaVersion?: number;
+      data?: SharedData;
+    };
+    if (
+      !parsed ||
+      typeof parsed !== 'object' ||
+      parsed.schemaVersion !== SHARED_DATA_SCHEMA_VERSION ||
+      !parsed.data ||
+      !Array.isArray(parsed.data.webtoons)
+    ) {
+      return null;
+    }
+    return parsed.data;
+  } catch {
+    return null;
+  }
+};
+
+const parseLegacyCatalog = (raw: string): SharedData | null => {
+  try {
+    const parsed = JSON.parse(raw) as SharedData;
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.webtoons)) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
 export const saveToLocalStorage = (data: SharedData) => {
-  localStorage.setItem('softgate-comic-shared-data', exportToJSON(data));
+  localStorage.setItem(
+    SHARED_DATA_STORAGE_KEY,
+    JSON.stringify({ schemaVersion: SHARED_DATA_SCHEMA_VERSION, data }),
+  );
 };
 
 export const loadFromLocalStorage = (): SharedData | null => {
-  const stored = localStorage.getItem('softgate-comic-shared-data');
-  if (stored) {
-    try {
-      return importFromJSON(stored);
-    } catch {
-      return null;
+  const portalRaw = localStorage.getItem(SHARED_DATA_STORAGE_KEY);
+  if (portalRaw) {
+    const data = parsePortalBlob(portalRaw);
+    if (data) {
+      const missingSettings = !data.settings;
+      const missingPackages = !Array.isArray(data.coinPackages);
+      const merged = ensureCoinPackages(ensurePortalSettings(data));
+      if (missingSettings || missingPackages) {
+        saveToLocalStorage(merged);
+      }
+      return merged;
     }
   }
+
+  const legacyRaw = localStorage.getItem(LEGACY_SHARED_DATA_STORAGE_KEY);
+  if (legacyRaw) {
+    const data = parseLegacyCatalog(legacyRaw);
+    if (data) {
+      const merged = ensureCoinPackages(ensurePortalSettings(data));
+      saveToLocalStorage(merged);
+      return merged;
+    }
+  }
+
   return null;
 };

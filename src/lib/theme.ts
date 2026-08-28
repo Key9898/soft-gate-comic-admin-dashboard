@@ -13,7 +13,7 @@ export type ResolvedTheme = 'light' | 'dark';
 
 export const THEME_PREFERENCE_KEY = 'softgate_admin_theme_preference';
 export const THEME_LEGACY_KEY = 'softgate_admin_theme';
-/** One-shot: reset legacy auto-written light/dark locks to Light default. */
+/** One-shot: migration already ran; honor stored preference. First-run default is System. */
 export const THEME_PREF_V2_KEY = 'softgate_admin_theme_pref_v2';
 
 export function resolveTheme(preference: ThemePreference, matchesDark: boolean): ResolvedTheme {
@@ -25,7 +25,7 @@ export function resolveTheme(preference: ThemePreference, matchesDark: boolean):
 
 /**
  * Legacy softgate_admin_theme stored resolved OS theme, not a user choice.
- * Run once: force Light, clear legacy, set v2 flag.
+ * Run once: set System default, clear legacy, set v2 flag. After v2, honor stored preference.
  */
 export function migrateThemePreferenceV2(
   storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> = localStorage,
@@ -35,17 +35,17 @@ export function migrateThemePreferenceV2(
     if (stored === 'light' || stored === 'dark' || stored === 'system') {
       return stored;
     }
-    return 'light';
+    return 'system';
   }
 
-  storage.setItem(THEME_PREFERENCE_KEY, 'light');
+  storage.setItem(THEME_PREFERENCE_KEY, 'system');
   storage.removeItem(THEME_LEGACY_KEY);
   storage.setItem(THEME_PREF_V2_KEY, '1');
-  return 'light';
+  return 'system';
 }
 
 function readStoredPreference(): ThemePreference {
-  if (typeof window === 'undefined') return 'light';
+  if (typeof window === 'undefined') return 'system';
   return migrateThemePreferenceV2(localStorage);
 }
 

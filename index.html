@@ -11,14 +11,14 @@
           var v2 = 'softgate_admin_theme_pref_v2';
           var pref;
           if (localStorage.getItem(v2) !== '1') {
-            pref = 'light';
-            localStorage.setItem(key, 'light');
+            pref = 'system';
+            localStorage.setItem(key, 'system');
             localStorage.removeItem(legacy);
             localStorage.setItem(v2, '1');
           } else {
             pref = localStorage.getItem(key);
             if (pref !== 'light' && pref !== 'dark' && pref !== 'system') {
-              pref = 'light';
+              pref = 'system';
             }
             localStorage.removeItem(legacy);
           }

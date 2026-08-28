@@ -10,6 +10,7 @@ SoftGate Comic Admin Dashboard — production-grade React dashboard for managing
 
 - React 18 + TypeScript 5
 - Vite 5 + Tailwind CSS v3
+- Express 5 in sibling `backend/` (`npm run dev:api`) — health + Prisma + staff cookie auth + catalog CRUD + local media adapter (Impl 34); Admin SPA wires staff+catalog when `VITE_USE_MOCK_API=false` (Impl 33) and media when that flag is `false` (Impl 35). Daily Media Library stays mock.
 - ESLint 9 + Prettier 3
 - Vitest 4 + Testing Library
 - Husky 9 + lint-staged 15
@@ -30,5 +31,6 @@ After completing implementation work:
 
 ## Quality
 
-- `npm run check` must pass before done.
+- `npm run check` must pass before done (Admin + `backend/` workspace).
 - Never push or amend unless the user explicitly asks.
+- Do not edit the website / `soft-gate-comic` reader-portal repo.

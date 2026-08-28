@@ -13,6 +13,7 @@ export type { ModalProps } from './Modal';
 export { default as Sidebar } from './Sidebar';
 export { default as Header } from './Header';
 export { default as ProtectedRoute } from './ProtectedRoute';
+export { default as CatalogStatus } from './CatalogStatus';
 export { default as Toggle } from './Toggle';
 export type { ToggleProps } from './Toggle';
 export { default as ProgressBar } from './ProgressBar';
@@ -31,11 +32,16 @@ export {
 } from './EmptyState';
 export {
   default as Skeleton,
+  SkeletonSection,
+  SkeletonText,
+  SkeletonStatCard,
+  SkeletonTable,
   TableSkeleton,
   CardSkeleton,
   StatsSkeleton,
   ImageSkeleton,
   TextSkeleton,
+  coverSheenClass,
 } from './Skeleton';
 export { default as MediaPicker } from './MediaPicker';
 export type { MediaFile } from './MediaPicker';

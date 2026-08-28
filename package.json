@@ -3,14 +3,18 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "workspaces": [
+    "backend"
+  ],
   "scripts": {
     "dev": "vite",
+    "dev:api": "npm run dev -w backend",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" \"wiki/**/*.{md,mdx}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" \"wiki/**/*.{md,mdx}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" \"wiki/**/*.{md,mdx}\" \"backend/src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" \"wiki/**/*.{md,mdx}\" \"backend/src/**/*.ts\"",
     "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build",
     "test": "vitest",
@@ -18,7 +22,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "check": "npm run lint && npm run format:check && npm run test:run && npm run build",
+    "check": "npm run lint && npm run format:check && npm run test:run && npm run build && npm run check -w backend",
     "prepare": "husky"
   },
   "dependencies": {
@@ -66,7 +70,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix",
+      "eslint --fix --no-warn-ignored",
       "prettier --write"
     ],
     "*.{js,jsx,json,css,md}": [

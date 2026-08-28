@@ -9,7 +9,7 @@ export interface AdminUser {
   username: string;
   displayName: string;
   avatar?: string;
-  role: 'admin' | 'super_admin';
+  role: 'super_admin' | 'admin' | 'member' | 'viewer';
   createdAt?: string;
   /** Mock-only password digest; when set, login must match. */
   passwordHash?: string;
@@ -28,6 +28,17 @@ export interface User {
   lastLoginAt?: string;
 }
 
+export type ContentRating = 'all' | '13' | '16' | '18';
+
+export type PortalLanguage = 'en' | 'mm';
+
+export interface PortalSettings {
+  maintenanceMode: boolean;
+  allowRegistration: boolean;
+  contactEmail: string;
+  defaultLanguage: PortalLanguage;
+}
+
 export interface Webtoon {
   id: string;
   title: BilingualText;
@@ -43,8 +54,12 @@ export interface Webtoon {
   likeCount: number;
   episodeCount: number;
   rating: number;
+  contentRating: ContentRating;
   createdAt: string;
   updatedAt: string;
+  spotlight?: boolean;
+  spotlightOrder?: number;
+  weeklyViewCount?: number;
 }
 
 export interface Episode {
@@ -54,6 +69,7 @@ export interface Episode {
   title: BilingualText;
   description?: BilingualText;
   images: string[];
+  imageSizes?: Array<{ width: number; height: number } | null>;
   isPremium: boolean;
   coinPrice: number;
   viewCount: number;
@@ -62,6 +78,8 @@ export interface Episode {
   status: 'published' | 'draft' | 'scheduled';
   createdAt: string;
   updatedAt: string;
+  freeAt?: string;
+  scheduledAt?: string;
 }
 
 export interface Author {
@@ -152,6 +170,8 @@ export interface ActivityLog {
   action: 'create' | 'update' | 'delete' | 'publish' | 'ban' | 'unban' | 'login' | 'logout';
   targetType:
     | 'webtoon'
+    | 'author'
+    | 'genre'
     | 'episode'
     | 'user'
     | 'comment'
@@ -160,7 +180,9 @@ export interface ActivityLog {
     | 'report'
     | 'media'
     | 'schedule'
-    | 'transaction';
+    | 'transaction'
+    | 'coin-package'
+    | 'staff';
   targetId: string;
   targetName: BilingualText;
   details?: BilingualText;
@@ -204,6 +226,15 @@ export interface ScheduledEpisode {
   status: 'scheduled' | 'published' | 'draft';
 }
 
+export interface CoinPackage {
+  id: string;
+  coins: number;
+  price: number;
+  bonus?: number;
+  popular?: boolean;
+  bestValue?: boolean;
+}
+
 export interface SharedData {
   dashboardStats: DashboardStats;
   revenueData: RevenueData[];
@@ -211,6 +242,7 @@ export interface SharedData {
   popularWebtoons: PopularWebtoon[];
   authors: Author[];
   genres: Genre[];
+  coinPackages: CoinPackage[];
   webtoons: Webtoon[];
   episodes: Episode[];
   users: User[];
@@ -221,4 +253,5 @@ export interface SharedData {
   transactions: Transaction[];
   scheduledEpisodes: ScheduledEpisode[];
   notifications: Notification[];
+  settings?: PortalSettings;
 }

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SidebarProvider, useSidebar } from '@/lib/SidebarContext';
-import { Sidebar, Header } from '../components';
+import { useData } from '@/lib/DataContext';
+import { Sidebar, Header, CatalogStatus } from '../components';
 
 const AdminLayoutContent = () => {
   const [isReady, setIsReady] = useState(false);
   const { isCollapsed } = useSidebar();
   const location = useLocation();
+  const { reloadCatalog } = useData();
 
   useEffect(() => {
     const timer = requestAnimationFrame(() => {
@@ -15,6 +17,10 @@ const AdminLayoutContent = () => {
     });
     return () => cancelAnimationFrame(timer);
   }, []);
+
+  useEffect(() => {
+    void reloadCatalog();
+  }, [reloadCatalog]);
 
   return (
     <div className="min-h-screen bg-canvas text-fg">
@@ -25,6 +31,7 @@ const AdminLayoutContent = () => {
       >
         <Header />
         <main className="p-6">
+          <CatalogStatus />
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

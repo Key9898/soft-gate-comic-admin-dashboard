@@ -3,6 +3,9 @@ import { Upload, X, Image as ImageIcon, FileText } from 'lucide-react';
 import type { MediaFile } from '@softgate/shared';
 import Button from '../Button/Button';
 import { useData } from '@/lib/DataContext';
+import { useStaffAccess } from '@/lib/auth/staffAccess';
+import { apiMessage, isMockApi } from '@/lib/api/http';
+import { uploadMedia } from '@/lib/api/media';
 import { MediaUploadError, readFileAsMediaFile } from '@/lib/mediaUpload';
 
 interface MediaPickerProps {
@@ -21,6 +24,7 @@ const MediaPicker = ({
   accept = 'all',
 }: MediaPickerProps) => {
   const { mediaFiles, setMediaFiles } = useData();
+  const { canWriteCatalog } = useStaffAccess();
   const [selectedFiles, setSelectedFiles] = useState<MediaFile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'image' | 'pdf'>('all');
@@ -51,16 +55,27 @@ const MediaPicker = ({
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFiles = e.target.files;
     if (!uploadedFiles?.length) return;
+    if (!canWriteCatalog) {
+      setUploadError('Forbidden');
+      e.target.value = '';
+      return;
+    }
     setUploadError('');
     try {
       const next: MediaFile[] = [];
       for (const file of Array.from(uploadedFiles)) {
-        next.push(await readFileAsMediaFile(file, 'general'));
+        next.push(
+          isMockApi()
+            ? await readFileAsMediaFile(file, 'general')
+            : (await uploadMedia(file, 'general')).file,
+        );
       }
       setMediaFiles((prev) => [...next, ...prev]);
       setSelectedFiles((prev) => (multiple ? [...next, ...prev] : next.slice(0, 1)));
     } catch (err) {
-      setUploadError(err instanceof MediaUploadError ? err.message : 'Upload failed');
+      setUploadError(
+        err instanceof MediaUploadError ? err.message : apiMessage(err, 'Upload failed'),
+      );
     } finally {
       e.target.value = '';
     }
@@ -132,19 +147,25 @@ const MediaPicker = ({
           </div>
 
           <div className="flex items-center gap-4">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={accept === 'image' ? 'image/*' : accept === 'pdf' ? '.pdf' : 'image/*,.pdf'}
-              multiple
-              aria-label="Upload new file"
-              onChange={handleUpload}
-              className="hidden"
-            />
-            <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="mr-2 h-4 w-4" />
-              Upload New
-            </Button>
+            {canWriteCatalog ? (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={
+                    accept === 'image' ? 'image/*' : accept === 'pdf' ? '.pdf' : 'image/*,.pdf'
+                  }
+                  multiple
+                  aria-label="Upload new file"
+                  onChange={handleUpload}
+                  className="hidden"
+                />
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload New
+                </Button>
+              </>
+            ) : null}
             {selectedFiles.length > 0 && (
               <span className="text-sm text-fg-muted">{selectedFiles.length} selected</span>
             )}

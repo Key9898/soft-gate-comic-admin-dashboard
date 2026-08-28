@@ -15,10 +15,10 @@ npm run dev        # http://localhost:5173
 
 Copy `.env.example` to `.env.local`:
 
-| Variable            | Default                 | Description                            |
-| ------------------- | ----------------------- | -------------------------------------- |
-| `VITE_USE_MOCK_API` | `true`                  | `false` → HTTP `/api/*` via Vite proxy |
-| `VITE_API_BASE_URL` | `http://localhost:3000` | Backend origin for dev proxy           |
+| Variable            | Default                 | Description                                                                                     |
+| ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------- |
+| `VITE_USE_MOCK_API` | `true`                  | `false` → cookie + REST (`/api/staff`, catalog, `/api/media`). Default mock stays localStorage. |
+| `VITE_API_BASE_URL` | `http://localhost:3000` | Browser origin for API calls. Empty string uses Vite proxy `/api` → `:3000`.                    |
 
 ## Scripts
 

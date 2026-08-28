@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useState,
   useEffect,
@@ -19,6 +20,7 @@ import {
   PopularWebtoon,
   Author,
   Genre,
+  CoinPackage,
   MediaFile,
   ActivityLog,
   Report,
@@ -35,6 +37,7 @@ import {
   mockPopularWebtoons,
   mockAuthors,
   mockGenres,
+  mockCoinPackages,
   mockWebtoons,
   mockEpisodes,
   mockUsers,
@@ -45,7 +48,13 @@ import {
   mockTransactions,
   mockScheduledEpisodes,
   mockNotifications,
+  ADMIN_SETTINGS_STORAGE_KEY,
+  toPortalSettings,
+  normalizePortalLanguage,
 } from '@/data';
+import { isMockApi } from '@/lib/api/http';
+import { loadCatalog } from '@/lib/api/catalog';
+import { listMedia } from '@/lib/api/media';
 
 export interface PlatformSettings {
   siteName: string;
@@ -54,7 +63,7 @@ export interface PlatformSettings {
   maintenanceMode: boolean;
   allowRegistration: boolean;
   requireEmailVerification: boolean;
-  defaultLanguage: string;
+  defaultLanguage: 'en' | 'mm';
   notifications: {
     newUser: boolean;
     newWebtoon: boolean;
@@ -79,6 +88,49 @@ const defaultSettings: PlatformSettings = {
   },
 };
 
+const mockNonCatalog = {
+  dashboardStats: mockDashboardStats,
+  revenueData: mockRevenueData,
+  userGrowthData: mockUserGrowthData,
+  popularWebtoons: mockPopularWebtoons,
+  coinPackages: mockCoinPackages,
+  users: mockUsers,
+  comments: mockComments,
+  mediaFiles: mockMediaFiles,
+  activityLogs: mockActivityLogs,
+  reports: mockReports,
+  transactions: mockTransactions,
+  scheduledEpisodes: mockScheduledEpisodes,
+  notifications: mockNotifications,
+};
+
+function emptyApiCatalog(): SharedData {
+  return {
+    ...mockNonCatalog,
+    authors: [],
+    genres: [],
+    webtoons: [],
+    episodes: [],
+    mediaFiles: [],
+  };
+}
+
+function loadMockDb(): SharedData {
+  const loaded = loadFromLocalStorage();
+  const base = loaded || {
+    ...mockNonCatalog,
+    authors: mockAuthors,
+    genres: mockGenres,
+    webtoons: mockWebtoons,
+    episodes: mockEpisodes,
+  };
+  return {
+    ...base,
+    notifications: base.notifications ?? mockNotifications,
+    transactions: base.transactions?.length ? base.transactions : mockTransactions,
+  };
+}
+
 interface DataContextType {
   webtoons: Webtoon[];
   setWebtoons: Dispatch<SetStateAction<Webtoon[]>>;
@@ -100,6 +152,8 @@ interface DataContextType {
   setAuthors: Dispatch<SetStateAction<Author[]>>;
   genres: Genre[];
   setGenres: Dispatch<SetStateAction<Genre[]>>;
+  coinPackages: CoinPackage[];
+  setCoinPackages: Dispatch<SetStateAction<CoinPackage[]>>;
   mediaFiles: MediaFile[];
   setMediaFiles: Dispatch<SetStateAction<MediaFile[]>>;
   activityLogs: ActivityLog[];
@@ -114,119 +168,85 @@ interface DataContextType {
   setNotifications: Dispatch<SetStateAction<Notification[]>>;
   settings: PlatformSettings;
   setSettings: Dispatch<SetStateAction<PlatformSettings>>;
+  isLoading: boolean;
+  error: Error | null;
+  retry: () => void;
+  reloadCatalog: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
+function readAdminSettings(): Partial<PlatformSettings> {
+  const stored = localStorage.getItem(ADMIN_SETTINGS_STORAGE_KEY);
+  if (!stored) return {};
+  try {
+    const parsed = JSON.parse(stored) as Record<string, unknown>;
+    delete parsed.defaultTheme;
+    delete parsed.primaryColor;
+    return parsed as Partial<PlatformSettings>;
+  } catch {
+    return {};
+  }
+}
+
 export const DataProvider = ({ children }: { children: ReactNode }) => {
-  const [db, setDb] = useState<SharedData>(() => {
-    const loaded = loadFromLocalStorage();
-    const base = loaded || {
-      dashboardStats: mockDashboardStats,
-      revenueData: mockRevenueData,
-      userGrowthData: mockUserGrowthData,
-      popularWebtoons: mockPopularWebtoons,
-      authors: mockAuthors,
-      genres: mockGenres,
-      webtoons: mockWebtoons,
-      episodes: mockEpisodes,
-      users: mockUsers,
-      comments: mockComments,
-      mediaFiles: mockMediaFiles,
-      activityLogs: mockActivityLogs,
-      reports: mockReports,
-      transactions: mockTransactions,
-      scheduledEpisodes: mockScheduledEpisodes,
-      notifications: mockNotifications,
-    };
-    return {
-      ...base,
-      notifications: base.notifications ?? mockNotifications,
-      transactions: base.transactions?.length ? base.transactions : mockTransactions,
-    };
-  });
+  const mock = isMockApi();
+  const [db, setDb] = useState<SharedData>(() => (mock ? loadMockDb() : emptyApiCatalog()));
+  const [isLoading, setIsLoading] = useState(() => !mock);
+  const [error, setError] = useState<Error | null>(null);
 
   const [settings, setSettings] = useState<PlatformSettings>(() => {
-    const stored = localStorage.getItem('softgate_admin_settings');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as Record<string, unknown>;
-        delete parsed.defaultTheme;
-        delete parsed.primaryColor;
-        return { ...defaultSettings, ...(parsed as Partial<PlatformSettings>) };
-      } catch {
-        return defaultSettings;
-      }
-    }
-    return defaultSettings;
+    const fromAdmin = readAdminSettings();
+    const loaded = mock ? loadFromLocalStorage() : null;
+    const merged: PlatformSettings = {
+      ...defaultSettings,
+      ...fromAdmin,
+      ...(loaded?.settings ?? {}),
+    };
+    merged.defaultLanguage = normalizePortalLanguage(merged.defaultLanguage);
+    return merged;
   });
 
-  // Load data from backend if VITE_USE_MOCK_API is 'false'
-  useEffect(() => {
-    const isMock = import.meta.env.VITE_USE_MOCK_API !== 'false';
-    if (!isMock) {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-      fetch(`${baseUrl}/api/data`)
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch data');
-          return res.json();
-        })
-        .then((data) => {
-          setDb(data);
-        })
-        .catch((err) => {
-          console.error('Error fetching data from backend, falling back to local/mock:', err);
-        });
-
-      fetch(`${baseUrl}/api/settings`)
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch settings');
-          return res.json();
-        })
-        .then((data) => {
-          setSettings(data);
-        })
-        .catch((err) => {
-          console.error('Error fetching settings from backend, falling back to local/mock:', err);
-        });
+  const reloadCatalog = useCallback(async () => {
+    if (isMockApi()) return;
+    setError(null);
+    setIsLoading(true);
+    try {
+      const [catalog, media] = await Promise.all([loadCatalog(), listMedia()]);
+      setDb((prev) => ({
+        ...prev,
+        authors: catalog.authors,
+        genres: catalog.genres,
+        webtoons: catalog.webtoons,
+        episodes: catalog.episodes,
+        mediaFiles: media.files,
+      }));
+      setError(null);
+    } catch (err: unknown) {
+      const nextError = err instanceof Error ? err : new Error('Failed to fetch catalog');
+      setError(nextError);
+      setDb((prev) => ({
+        ...prev,
+        authors: [],
+        genres: [],
+        webtoons: [],
+        episodes: [],
+        mediaFiles: [],
+      }));
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  // Save shared database to localStorage or Backend on modifications
   useEffect(() => {
-    const isMock = import.meta.env.VITE_USE_MOCK_API !== 'false';
-    if (isMock) {
-      saveToLocalStorage(db);
-    } else {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-      fetch(`${baseUrl}/api/data`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(db),
-      }).catch((err) => {
-        console.error('Error saving data to backend:', err);
-      });
-    }
-  }, [db]);
+    if (!isMockApi()) return;
+    saveToLocalStorage({ ...db, settings: toPortalSettings(settings) });
+  }, [db, settings]);
 
-  // Save settings to localStorage or Backend on modifications
   useEffect(() => {
-    const isMock = import.meta.env.VITE_USE_MOCK_API !== 'false';
-    if (isMock) {
-      localStorage.setItem('softgate_admin_settings', JSON.stringify(settings));
-    } else {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-      fetch(`${baseUrl}/api/settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      }).catch((err) => {
-        console.error('Error saving settings to backend:', err);
-      });
-    }
+    localStorage.setItem(ADMIN_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
   }, [settings]);
 
-  // State setters helpers to trigger re-renders by mutating the db wrapper state
   const setWebtoons = (val: SetStateAction<Webtoon[]>) => {
     setDb((prev) => ({
       ...prev,
@@ -297,6 +317,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const setCoinPackages = (val: SetStateAction<CoinPackage[]>) => {
+    setDb((prev) => ({
+      ...prev,
+      coinPackages: typeof val === 'function' ? val(prev.coinPackages) : val,
+    }));
+  };
+
   const setMediaFiles = (val: SetStateAction<MediaFile[]>) => {
     setDb((prev) => ({
       ...prev,
@@ -360,6 +387,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setAuthors,
     genres: db.genres,
     setGenres,
+    coinPackages: db.coinPackages,
+    setCoinPackages,
     mediaFiles: db.mediaFiles,
     setMediaFiles,
     activityLogs: db.activityLogs,
@@ -374,6 +403,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setNotifications,
     settings,
     setSettings,
+    isLoading,
+    error,
+    retry: () => {
+      void reloadCatalog();
+    },
+    reloadCatalog,
   };
 
   return React.createElement(DataContext.Provider, { value: contextValue }, children);

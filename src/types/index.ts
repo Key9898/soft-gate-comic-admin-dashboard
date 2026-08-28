@@ -5,6 +5,7 @@ export type {
   Episode,
   Author,
   Genre,
+  CoinPackage,
   Comment,
   DashboardStats,
   RevenueData,
@@ -17,4 +18,7 @@ export type {
   Transaction,
   ScheduledEpisode,
   SharedData,
+  ContentRating,
+  PortalSettings,
+  PortalLanguage,
 } from '@softgate/shared';

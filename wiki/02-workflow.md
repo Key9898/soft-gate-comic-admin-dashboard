@@ -18,20 +18,21 @@ tags: [git, husky, wiki, sessions]
 
 Runs `npx lint-staged` — only touches **staged files**:
 
-| Pattern                  | Task                                |
-| ------------------------ | ----------------------------------- |
-| `*.{ts,tsx}`             | `eslint --fix` → `prettier --write` |
-| `*.{js,jsx,json,css,md}` | `prettier --write`                  |
-| `wiki/**/*.md`           | `prettier --write`                  |
+| Pattern                  | Task                                                  |
+| ------------------------ | ----------------------------------------------------- |
+| `*.{ts,tsx}`             | `eslint --fix --no-warn-ignored` → `prettier --write` |
+| `*.{js,jsx,json,css,md}` | `prettier --write`                                    |
+| `wiki/**/*.md`           | `prettier --write`                                    |
 
 ### pre-push (`.husky/pre-push`)
 
 Runs `npm run check` — full project validation:
 
-1. `eslint .`
-2. `prettier --check` (`src/` + `wiki/`)
-3. `vitest run`
-4. `tsc -b && vite build`
+1. `eslint .` (root ignores `backend/**`)
+2. `prettier --check` (`src/` + `wiki/` + `backend/src/`)
+3. `vitest run` (Admin `src/` only)
+4. `tsc -b && vite build` (Admin; does not reference `backend`)
+5. `npm run check -w backend` (API lint + vitest + `tsc`)
 
 > If any step fails, push is **blocked**.
 
@@ -70,4 +71,4 @@ After implementation work: update **both** tracks + give the user a Lark Title +
 
 ## Current implementation status
 
-Impls **1–16** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 16 = favicon/OG head alignment with website. Labels use **Impl N** (not Phase).
+Impls **1–36** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 36 = catalog titles + schema 14 (website Impl 177 parity / Lark website 178 follow-up). Labels use **Impl N** (not Phase).

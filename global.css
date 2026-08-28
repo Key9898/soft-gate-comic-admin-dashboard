@@ -220,6 +220,60 @@
 }
 
 @layer utilities {
+  .skeleton-sheen {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton-sheen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 35%,
+      rgb(255 255 255 / 0.6) 50%,
+      transparent 65%
+    );
+    transform: translateX(-100%);
+    animation: skeleton-sheen-sweep 1.8s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-sheen-sweep {
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  .skeleton-appear {
+    animation: skeleton-appear-fade 200ms ease-out;
+  }
+
+  @keyframes skeleton-appear-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-sheen::after {
+      animation: none;
+      content: none;
+    }
+
+    .skeleton-appear {
+      animation: none;
+    }
+
+    .animate-pulse,
+    .animate-spin {
+      animation: none !important;
+    }
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
   }
@@ -407,5 +461,69 @@
   html.dark .badge-burst {
     background-color: #9d174d;
     color: #fecdd3;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100%;
+  z-index: 50;
+  border-radius: 1rem;
+  background-color: var(--sg-surface);
+  padding: 0.5rem 1rem;
+  color: var(--sg-text);
+  outline: none;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.auth-split-card {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 28rem;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid var(--sg-border);
+  background-color: var(--sg-surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+@media (width >= 64rem) {
+  .auth-split-card {
+    max-width: 56rem;
+    height: min(40rem, calc(100dvh - 8rem));
+  }
+}
+
+.auth-split-slide {
+  transition:
+    transform 0.65s ease-in-out,
+    opacity 0.65s ease-in-out,
+    visibility 0.65s ease-in-out;
+}
+
+.auth-split-bg {
+  background-image: url('/auth/ops-desk-lg-light.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+html.dark .auth-split-bg {
+  background-image: url('/auth/ops-desk-lg-dark.jpg');
+}
+
+.auth-split-bg-motion {
+  transition: transform 0.65s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-split-slide,
+  .auth-split-bg-motion {
+    transition: none;
   }
 }

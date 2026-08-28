@@ -15,6 +15,8 @@ SoftGate Comic Admin Dashboard — production-grade React dashboard for managing
 - **Tailwind CSS v3** — style config (`tailwind.config.js`)
 - **ESLint 9** + **Prettier 3** + `prettier-plugin-tailwindcss`
 - **Vitest 4** + Testing Library + jsdom
+- **Express 5** — sibling `backend/` workspace (`npm run dev:api`)
+- **PostgreSQL + Prisma 6** — `backend/.env` `DATABASE_URL` (never `VITE_*`)
 - **Husky 9** + **lint-staged 15** — git hooks
 
 ## Entry points
@@ -28,14 +30,15 @@ SoftGate Comic Admin Dashboard — production-grade React dashboard for managing
 
 ```bash
 npm run dev          # vite dev server (port 5173)
-npm run build        # tsc -b && vite build
+npm run dev:api      # Express in backend/ (PORT default 3000)
+npm run build        # tsc -b && vite build (Admin only)
 npm run preview      # serve production build
-npm run lint         # eslint .
-npm run format       # prettier --write (src/ + wiki/)
+npm run lint         # eslint . (ignores backend/)
+npm run format       # prettier --write (src/ + wiki/ + backend/src/)
 npm run format:check # prettier --check
-npm run test         # vitest (watch)
+npm run test         # vitest (watch, Admin src/)
 npm run test:run     # vitest run (single)
-npm run check        # lint + format:check + test:run + build  ← runs in pre-push
+npm run check        # lint + format:check + test:run + build + backend check  ← pre-push
 ```
 
 ## Where things live
@@ -43,7 +46,8 @@ npm run check        # lint + format:check + test:run + build  ← runs in pre-p
 | Area | Location |
 |---|---|
 | App source | `src/` |
-| Tests | `src/test/` or next to source files |
+| HTTP API | `backend/` (npm workspace; not mixed into Vite) |
+| Tests | `src/test/` or next to source files; API tests in `backend/src/*.test.ts` |
 | Wiki (AI knowledge base) | `wiki/` |
 | Agent operating contract | `AGENTS.md` (root) + `.agents/AGENTS.md` (Antigravity mirror) |
 | Project rules (Cursor) | `.cursor/rules/` |

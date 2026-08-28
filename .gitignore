@@ -35,6 +35,10 @@ storybook-static
 # Local session detail (dual-track docs — wiki/ is committed)
 docs/
 
+# Local media adapter (Impl 34)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
 # Windows reserved-name accidentals (e.g. `npx ... -o ./nul`)
 /nul
 nul

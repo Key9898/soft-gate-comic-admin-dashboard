@@ -14,7 +14,7 @@ Settings exposed Primary Color swatches and a Default Theme field that did not s
 ## Decision
 
 1. **Brand color** is fixed in code (logo teal / burst magenta). No runtime Primary Color picker.
-2. **Theme preference** is user comfort only: Light / Dark / System, default **Light**, single ThemeProvider store shared by Settings and Profile. System remains an option (follows OS). Existing stored preferences are not reset.
+2. **Theme preference** is user comfort only: Light / Dark / System, default **System** (Impl 18; Impl 15 was Light). Single ThemeProvider store shared by Settings and Profile. Existing stored preferences are not reset.
 
 ## Consequences
 

@@ -68,16 +68,18 @@ Never skip the Lark block. The user pastes it into Lark manually.
 - Entry: `index.html` → `src/main.tsx` → `src/App.tsx` → `ProtectedRoute` → `AdminLayout` → feature pages.
 - Features: `src/features/<name>/` (webtoons, episodes, users, comments, …).
 - Shared mocks/types: `@softgate/shared` → `packages/shared/src`.
-- Data: `DataContext` + localStorage mock (optional real API via `VITE_USE_MOCK_API=false`).
+- API: sibling `backend/` (npm workspace). `npm run dev:api` needs `DATABASE_URL` and `JWT_SECRET`. Staff routes `/api/staff`. Catalog REST `/api/authors|genres|webtoons|episodes`. Media REST `/api/media` (Impl 34, local disk; remote vendor TBD). Admin SPA mock by default; `VITE_USE_MOCK_API=false` uses cookie + catalog REST (Impl 33) and media REST (Impl 35). Do not put Express in Vite `src/`. Do not edit the website/reader-portal repo.
+- Data: `DataContext` + localStorage mock by default. When `VITE_USE_MOCK_API=false`, catalog + staff + media go through `src/lib/api/` (`credentials: 'include'`). Settings/coins/community stay mock.
 - Brand mark: `public/logo/logo.svg` (UI). Favicon head: `public/favicon/favicon.svg` + `favicon-32.png` + `apple-touch-icon.png`. OG: `public/logo/logo.png`.
 
 ## Verification commands
 
-| Check                | Command            |
-| -------------------- | ------------------ |
-| Full gate (pre-push) | `npm run check`    |
-| Dev server           | `npm run dev`      |
-| Lint + fix           | `npm run lint:fix` |
-| Format               | `npm run format`   |
-| Test run             | `npm run test:run` |
-| Build                | `npm run build`    |
+| Check                | Command                                               |
+| -------------------- | ----------------------------------------------------- |
+| Full gate (pre-push) | `npm run check` (includes `npm run check -w backend`) |
+| Dev server           | `npm run dev`                                         |
+| API health process   | `npm run dev:api`                                     |
+| Lint + fix           | `npm run lint:fix`                                    |
+| Format               | `npm run format`                                      |
+| Test run             | `npm run test:run`                                    |
+| Build                | `npm run build`                                       |

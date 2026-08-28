@@ -66,6 +66,24 @@ export const PageSEO = {
       description="Manage webtoons on SoftGate Comic platform - add, edit, delete webtoons"
     />
   ),
+  Authors: () => (
+    <SEO
+      title="Authors"
+      description="Manage catalog authors on SoftGate Comic platform - add, edit, deactivate authors"
+    />
+  ),
+  Genres: () => (
+    <SEO
+      title="Genres"
+      description="Manage catalog genres on SoftGate Comic platform - add, edit, delete genres"
+    />
+  ),
+  CoinPackages: () => (
+    <SEO
+      title="Coin packages"
+      description="Manage shop SKUs on SoftGate Comic platform - coins, MMK, bonus, and badges"
+    />
+  ),
   Episodes: () => (
     <SEO
       title="Episodes"
@@ -93,7 +111,22 @@ export const PageSEO = {
       description="Configure SoftGate Comic platform settings and preferences"
     />
   ),
-  Login: () => <SEO title="Login" description="Admin login for SoftGate Comic platform" />,
+  Login: () => <SEO title="Sign in" description="Admin sign in for SoftGate Comic platform" />,
+  Register: () => (
+    <SEO title="Create account" description="Create the first SoftGate Comic admin account" />
+  ),
+  Forgot: () => (
+    <SEO title="Forgot password" description="Reset SoftGate Comic admin password (demo)" />
+  ),
+  Reset: () => (
+    <SEO title="Reset password" description="Set a new SoftGate Comic admin password (demo)" />
+  ),
+  Terms: () => (
+    <SEO title="Terms of Service" description="Staff terms stub for SoftGate Comic Admin" />
+  ),
+  Privacy: () => (
+    <SEO title="Privacy Policy" description="Staff privacy stub for SoftGate Comic Admin" />
+  ),
   Media: () => (
     <SEO title="Media Library" description="Manage media files on SoftGate Comic platform" />
   ),
@@ -114,4 +147,8 @@ export const PageSEO = {
   ),
   Notifications: () => <SEO title="Notifications" description="View and manage notifications" />,
   Schedule: () => <SEO title="Schedule" description="Manage scheduled episode releases" />,
+  Team: () => <SEO title="Team" description="Invite and manage SoftGate Comic admin staff" />,
+  Invite: () => (
+    <SEO title="Join team" description="Accept a SoftGate Comic admin staff invitation" />
+  ),
 };

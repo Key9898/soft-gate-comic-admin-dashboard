@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StaffRole {
+  super_admin
+  admin
+  member
+  viewer
+}
+
+enum InviteRole {
+  admin
+  member
+  viewer
+}
+
+enum InviteStatus {
+  pending
+  accepted
+  revoked
+  expired
+}
+
+enum AuthorStatus {
+  active
+  inactive
+}
+
+enum WebtoonStatus {
+  ongoing
+  completed
+  hiatus
+  draft
+}
+
+enum EpisodeStatus {
+  published
+  draft
+  scheduled
+}
+
+enum MediaKind {
+  image
+  pdf
+}
+
+model Meta {
+  id Int @id @default(autoincrement())
+}
+
+model StaffUser {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  displayName  String
+  role         StaffRole
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  invites      StaffInvite[] @relation("StaffInviter")
+}
+
+model StaffInvite {
+  id         String       @id @default(uuid())
+  email      String
+  role       InviteRole
+  tokenHash  String
+  status     InviteStatus @default(pending)
+  inviterId  String
+  inviter    StaffUser    @relation("StaffInviter", fields: [inviterId], references: [id])
+  createdAt  DateTime     @default(now())
+  expiresAt  DateTime
+  acceptedAt DateTime?
+}
+
+model Author {
+  id            String       @id @default(uuid())
+  name          Json
+  bio           Json?
+  avatar        String?
+  followerCount Int          @default(0)
+  status        AuthorStatus @default(active)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  webtoons      Webtoon[]
+}
+
+model Genre {
+  id        String         @id @default(uuid())
+  name      Json
+  slug      String         @unique
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  webtoons  WebtoonGenre[]
+}
+
+model Webtoon {
+  id              String         @id @default(uuid())
+  title           Json
+  description     Json
+  coverImage      String?
+  coverColor      String         @default("")
+  authorId        String
+  author          Author         @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  tags            String[]
+  status          WebtoonStatus
+  isPremium       Boolean        @default(false)
+  viewCount       Int            @default(0)
+  likeCount       Int            @default(0)
+  rating          Float          @default(0)
+  contentRating   String
+  spotlight       Boolean        @default(false)
+  spotlightOrder  Int?
+  weeklyViewCount Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  genres          WebtoonGenre[]
+  episodes        Episode[]
+}
+
+model WebtoonGenre {
+  webtoonId String
+  genreId   String
+  webtoon   Webtoon @relation(fields: [webtoonId], references: [id], onDelete: Cascade)
+  genre     Genre   @relation(fields: [genreId], references: [id], onDelete: Restrict)
+
+  @@id([webtoonId, genreId])
+}
+
+model Episode {
+  id            String        @id @default(uuid())
+  webtoonId     String
+  webtoon       Webtoon       @relation(fields: [webtoonId], references: [id], onDelete: Restrict)
+  title         Json
+  description   Json?
+  images        String[]
+  imageSizes    Json?
+  isPremium     Boolean       @default(false)
+  coinPrice     Int           @default(0)
+  viewCount     Int           @default(0)
+  likeCount     Int           @default(0)
+  episodeNumber Int
+  status        EpisodeStatus
+  freeAt        DateTime?
+  scheduledAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([webtoonId, episodeNumber])
+}
+
+model MediaAsset {
+  id          String    @id @default(uuid())
+  key         String    @unique
+  url         String
+  name        String
+  contentType String
+  kind        MediaKind
+  size        Int
+  category    String    @default("general")
+  createdAt   DateTime  @default(now())
+}

@@ -149,3 +149,137 @@
 - [x] Head icons match website: `favicon.svg` + `favicon-32.png` + `apple-touch-icon` (2026-08-19)
 - [x] OG/Twitter image → `/logo/logo.png` (2026-08-19)
 - [x] No `icon-512` in head; Sidebar/Login `logo.svg` unchanged (2026-08-19)
+
+## Impl 17 — Admin production skeleton contract
+
+- [x] Eager page imports; remove `PageLoader` / Routes `Suspense` splash (2026-08-21)
+- [x] `skeleton-sheen` + reduced-motion; layout-faithful 14 page skeletons inside AdminLayout (2026-08-21)
+- [x] `DataContext` `isLoading` / `error` / `retry`; CatalogStatus banner; empty ≠ loading ≠ error (2026-08-21)
+- [x] Cover/avatar sheen (default loaded true); Media upload `Button isLoading` (2026-08-21)
+
+## Impl 18 — First-run theme default System
+
+- [x] First-run + invalid/missing preference fallback `'light'` → `'system'` in `theme.ts` + `index.html` FOUC (2026-08-21)
+- [x] Keep Light/Dark/System options; keep stored `light`/`dark`/`system` when v2 is set (no v3 mass-migrate) (2026-08-21)
+- [x] Theme tests + dual-track docs (2026-08-21)
+
+## Impl 19 — Catalog pipe + settings blob
+
+- [x] Align `@softgate/shared` with portal catalog fields (`contentRating`, `spotlight` / `spotlightOrder`, `weeklyViewCount`, `Episode.scheduledAt` / `freeAt`) (2026-08-22)
+- [x] Persist `{ schemaVersion: 13, data }` under `softgate-shared-data`; one-shot migrate from `softgate-comic-shared-data` (2026-08-22)
+- [x] Portal-safe settings on the blob (`maintenanceMode`, `allowRegistration`, `contactEmail`, `defaultLanguage` `en`|`mm`) (2026-08-22)
+- [x] Webtoon form: EN/MM split, spotlight cap 5, content rating, weekly views, ISO timestamps, tags (2026-08-22)
+- [x] Episode form writes `scheduledAt` / `freeAt`; Schedule page uses episodes (Yangon wall clock → UTC ISO) (2026-08-22)
+- [x] No `uploadDay`; no Author/Genre/coin CRUD; no `viewCount` / public `followerCount` editors (2026-08-22)
+
+## Impl 20 — Admin staff auth (website parity)
+
+- [x] Staff accounts store `softgate_admin_accounts_v1`; login requires hash; first register is `super_admin` then lock (2026-08-22)
+- [x] Themed split login/register + ops-desk photos; forgot OTP `000000` does not persist password (2026-08-22)
+- [x] `/reset-password/:token?`, `/terms` `/privacy` stubs; English-only; Profile password min 8 (2026-08-22)
+- [x] Playwright seed helper; Author CRUD is Impl 21 (2026-08-22)
+
+## Impl 21 — Author CRUD (wiki 14)
+
+- [x] Authors page + skeleton + `/authors` nav after Webtoons (`PenTool`) (2026-08-22)
+- [x] EN/MM name/bio, optional MediaPicker avatar, `active` | `inactive`; no follower/view editors (2026-08-22)
+- [x] Stable numeric ids; delete guard when series exist; cascade nested `webtoon.author`; derived `webtoonCount` (2026-08-22)
+- [x] Webtoons picker uses `authorsForPicker`; `syncAuthorWebtoonCounts` on series add/edit/delete (2026-08-22)
+- [x] `ActivityLog.targetType` `'author'`; schema 13 unchanged (2026-08-22)
+
+## Impl 22 — Genre CRUD (wiki 15)
+
+- [x] Genres page + skeleton + `/genres` nav after Authors (`LayoutGrid`) (2026-08-22)
+- [x] EN/MM names; create-only kebab slug; `all` sentinel locked; no description/inactive editors (2026-08-22)
+- [x] Delete guard when series exist; token cascade on rename except `all`; derived `webtoonCount` (2026-08-22)
+- [x] Webtoons chips store slugs and display EN; Analytics pie skips `all` (2026-08-22)
+- [x] `ActivityLog.targetType` `'genre'`; schema 13 unchanged (2026-08-22)
+
+## Impl 23 — Sidebar edge collapse toggle
+
+- [x] Collapse chip straddles the sidebar right border (header midline); `overflow-visible` (2026-08-22)
+- [x] `primary-600` / `rounded-lg`; true left/right chevrons (no rotate-180 cancel) (2026-08-22)
+- [x] `aria-expanded` + labels; collapsed logo centered; 80/256 widths unchanged (2026-08-22)
+
+## Impl 24 — Coin packages editor (wiki 16)
+
+- [x] Coin packages page + skeleton + `/coin-packages` nav after Genres (`Coins`) (2026-08-23)
+- [x] Persist `id`, `coins`, `price`, optional `bonus` / `popular` / `bestValue`; never `metalClass` / `glowClass` (2026-08-23)
+- [x] Seed ids `"1"`…`"6"`; edit keeps `id`; new id = max numeric + 1; hard delete with no wallet cascade (2026-08-23)
+- [x] Badge XOR: at most one `popular`, at most one `bestValue`, never both on the same pack (2026-08-23)
+- [x] Missing blob array hydrates seed; existing array (including empty) kept; schema **13**; `ActivityLog.targetType` `'coin-package'` (2026-08-23)
+
+## Impl 25 — Staff Team invites
+
+- [x] Sidebar Team (`/team`, `UserPlus` before Settings); Super Admin invite modal (email + Admin) (2026-08-23)
+- [x] Invite store `softgate_admin_invites_v1` (hash only, 48h); `/invite/:token` accept; `/register` stays locked (2026-08-23)
+- [x] Super Admin lock; Admin remove; no SMTP (copy-link in modal); `ActivityLog.targetType` `'staff'` (2026-08-23)
+
+## Impl 26 — Staff roles + grouped sidebar
+
+- [x] Roles `super_admin | admin | member | viewer`; `staffAccess` helpers; Viewer sees all routes, mutate chrome hidden (2026-08-23)
+- [x] Team invite select Admin/Member/Viewer (Admin actor: Member/Viewer only); `acceptInvite` persists `invite.role` (2026-08-23)
+- [x] Sidebar section labels (Catalog / Community / Business / Admin); collapsed rail hides labels; no accordion (2026-08-23)
+
+## Impl 27 — Episode `imageSizes` persist (wiki item 21)
+
+- [x] Optional `Episode.imageSizes?` beside `images: string[]`; omit on mock seed; schema stays **13** (2026-08-23)
+- [x] Measure `naturalWidth` / `naturalHeight` on file, MediaPicker, and bulk image add; no staff-typed px (2026-08-23)
+- [x] Persist parallel `{ width, height } | null`; omit the field when every slot is unmeasured (2026-08-23)
+- [x] Edit hydrate + reorder/remove keep sizes on the slot; portal consume remains 166 (2026-08-23)
+
+## Impl 28 — Team Roles legend + invite confirm copy
+
+- [x] Team Roles card after Pending invites; Super Admin / Admin / Member / Viewer blurbs; visible to all staff roles (2026-08-23)
+- [x] Copy-link `Inviting {email} as {Role}.` from persisted invite; Resend sets `inviteRole`; no sticky / SMTP / Settings matrix (2026-08-23)
+
+## Impl 29 — Sibling `backend/` + `GET /health`
+
+- [x] npm workspace `backend/`; Express not mixed into Vite `src/`; `GET /health` (2026-08-24)
+- [x] `createApp()` + supertest; root `check` includes `-w backend` (2026-08-24)
+- [x] Do not edit website repo; Admin SPA unwired (2026-08-24)
+
+## Impl 30 — PostgreSQL + Prisma (connect only)
+
+- [x] Prisma 6 + `DATABASE_URL`; `Meta` table only (2026-08-24)
+- [x] Health `db: "up" | "down"`; tests without Docker (2026-08-24)
+- [x] Init SQL via `migrate diff`; docker-compose Postgres 16 (2026-08-24)
+
+## Impl 31 — Staff auth API (cookie + bcrypt)
+
+- [x] `StaffUser` + `StaffInvite`; bcrypt; SHA-256 invite hashes; httpOnly JWT cookie `sg_staff` (2026-08-24)
+- [x] RBAC matches Admin mock; first register only; Super Admin locked (2026-08-24)
+- [x] Fake `JWT_SECRET`; Admin SPA still mock; website untouched (2026-08-24)
+
+## Impl 32 — Catalog CRUD APIs
+
+- [x] Prisma Author / Genre / Webtoon / Episode + WebtoonGenre; third migration from Staff+Meta (not `--from-empty`) (2026-08-24)
+- [x] REST `/api/authors|genres|webtoons|episodes`; staff cookie; `canWriteCatalog`; no `PUT /api/data` (2026-08-24)
+- [x] Server rules: genre/author delete guards, spotlight cap 5, UTC `scheduledAt`, webtoon DELETE 409 if episodes exist (2026-08-24)
+- [x] In-memory `CatalogStore` tests without Docker; Admin SPA still mock; website untouched (2026-08-24)
+
+## Impl 33 — Point Admin SPA at staff + catalog APIs
+
+- [x] `VITE_USE_MOCK_API` default true; `false` uses cookie session + REST catalog (no blob `PUT /api/data`) (2026-08-24)
+- [x] Vite `/api` proxy; `credentials: 'include'`; staff login/register/me/logout + Team invites (2026-08-24)
+- [x] Catalog load from AdminLayout `reloadCatalog()`; page writes via REST; genre PATCH omits slug; bulk upload mock-only (2026-08-24)
+- [x] Vitest pins mock flag; e2e stays localStorage seed; website untouched (2026-08-24)
+
+## Impl 34 — Media storage adapter (local now, remote TBD)
+
+- [x] `ObjectStore` + local-disk driver (`MEDIA_UPLOAD_DIR`, default `./uploads`); memory store for tests; factory always local — no Cloudinary/R2 SDK (2026-08-24)
+- [x] Prisma `MediaAsset` (url + key, never bytes); fourth migration from catalog schema (2026-08-24)
+- [x] Staff `/api/media` GET/POST/DELETE; `canWriteCatalog` on write; multer memory; jpeg/png/webp/gif 2MB, PDF 10MB, no SVG; public `GET /uploads` for local disk only (2026-08-24)
+- [x] Admin SPA Media Library stays mock data-URL; website untouched; remote vendor TBD (2026-08-24)
+
+## Impl 35 — SPA Media Library → local `/api/media`
+
+- [x] Default mock unchanged; `VITE_USE_MOCK_API=false` uses `/api/media` + `backend/uploads` (FormData, no JSON Content-Type) (2026-08-24)
+- [x] API-mode `mediaFiles` starts empty (not mock data-URLs); load with catalog; Library/Picker/Profile REST (2026-08-24)
+- [x] Mock seeds kept; Vitest/e2e stay mock; no R2/Brevo; website untouched; no commit (2026-08-24)
+
+## Impl 36 — Catalog titles + schema 14 (website 177 parity)
+
+- [x] `SHARED_DATA_SCHEMA_VERSION` 13 → 14 so Admin load/save matches portal envelope (2026-08-25)
+- [x] Demo series titles aligned with website Impl 177 (Latin cover-brand MM + literary kept; Love in Seoul MM + Seoul desc/tags); cover paths unchanged (2026-08-25)
+- [x] Admin-only; website untouched; Lark follow-up to website Impl 178 (2026-08-25)
