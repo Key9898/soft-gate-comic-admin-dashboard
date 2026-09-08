@@ -32,17 +32,19 @@ soft-gate-comic-admin-dashboard/
 │   ├── notes/
 │   ├── references/
 │   └── snippets/
-├── backend/                  # npm workspace — Express + Prisma (Impl 29–34)
+├── backend/                  # npm workspace — Express + Prisma (Impl 29–43)
 │   ├── prisma/               # Meta + Staff + catalog + MediaAsset
 │   ├── docker-compose.yml    # local Postgres 16
+│   ├── scripts/              # prisma-generate + copy-mail-templates
 │   ├── uploads/              # local ObjectStore files (gitignored except .gitkeep)
 │   ├── src/auth/             # cookie JWT, bcrypt, StaffStore, /api/staff
 │   ├── src/catalog/          # CatalogStore, rules, /api/authors|genres|webtoons|episodes
-│   ├── src/media/            # ObjectStore + MediaAsset + /api/media (local disk; remote TBD)
+│   ├── src/media/            # ObjectStore + MediaAsset + /api/media (disk or R2)
+│   ├── src/mail/             # Brevo mailer + in-repo HTML (Impl 43)
 │   ├── src/app.ts            # createApp(); no listen
 │   ├── src/db.ts             # Prisma ping
 │   ├── src/index.ts          # connect then listen
-│   └── .env.example          # PORT, DATABASE_URL, MEDIA_*, fake JWT/R2/Brevo
+│   └── .env.example          # PORT, DATABASE_URL, MEDIA_*, stub JWT/R2/Brevo
 ├── packages/
 │   └── shared/               # @softgate/shared types + mocks (path alias)
 ├── public/
@@ -55,19 +57,19 @@ soft-gate-comic-admin-dashboard/
 └── src/
     ├── main.tsx
     ├── App.tsx
-    ├── components/           # shared UI primitives (incl. CatalogStatus, Skeleton)
+    ├── components/           # shared UI primitives (incl. CatalogStatus, Skeleton, CommandPalette)
     ├── config/
     ├── data/
     ├── features/             # feature-sliced pages
     ├── layouts/              # AdminLayout, AuthLayout
-    ├── lib/                  # DataContext, api/, theme, yangonDate, episodeImages, spotlight, authors, genres, coinPackages, formatters, auth (staffAccess)
+    ├── lib/                  # DataContext, api/, theme, yangonDate, episodeImages, spotlight, authors, genres, coinPackages, formatters, auth (staffAccess), commands
     ├── test/
     └── types/
 ```
 
 ## `src/features/`
 
-`activity-log`, `analytics`, `auth`, `authors`, `coin-packages`, `comments`, `dashboard`, `episodes`, `genres`, `media`, `notifications`, `profile`, `reports`, `revenue`, `schedule`, `settings`, `team`, `users`, `webtoons`
+`activity-log`, `analytics`, `auth`, `authors`, `coin-packages`, `comments`, `dashboard`, `episodes`, `genres`, `help`, `media`, `notifications`, `profile`, `reports`, `revenue`, `schedule`, `settings`, `team`, `users`, `webtoons`
 
 ## Aliases
 

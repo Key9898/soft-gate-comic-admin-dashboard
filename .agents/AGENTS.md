@@ -10,10 +10,16 @@ SoftGate Comic Admin Dashboard — production-grade React dashboard for managing
 
 - React 18 + TypeScript 5
 - Vite 5 + Tailwind CSS v3
-- Express 5 in sibling `backend/` (`npm run dev:api`) — health + Prisma + staff cookie auth + catalog CRUD + local media adapter (Impl 34); Admin SPA wires staff+catalog when `VITE_USE_MOCK_API=false` (Impl 33) and media when that flag is `false` (Impl 35). Daily Media Library stays mock.
+- Express 5 in sibling `backend/` (`npm run dev:api`) — health + Prisma + staff cookie auth + catalog CRUD + local media adapter (Impl 34) + R2 `ObjectStore` when real R2 env is set (Impl 41) + CORS/cookie from env (Impl 42) + Brevo invite mail when real env is set (Impl 43); Admin SPA wires staff+catalog when `VITE_USE_MOCK_API=false` (Impl 33) and media when that flag is `false` (Impl 35). Daily Media Library stays mock.
 - ESLint 9 + Prettier 3
 - Vitest 4 + Testing Library
 - Husky 9 + lint-staged 15
+
+## Git branches
+
+- `main` — GitHub default and Vercel Production.
+- `development` — long-lived leader **dev** cloud integration line (same committed code as `main` at the split). Not GitFlow `develop`. Secrets only in gitignored `backend/.env`.
+- Short-lived `feat|fix|chore/<scope>`. Do not merge Admin `development` with the website repo.
 
 ## Documentation Hygiene (Mandatory)
 

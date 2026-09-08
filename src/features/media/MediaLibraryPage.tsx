@@ -21,6 +21,7 @@ import { useToast } from '../../components/Toast/Toast';
 import type { MediaFile } from '@softgate/shared';
 import { markIdLoaded } from '@/lib/imageLoaded';
 import MediaLibraryPageSkeleton from './components/MediaLibraryPageSkeleton';
+import { useOpenCreateQuery } from '@/lib/commands';
 
 const MediaLibraryPage = () => {
   const { user } = useAuth();
@@ -36,6 +37,8 @@ const MediaLibraryPage = () => {
   const [previewFile, setPreviewFile] = useState<(typeof mediaFiles)[number] | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [loadedThumbs, setLoadedThumbs] = useState<Set<string>>(() => new Set());
+
+  useOpenCreateQuery(() => fileInputRef.current?.click(), canWriteCatalog && !isLoading);
 
   const filteredFiles = mediaFiles.filter((file) => {
     const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -222,18 +225,18 @@ const MediaLibraryPage = () => {
                 >
                   <div className="relative">
                     {file.type === 'image' ? (
-                      <div className="relative h-32 w-full">
+                      <div className="relative aspect-square w-full">
                         <img
                           src={file.url}
                           alt={file.name}
-                          className="h-32 w-full object-cover"
+                          className="h-full w-full object-cover"
                           onLoad={() => markIdLoaded(setLoadedThumbs, file.id)}
                           onError={() => markIdLoaded(setLoadedThumbs, file.id)}
                         />
                         {!loadedThumbs.has(file.id) && <span className={coverSheenClass} />}
                       </div>
                     ) : (
-                      <div className="flex h-32 w-full items-center justify-center bg-gray-100">
+                      <div className="flex aspect-square w-full items-center justify-center bg-gray-100">
                         <FileText className="h-12 w-12 text-fg-muted" />
                       </div>
                     )}
@@ -266,7 +269,7 @@ const MediaLibraryPage = () => {
                       ) : null}
                     </div>
                   </div>
-                  <div className="p-2">
+                  <div className="p-3">
                     <p className="truncate text-xs font-medium text-fg">{file.name}</p>
                     <p className="text-xs text-fg-muted">{formatFileSize(file.size)}</p>
                   </div>

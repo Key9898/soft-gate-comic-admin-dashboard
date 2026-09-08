@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import type { Response } from 'express';
+import { staffClearCookieOptions, staffCookieOptions } from './cookieOptions.js';
 import type { StaffRole } from './rbac.js';
 
 export const STAFF_COOKIE = 'sg_staff';
@@ -39,20 +40,9 @@ export function verifyStaffToken(token: string): StaffJwtPayload | null {
 
 export function setStaffCookie(res: Response, payload: StaffJwtPayload): void {
   const token = signStaffToken(payload);
-  res.cookie(STAFF_COOKIE, token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  res.cookie(STAFF_COOKIE, token, staffCookieOptions());
 }
 
 export function clearStaffCookie(res: Response): void {
-  res.clearCookie(STAFF_COOKIE, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-  });
+  res.clearCookie(STAFF_COOKIE, staffClearCookieOptions());
 }

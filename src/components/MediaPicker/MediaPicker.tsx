@@ -186,13 +186,17 @@ const MediaPicker = ({
                 }`}
               >
                 {file.type === 'image' ? (
-                  <img src={file.url} alt={file.name} className="h-32 w-full object-cover" />
+                  <img
+                    src={file.url}
+                    alt={file.name}
+                    className="aspect-square w-full object-cover"
+                  />
                 ) : (
-                  <div className="flex h-32 w-full items-center justify-center bg-gray-100">
+                  <div className="flex aspect-square w-full items-center justify-center bg-gray-100">
                     <FileText className="h-12 w-12 text-fg-muted" />
                   </div>
                 )}
-                <div className="p-2">
+                <div className="p-3">
                   <p className="truncate text-xs font-medium text-fg">{file.name}</p>
                   <p className="text-xs text-fg-muted">{formatFileSize(file.size)}</p>
                 </div>

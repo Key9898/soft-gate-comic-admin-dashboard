@@ -20,6 +20,7 @@ import {
 } from '@/lib/genres';
 import { apiMessage, isMockApi } from '@/lib/api/http';
 import { createGenre, deleteGenre, updateGenre } from '@/lib/api/catalog';
+import { useOpenCreateQuery } from '@/lib/commands';
 
 type GenreFormState = {
   nameEn: string;
@@ -47,6 +48,8 @@ const GenresPage = () => {
   const [formData, setFormData] = useState<GenreFormState>(emptyForm);
   const [formError, setFormError] = useState('');
   const [deleteError, setDeleteError] = useState('');
+
+  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteCatalog && !isLoading);
 
   const filteredGenres = genres.filter((genre) => {
     const haystack = `${genre.name.en} ${genre.name.mm} ${genre.slug}`.toLowerCase();

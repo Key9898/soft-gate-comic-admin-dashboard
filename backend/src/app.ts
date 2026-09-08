@@ -2,21 +2,22 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import { createPrismaStaffStore } from './auth/prismaStaffStore.js';
+import { parseCorsOrigins } from './auth/corsOrigins.js';
 import { createStaffRouter } from './auth/staffRoutes.js';
 import type { StaffStore } from './auth/staffStore.js';
 import { mountCatalogRoutes } from './catalog/catalogRoutes.js';
 import type { CatalogStore } from './catalog/catalogStore.js';
 import { createPrismaCatalogStore } from './catalog/prismaCatalogStore.js';
 import { getPrisma, pingDb } from './db.js';
-import { createObjectStore } from './media/createObjectStore.js';
-import { resolveUploadDir } from './media/localDiskStore.js';
+import { createMailerFromEnv, type StaffMailer } from './mail/mailer.js';
+import { createMediaServicesFromEnv } from './media/fromEnv.js';
 import { mountMediaRoutes, type MediaServices } from './media/mediaRoutes.js';
-import { createPrismaMediaAssetStore } from './media/prismaMediaAssetStore.js';
 
 export type CreateAppOptions = {
   store?: StaffStore;
   catalog?: CatalogStore;
   media?: MediaServices;
+  mailer?: StaffMailer;
 };
 
 const CATALOG_PREFIXES = ['/api/authors', '/api/genres', '/api/webtoons', '/api/episodes'] as const;
@@ -25,9 +26,21 @@ export function createApp(options: CreateAppOptions = {}) {
   const app = express();
   const store = options.store ?? prismaStaffFromEnv();
   const catalog = options.catalog ?? prismaCatalogFromEnv();
-  const media = options.media ?? prismaMediaFromEnv();
+  const media = options.media ?? createMediaServicesFromEnv();
 
-  app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+  const allowedOrigins = parseCorsOrigins();
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin) {
+          callback(null, true);
+          return;
+        }
+        callback(null, allowedOrigins.includes(origin));
+      },
+      credentials: true,
+    }),
+  );
   app.use(express.json());
   app.use(cookieParser());
 
@@ -41,7 +54,8 @@ export function createApp(options: CreateAppOptions = {}) {
   });
 
   if (store) {
-    app.use('/api/staff', createStaffRouter(store));
+    const mailer = options.mailer ?? createMailerFromEnv();
+    app.use('/api/staff', createStaffRouter(store, mailer));
   } else {
     app.use('/api/staff', (_req, res) => {
       res.status(503).json({ error: 'Staff store unavailable' });
@@ -80,14 +94,4 @@ function prismaCatalogFromEnv(): CatalogStore | undefined {
   const prisma = getPrisma();
   if (!prisma) return undefined;
   return createPrismaCatalogStore(prisma);
-}
-
-function prismaMediaFromEnv(): MediaServices | undefined {
-  const prisma = getPrisma();
-  if (!prisma) return undefined;
-  return {
-    assets: createPrismaMediaAssetStore(prisma),
-    objects: createObjectStore(),
-    uploadDir: resolveUploadDir(),
-  };
 }

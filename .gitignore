@@ -35,6 +35,10 @@ storybook-static
 # Local session detail (dual-track docs — wiki/ is committed)
 docs/
 
+# Generated test / Playwright HTML
+playwright-report/
+test-results/
+
 # Local media adapter (Impl 34)
 backend/uploads/*
 !backend/uploads/.gitkeep

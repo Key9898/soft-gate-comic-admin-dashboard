@@ -37,6 +37,7 @@ import {
 } from '@/lib/authors';
 import { apiMessage, isMockApi } from '@/lib/api/http';
 import { createAuthor, deleteAuthor, updateAuthor } from '@/lib/api/catalog';
+import { useOpenCreateQuery } from '@/lib/commands';
 
 type AuthorFormState = {
   nameEn: string;
@@ -179,6 +180,8 @@ const AuthorsPage = () => {
   const [formData, setFormData] = useState<AuthorFormState>(emptyForm);
   const [formError, setFormError] = useState('');
   const [deleteError, setDeleteError] = useState('');
+
+  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteCatalog && !isLoading);
 
   const filteredAuthors = authors.filter((author) => {
     const haystack = `${author.name.en} ${author.name.mm}`.toLowerCase();

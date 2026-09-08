@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { staffInviteUrl, type StaffMailer } from '../mail/mailer.js';
 import { createInviteToken, hashInviteToken } from './inviteToken.js';
 import { newId } from './memoryStaffStore.js';
 import { hashPassword, MIN_PASSWORD_LENGTH, verifyPassword } from './password.js';
@@ -19,7 +20,7 @@ function readString(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
 }
 
-export function createStaffRouter(store: StaffStore): Router {
+export function createStaffRouter(store: StaffStore, mailer: StaffMailer): Router {
   const router = Router();
   const requireStaff = createRequireStaff(store);
 
@@ -138,6 +139,11 @@ export function createStaffRouter(store: StaffStore): Router {
       tokenHash: hashInviteToken(rawToken),
       expiresAt: new Date(Date.now() + INVITE_TTL_MS),
     });
+    await mailer.sendStaffInvite({
+      to: invite.email,
+      role: invite.role,
+      inviteUrl: staffInviteUrl(rawToken),
+    });
     res.json({ invite: publicInvite(updated ?? invite), token: rawToken });
   });
 
@@ -168,6 +174,11 @@ export function createStaffRouter(store: StaffStore): Router {
       tokenHash: hashInviteToken(rawToken),
       inviterId: req.staff!.id,
       expiresAt: new Date(Date.now() + INVITE_TTL_MS),
+    });
+    await mailer.sendStaffInvite({
+      to: email,
+      role,
+      inviteUrl: staffInviteUrl(rawToken),
     });
     res.status(201).json({ invite: publicInvite(invite), token: rawToken });
   });

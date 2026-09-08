@@ -61,14 +61,21 @@ Never skip the Lark block. The user pastes it into Lark manually.
 - Theme surfaces: JSX may use `bg-canvas` / `border-line` / `text-fg`; in `global.css` `@apply`, use `var(--sg-*)` instead (Vite PostCSS can reject `@apply border-line`).
 - No comments that restate the code. Wiki carries rationale.
 - Never commit secrets. `.env.example` stays stub-only.
-- **Never push or amend unless explicitly asked.**
+- **Never push or amend unless explicitly asked** (this git-hygiene task is an explicit push of `main` and `development`).
+
+## Git branches
+
+- `main` — GitHub default and Vercel Production.
+- `development` — long-lived leader **dev** cloud integration line (same committed code as `main` at the split). Not GitFlow `develop`. Secrets only in gitignored `backend/.env`. See [ADR 004](wiki/decisions/004-development-branch.md).
+- Short-lived `feat|fix|chore/<scope>`. Cloud work forks from `development`; mock-only UI may fork from `main`.
+- Do not edit the website/reader-portal repo. Do not merge Admin `development` with the website repo.
 
 ## Quick orientation
 
 - Entry: `index.html` → `src/main.tsx` → `src/App.tsx` → `ProtectedRoute` → `AdminLayout` → feature pages.
 - Features: `src/features/<name>/` (webtoons, episodes, users, comments, …).
 - Shared mocks/types: `@softgate/shared` → `packages/shared/src`.
-- API: sibling `backend/` (npm workspace). `npm run dev:api` needs `DATABASE_URL` and `JWT_SECRET`. Staff routes `/api/staff`. Catalog REST `/api/authors|genres|webtoons|episodes`. Media REST `/api/media` (Impl 34, local disk; remote vendor TBD). Admin SPA mock by default; `VITE_USE_MOCK_API=false` uses cookie + catalog REST (Impl 33) and media REST (Impl 35). Do not put Express in Vite `src/`. Do not edit the website/reader-portal repo.
+- API: sibling `backend/` (npm workspace). `npm run dev:api` needs `DATABASE_URL` and `JWT_SECRET`. Staff routes `/api/staff`. Catalog REST `/api/authors|genres|webtoons|episodes`. Media REST `/api/media` (Impl 34 local disk; Impl 41 Cloudflare R2 when real env is set; `R2_*=fake` stays disk). CORS/cookie from env (Impl 42): `CORS_ORIGINS`, `COOKIE_SAMESITE`, `COOKIE_SECURE`. Invite mail (Impl 43): in-repo HTML via Brevo when real env is set; `BREVO_API_KEY=fake` skips send; `ADMIN_APP_URL` for email links (default `http://localhost:5173`). Admin SPA mock by default; `VITE_USE_MOCK_API=false` uses cookie + catalog REST (Impl 33) and media REST (Impl 35). Do not put Express in Vite `src/`. Do not edit the website/reader-portal repo.
 - Data: `DataContext` + localStorage mock by default. When `VITE_USE_MOCK_API=false`, catalog + staff + media go through `src/lib/api/` (`credentials: 'include'`). Settings/coins/community stay mock.
 - Brand mark: `public/logo/logo.svg` (UI). Favicon head: `public/favicon/favicon.svg` + `favicon-32.png` + `apple-touch-icon.png`. OG: `public/logo/logo.png`.
 

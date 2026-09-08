@@ -31,6 +31,7 @@ import {
 } from '@/lib/yangonDate';
 import { apiMessage, isMockApi } from '@/lib/api/http';
 import { createEpisode, deleteEpisode, updateEpisode } from '@/lib/api/catalog';
+import { useOpenCreateQuery } from '@/lib/commands';
 
 interface EpisodeImage {
   id: string;
@@ -73,6 +74,8 @@ const EpisodesPage = () => {
     scheduledAt: '',
     freeAt: '',
   });
+
+  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteCatalog && !isLoading);
 
   const [bulkUploadData, setBulkUploadData] = useState({
     webtoonId: '',

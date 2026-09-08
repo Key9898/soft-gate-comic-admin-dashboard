@@ -29,6 +29,7 @@ import {
   toStaffAccount,
 } from '@/lib/api/staff';
 import TeamPageSkeleton from './components/TeamPageSkeleton';
+import { useOpenCreateQuery } from '@/lib/commands';
 
 const inviteUrl = (rawToken: string) => `${window.location.origin}/invite/${rawToken}`;
 
@@ -82,6 +83,8 @@ const TeamPage = () => {
     setCopied(false);
     setInviteOpen(true);
   };
+
+  useOpenCreateQuery(openInvite, access.canManageTeam);
 
   const closeInvite = () => {
     setInviteOpen(false);

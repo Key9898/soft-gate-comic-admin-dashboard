@@ -19,8 +19,8 @@ const MediaLibraryPageSkeleton = () => (
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {Array.from({ length: 10 }).map((_, i) => (
           <div key={i} className="overflow-hidden rounded-lg border border-line">
-            <Skeleton variant="rectangular" className="h-32 w-full rounded-none" />
-            <div className="space-y-2 p-2">
+            <Skeleton variant="rectangular" className="aspect-square w-full rounded-none" />
+            <div className="space-y-2 p-3">
               <Skeleton className="h-3 w-full" />
               <Skeleton className="h-3 w-12" />
             </div>

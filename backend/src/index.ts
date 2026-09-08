@@ -3,9 +3,7 @@ import { createPrismaCatalogStore } from './catalog/prismaCatalogStore.js';
 import { createPrismaStaffStore } from './auth/prismaStaffStore.js';
 import { createApp } from './app.js';
 import { getPrisma, hasDatabaseUrl } from './db.js';
-import { createObjectStore } from './media/createObjectStore.js';
-import { resolveUploadDir } from './media/localDiskStore.js';
-import { createPrismaMediaAssetStore } from './media/prismaMediaAssetStore.js';
+import { createMediaServicesFromEnv } from './media/fromEnv.js';
 
 async function main() {
   if (!hasDatabaseUrl()) {
@@ -32,15 +30,17 @@ async function main() {
     process.exit(1);
   }
 
+  const media = createMediaServicesFromEnv();
+  if (!media) {
+    console.error('DATABASE_URL is required');
+    process.exit(1);
+  }
+
   const port = Number(process.env.PORT) || 3000;
   const app = createApp({
     store: createPrismaStaffStore(prisma),
     catalog: createPrismaCatalogStore(prisma),
-    media: {
-      assets: createPrismaMediaAssetStore(prisma),
-      objects: createObjectStore(),
-      uploadDir: resolveUploadDir(),
-    },
+    media,
   });
 
   app.listen(port, () => {

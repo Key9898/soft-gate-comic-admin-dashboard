@@ -1,6 +1,9 @@
+import { StrictMode } from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { HelmetProvider } from 'react-helmet-async';
-import { render, screen } from '@/test/utils';
+import { MemoryRouter } from 'react-router-dom';
+import { render, screen, waitFor } from '@/test/utils';
+import { render as rtlRender } from '@testing-library/react';
 import { AuthProvider } from '@/features/auth/useAuth';
 import { DataProvider } from '@/lib/DataContext';
 import { hashPassword, upsertAccount, writeCredential } from '@/lib/auth';
@@ -43,5 +46,26 @@ describe('AuthorsPage staff access', () => {
     wrap();
     expect(screen.getByRole('heading', { name: 'Authors' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /add author/i })).not.toBeInTheDocument();
+  });
+
+  it('opens Add Author when ?new=1 for a writer', async () => {
+    seed('admin');
+    rtlRender(
+      <StrictMode>
+        <HelmetProvider>
+          <MemoryRouter initialEntries={['/authors?new=1']}>
+            <AuthProvider>
+              <DataProvider>
+                <AuthorsPage />
+              </DataProvider>
+            </AuthProvider>
+          </MemoryRouter>
+        </HelmetProvider>
+      </StrictMode>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Add Author' })).toBeInTheDocument();
+    });
   });
 });

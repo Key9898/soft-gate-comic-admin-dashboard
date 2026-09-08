@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SidebarProvider, useSidebar } from '@/lib/SidebarContext';
 import { useData } from '@/lib/DataContext';
 import { Sidebar, Header, CatalogStatus } from '../components';
+import CommandPalette, { CommandPaletteProvider } from '../components/CommandPalette';
 
 const AdminLayoutContent = () => {
   const [isReady, setIsReady] = useState(false);
@@ -30,6 +31,7 @@ const AdminLayoutContent = () => {
         style={{ marginLeft: isCollapsed ? 80 : 256 }}
       >
         <Header />
+        <CommandPalette />
         <main className="p-6">
           <CatalogStatus />
           <AnimatePresence mode="wait">
@@ -52,7 +54,9 @@ const AdminLayoutContent = () => {
 const AdminLayout = () => {
   return (
     <SidebarProvider>
-      <AdminLayoutContent />
+      <CommandPaletteProvider>
+        <AdminLayoutContent />
+      </CommandPaletteProvider>
     </SidebarProvider>
   );
 };

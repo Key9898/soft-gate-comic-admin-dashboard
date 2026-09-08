@@ -47,6 +47,7 @@ import {
 } from '@/lib/genres';
 import { apiMessage, isMockApi } from '@/lib/api/http';
 import { createWebtoon, deleteWebtoon, updateWebtoon } from '@/lib/api/catalog';
+import { useOpenCreateQuery } from '@/lib/commands';
 
 const popularTags = [
   'action',
@@ -114,6 +115,8 @@ const WebtoonsPage = () => {
   };
 
   const [formData, setFormData] = useState(emptyForm);
+
+  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteCatalog && !isLoading);
 
   const filteredWebtoons = webtoons.filter((webtoon) => {
     const matchesSearch = webtoon.title.en.toLowerCase().includes(searchQuery.toLowerCase());

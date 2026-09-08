@@ -27,6 +27,7 @@ import {
   withExclusiveBadges,
   type CoinPackageBadge,
 } from '@/lib/coinPackages';
+import { useOpenCreateQuery } from '@/lib/commands';
 
 type PackFormState = {
   coins: string;
@@ -58,6 +59,8 @@ const CoinPackagesPage = () => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [formData, setFormData] = useState<PackFormState>(emptyForm);
   const [formError, setFormError] = useState('');
+
+  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteCatalog && !isLoading);
 
   const filteredPackages = coinPackages.filter((pack) => {
     const haystack = `${pack.coins} ${pack.price} ${pack.bonus ?? ''}`.toLowerCase();

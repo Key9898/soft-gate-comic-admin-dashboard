@@ -1,7 +1,7 @@
 ---
 title: Git Workflow & Documentation
 type: convention
-date: 2026-08-10
+date: 2026-09-08
 tags: [git, husky, wiki, sessions]
 ---
 
@@ -9,8 +9,10 @@ tags: [git, husky, wiki, sessions]
 
 ## Branches
 
-- `main` — production / stable
-- Feature branches: `feat/<scope>`, `fix/<scope>`, `chore/<scope>`
+- `main` — production / stable. GitHub default. Vercel Production deploys this branch only. Do not attach `development` to prod.
+- `development` — long-lived **dev-cloud** integration line (leader Railway / R2 / Brevo). Same committed code as `main` at the split. Secrets stay in gitignored `backend/.env`. Not GitFlow `develop`. See [ADR 004](decisions/004-development-branch.md).
+- Feature branches: `feat/<scope>`, `fix/<scope>`, `chore/<scope>` (short-lived). Work that needs the leader dev cloud forks from `development`; mock-only UI may fork from `main`.
+- The website repo may use the name `development` too. Do not merge across remotes.
 
 ## Hooks
 
@@ -71,4 +73,4 @@ After implementation work: update **both** tracks + give the user a Lark Title +
 
 ## Current implementation status
 
-Impls **1–36** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 36 = catalog titles + schema 14 (website Impl 177 parity / Lark website 178 follow-up). Labels use **Impl N** (not Phase).
+Impls **1–43** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 43 = Brevo mailer + staff invite HTML. Labels use **Impl N** (not Phase).

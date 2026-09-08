@@ -18,7 +18,6 @@ const THEME_OPTIONS: {
 
 const ProfileDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -72,8 +71,8 @@ const ProfileDropdown = () => {
       icon: <HelpCircle className="h-4 w-4" />,
       label: 'Help & Support',
       onClick: () => {
+        navigate('/help');
         setIsOpen(false);
-        setIsHelpOpen(true);
       },
     },
   ];
@@ -200,49 +199,6 @@ const ProfileDropdown = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {isHelpOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setIsHelpOpen(false)} />
-          <div className="relative mx-4 w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-fg">Help & Support</h3>
-            <p className="mt-2 text-sm text-fg-secondary">
-              Need help with SoftGate Comic Admin? Reach the SoftGate team using the contacts below.
-            </p>
-            <ul className="mt-4 space-y-2 text-sm text-fg-secondary">
-              <li>
-                Email:{' '}
-                <a
-                  className="text-primary-600 hover:underline dark:text-primary-400"
-                  href="mailto:admin@softgatecomic.com"
-                >
-                  admin@softgatecomic.com
-                </a>
-              </li>
-              <li>
-                Website:{' '}
-                <a
-                  className="text-primary-600 hover:underline dark:text-primary-400"
-                  href="https://softgatecomic.com"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  softgatecomic.com
-                </a>
-              </li>
-            </ul>
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setIsHelpOpen(false)}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

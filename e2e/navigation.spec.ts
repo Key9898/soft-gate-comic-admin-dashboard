@@ -55,6 +55,12 @@ test.describe('Navigation', () => {
     await expect(page.getByRole('heading', { name: /settings/i })).toBeVisible();
   });
 
+  test('navigates to help', async ({ page }) => {
+    await page.getByRole('link', { name: /^help$/i }).click();
+    await expect(page).toHaveURL('/help');
+    await expect(page.getByRole('heading', { name: /^help$/i })).toBeVisible();
+  });
+
   test('sidebar is visible on desktop', async ({ page }) => {
     const sidebar = page.getByRole('navigation', { name: /sidebar/i });
     await expect(sidebar).toBeVisible();

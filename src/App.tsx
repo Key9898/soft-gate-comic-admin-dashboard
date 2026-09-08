@@ -28,6 +28,7 @@ import RevenuePage from '@/features/revenue/RevenuePage';
 import NotificationsPage from '@/features/notifications/NotificationsPage';
 import SchedulePage from '@/features/schedule/SchedulePage';
 import TeamPage from '@/features/team/TeamPage';
+import HelpPage from '@/features/help/HelpPage';
 
 function App() {
   return (
@@ -68,6 +69,7 @@ function App() {
               <Route path="/comments" element={<CommentsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/help" element={<HelpPage />} />
               <Route path="/media" element={<MediaLibraryPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/activity-log" element={<ActivityLogPage />} />

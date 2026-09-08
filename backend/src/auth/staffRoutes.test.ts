@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createApp } from '../app.js';
 import { createMemoryStaffStore } from './memoryStaffStore.js';
 
@@ -53,5 +53,34 @@ describe('staff auth routes', () => {
       .delete(`/api/staff/${owner.body.user.id}`)
       .set('Cookie', cookie);
     expect(removed.status).toBe(403);
+  });
+
+  it('still returns the invite token when the mailer runs', async () => {
+    const sendStaffInvite = vi.fn(async () => {});
+    const app = createApp({
+      store: createMemoryStaffStore(),
+      mailer: { sendStaffInvite },
+    });
+    const owner = await request(app).post('/api/staff/register').send({
+      email: 'owner@softgate.com',
+      password: 'password1',
+      displayName: 'Owner',
+    });
+    const cookie = owner.headers['set-cookie'] as string[];
+
+    const invited = await request(app)
+      .post('/api/staff/invites')
+      .set('Cookie', cookie)
+      .send({ email: 'member@softgate.com', role: 'member' });
+    expect(invited.status).toBe(201);
+    expect(invited.body.token).toMatch(/^[a-f0-9]{64}$/);
+    expect(sendStaffInvite).toHaveBeenCalledTimes(1);
+    expect(sendStaffInvite.mock.calls[0][0]).toMatchObject({
+      to: 'member@softgate.com',
+      role: 'member',
+    });
+    expect(sendStaffInvite.mock.calls[0][0].inviteUrl).toMatch(
+      /^http:\/\/localhost:5173\/invite\/[a-f0-9]{64}$/,
+    );
   });
 });

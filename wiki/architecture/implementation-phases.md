@@ -283,3 +283,45 @@
 - [x] `SHARED_DATA_SCHEMA_VERSION` 13 → 14 so Admin load/save matches portal envelope (2026-08-25)
 - [x] Demo series titles aligned with website Impl 177 (Latin cover-brand MM + literary kept; Love in Seoul MM + Seoul desc/tags); cover paths unchanged (2026-08-25)
 - [x] Admin-only; website untouched; Lark follow-up to website Impl 178 (2026-08-25)
+
+## Impl 37 — Command palette (Ctrl+K)
+
+- [x] Replace Header page-search with Ctrl+K / Cmd+K overlay; go slugs + `.new` create (`?new=1`); System help/theme/logout (2026-08-31)
+- [x] Role-hide Create/invite; no record prefixes; no `/commands` docs page; unused `globalShortcuts` left unmounted (2026-08-31)
+- [x] Admin-only; website untouched (2026-08-31)
+
+## Impl 38 — Staff Help page + palette chrome
+
+- [x] Replace Help dialog with `/help`; Profile + sidebar Help + palette `help` go there (2026-08-31)
+- [x] Palette footer keys; Header `kbd` Ctrl+K / ⌘K; staff desk copy (not “reach the SoftGate team”); no `/commands` page (2026-08-31)
+- [x] Admin-only; website untouched (2026-08-31)
+
+## Impl 39 — Staff Help desk handbook
+
+- [x] `/help` category tabs under the h1 only (Overview, Catalog, Community, Business, Admin, Commands); `?tab=` omit for overview (2026-08-31)
+- [x] Must-say copy (mock vs API, catalog order, community/business honesty, roles); Commands list has no Contact block (2026-08-31)
+- [x] Admin-only; website untouched (2026-08-31)
+
+## Impl 40 — Media Library square thumbs
+
+- [x] Library thumbs `aspect-square` (keep `lg:grid-cols-5` + `object-cover`); filename footer `p-3` (2026-09-01)
+- [x] MediaPicker + Media Library skeleton match; preview modal `h-64` unchanged (2026-09-01)
+- [x] Admin-only; website untouched (2026-09-01)
+
+## Impl 41 — R2 ObjectStore + public URL from key
+
+- [x] Factory uses R2 when real env is set; `fake` / missing stays local disk; no live R2 in tests (2026-09-08)
+- [x] DB key stays `{uuid}{ext}`; R2 object name `{prefix}/{key}` (`R2_KEY_PREFIX` default `admin`); public URL rebuilt from key + env (2026-09-08)
+- [x] `GET /uploads` disk-only via `createMediaServicesFromEnv` in `app.ts` and `index.ts`; website untouched (2026-09-08)
+
+## Impl 42 — CORS + cookie from env
+
+- [x] `CORS_ORIGINS` exact allowlist (default `http://localhost:5173`); no wildcards; unknown Origin is 200 without ACAO (2026-09-08)
+- [x] `COOKIE_SAMESITE` / `COOKIE_SECURE` from env; `none` forces Secure; clearCookie omits maxAge (2026-09-08)
+- [x] SPA proxy unchanged; website untouched (2026-09-08)
+
+## Impl 43 — Brevo mailer + staff invite HTML
+
+- [x] Fail-soft invite/resend mail via in-repo HTML; `fake`/missing key or throw still returns the token (2026-09-08)
+- [x] Configured only when `BREVO_API_KEY` is real and `BREVO_SENDER_EMAIL` is set; `ADMIN_APP_URL` for email links (default `http://localhost:5173`); no `templateId`; no `VITE_BREVO_*` (2026-09-08)
+- [x] Forgot/reset HTML placeholders only; Team copy-link unchanged; website untouched (2026-09-08)
