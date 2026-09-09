@@ -19,7 +19,8 @@ tags: [admin, help, commands, navigation]
 - Team invite: copy-link always; the API may also email when mail is configured. Super Admin cannot be invited. Revoke on a pending invite is mock-only.
 - Sign in: no public Sign up. Empty staff uses **Create the first Super Admin**. After that, Sign in + Team invite. Reader registration is a website setting.
 - Coin packages: shop SKUs, not a payments API. With the catalog API on, they save on `/api/coin-packages`. Super Admin and Admin can write.
-- Comments: live desk is portal ReaderComment on `/api/comments`. Reported is the queue. Delete removes the reader thread. Super Admin and Admin can write. Users and Reports stay mock.
+- Users: live desk is portal ReaderUser on `/api/users`. Delete removes the reader. Coins are wallet read-only. Team is still staff. Ban and suspend stay mock-only. Reports stay mock. Super Admin and Admin can write.
+- Comments: live desk is portal ReaderComment on `/api/comments`. Reported is the queue. Delete removes the reader thread. Super Admin and Admin can write.
 - Notifications: desk inbox on `/api/notifications` when the catalog API is on; not the reader inbox. Hard-delete. Super Admin and Admin can write; Member and Viewer look only. Super Admin and Admin can send bilingual reader broadcasts (`/api/reader-broadcasts`) when the website service is configured.
 - Settings: four portal-safe fields on `/api/settings` when the catalog API is on; they can reach the reader site when the portal persist is on. Theme is not Save. Super Admin and Admin can write; Member and Viewer look only.
 - Command list uses the same `filterCommands` / role hide as the palette. Go/Create rows navigate; System rows are read-only.

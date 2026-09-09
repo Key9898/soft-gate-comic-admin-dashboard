@@ -7,6 +7,7 @@ import { createMemoryCoinPackageStore } from './memoryCoinPackageStore.js';
 import { createMemoryCommentStore } from '../comments/memoryCommentStore.js';
 import { createMemoryNotificationStore } from '../notifications/memoryNotificationStore.js';
 import { createMemoryPlatformSettingsStore } from '../settings/memoryPlatformSettingsStore.js';
+import { createMemoryReaderUserStore } from '../users/memoryReaderUserStore.js';
 
 function appWithCoins() {
   return createApp({
@@ -14,6 +15,7 @@ function appWithCoins() {
     catalog: createMemoryCatalogStore(),
     coinPackages: createMemoryCoinPackageStore(),
     comments: createMemoryCommentStore(),
+    readerUsers: createMemoryReaderUserStore(),
     notifications: createMemoryNotificationStore(),
     settings: createMemoryPlatformSettingsStore(),
   });

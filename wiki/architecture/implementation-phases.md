@@ -1,6 +1,6 @@
 # Implementation track — SoftGate Comic Admin
 
-> Numbering is sequential **Impl 1–53** (Lark-aligned). SoftGate name + logo = Impl 7; Profile polish + media-backed avatar = Impl 8.
+> Numbering is sequential **Impl 1–54** (Lark-aligned). SoftGate name + logo = Impl 7; Profile polish + media-backed avatar = Impl 8.
 > Terminology: work batches are labeled **Impl N** (not “Phase N”).
 
 ## Impl 1 — Documentation, architecture & SoftGate branding
@@ -385,3 +385,9 @@
 - [x] Copy website `ReaderComment` + `ReaderCommentLike` into Admin Prisma (no `ReaderUser` FKs, no Admin migrate); `prisma generate` only (2026-09-10)
 - [x] `/api/comments` lists portal rows, PATCH `{ reported }`, hard DELETE (likes cascade); staff `Comment` table unused by REST (2026-09-10)
 - [x] Live Comments desk uses `readerComments`; mock hide/soft-delete unchanged; Help: delete removes the reader thread (2026-09-10)
+
+## Impl 54 — Moderate `ReaderUser` (Admin only)
+
+- [x] Copy website `ReaderUser` + `Wallet` + delete-child models into Admin Prisma (no `ReaderComment` FKs, no Admin migrate); `prisma generate` only (2026-09-10)
+- [x] `/api/users` lists portal rows, PATCH profile fields, hard DELETE (website cascade); mock ban/suspend unchanged (2026-09-10)
+- [x] Live Users desk uses `readerUsers`; coins are wallet read-only; Help: delete removes the reader (2026-09-10)

@@ -14,6 +14,9 @@ import { createPrismaCoinPackageStore } from './coins/prismaCoinPackageStore.js'
 import { mountCommentRoutes } from './comments/commentRoutes.js';
 import type { CommentStore } from './comments/commentStore.js';
 import { createPrismaCommentStore } from './comments/prismaCommentStore.js';
+import { mountReaderUserRoutes } from './users/readerUserRoutes.js';
+import type { ReaderUserStore } from './users/readerUserStore.js';
+import { createPrismaReaderUserStore } from './users/prismaReaderUserStore.js';
 import { mountNotificationRoutes } from './notifications/notificationRoutes.js';
 import type { NotificationStore } from './notifications/notificationStore.js';
 import { createPrismaNotificationStore } from './notifications/prismaNotificationStore.js';
@@ -30,6 +33,7 @@ export type CreateAppOptions = {
   catalog?: CatalogStore;
   coinPackages?: CoinPackageStore;
   comments?: CommentStore;
+  readerUsers?: ReaderUserStore;
   notifications?: NotificationStore;
   settings?: PlatformSettingsStore;
   media?: MediaServices;
@@ -44,6 +48,7 @@ export function createApp(options: CreateAppOptions = {}) {
   const catalog = options.catalog ?? prismaCatalogFromEnv();
   const coinPackages = options.coinPackages ?? prismaCoinPackagesFromEnv();
   const comments = options.comments ?? prismaCommentsFromEnv();
+  const readerUsers = options.readerUsers ?? prismaReaderUsersFromEnv();
   const notifications = options.notifications ?? prismaNotificationsFromEnv();
   const settings = options.settings ?? prismaSettingsFromEnv();
   const media = options.media ?? createMediaServicesFromEnv();
@@ -109,6 +114,14 @@ export function createApp(options: CreateAppOptions = {}) {
     });
   }
 
+  if (store && readerUsers) {
+    mountReaderUserRoutes(app, store, readerUsers);
+  } else {
+    app.use('/api/users', (_req, res) => {
+      res.status(503).json({ error: 'Users store unavailable' });
+    });
+  }
+
   if (store && notifications) {
     mountNotificationRoutes(app, store, notifications);
   } else {
@@ -158,6 +171,12 @@ function prismaCommentsFromEnv(): CommentStore | undefined {
   const prisma = getPrisma();
   if (!prisma) return undefined;
   return createPrismaCommentStore(prisma);
+}
+
+function prismaReaderUsersFromEnv(): ReaderUserStore | undefined {
+  const prisma = getPrisma();
+  if (!prisma) return undefined;
+  return createPrismaReaderUserStore(prisma);
 }
 
 function prismaNotificationsFromEnv(): NotificationStore | undefined {

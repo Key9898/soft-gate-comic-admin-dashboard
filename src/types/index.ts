@@ -1,6 +1,7 @@
 export type {
   AdminUser,
   User,
+  ReaderUser,
   Webtoon,
   Episode,
   Author,

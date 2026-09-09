@@ -29,6 +29,18 @@ export interface User {
   lastLoginAt?: string;
 }
 
+export interface ReaderUser {
+  id: string;
+  email: string;
+  username: string;
+  displayName: string;
+  avatar?: string;
+  bio: string;
+  createdAt: string;
+  lastLoginAt?: string;
+  coinBalance: number;
+}
+
 export type ContentRating = 'all' | '13' | '16' | '18';
 
 export type PortalLanguage = 'en' | 'mm';

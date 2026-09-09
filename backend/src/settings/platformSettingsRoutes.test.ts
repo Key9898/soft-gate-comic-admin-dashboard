@@ -7,6 +7,7 @@ import { createMemoryCoinPackageStore } from '../coins/memoryCoinPackageStore.js
 import { createMemoryCommentStore } from '../comments/memoryCommentStore.js';
 import { createMemoryNotificationStore } from '../notifications/memoryNotificationStore.js';
 import { createMemoryPlatformSettingsStore } from './memoryPlatformSettingsStore.js';
+import { createMemoryReaderUserStore } from '../users/memoryReaderUserStore.js';
 import { DEFAULT_PLATFORM_SETTINGS, type PlatformSettingsStore } from './platformSettingsStore.js';
 
 function appWithSettings(settings: PlatformSettingsStore) {
@@ -15,6 +16,7 @@ function appWithSettings(settings: PlatformSettingsStore) {
     catalog: createMemoryCatalogStore(),
     coinPackages: createMemoryCoinPackageStore(),
     comments: createMemoryCommentStore(),
+    readerUsers: createMemoryReaderUserStore(),
     notifications: createMemoryNotificationStore(),
     settings,
   });

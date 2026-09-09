@@ -415,7 +415,9 @@ const MockCommentsPage = () => {
 const ReaderCommentsPage = () => {
   const { user } = useAuth();
   const { canWriteCommunity } = useStaffAccess();
-  const { readerComments, setActivityLogs, isLoading, reloadCatalog } = useData();
+  const { readerComments, readerUsers, setActivityLogs, isLoading, reloadCatalog } = useData();
+  const readerLabel = (userId: string) =>
+    readerUsers.find((user) => user.id === userId)?.displayName ?? userId;
   const [searchQuery, setSearchQuery] = useState('');
   const [queueFilter, setQueueFilter] = useState<'reported' | 'all'>('reported');
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -563,7 +565,7 @@ const ReaderCommentsPage = () => {
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <span className="font-medium text-fg">{comment.userId}</span>
+                        <span className="font-medium text-fg">{readerLabel(comment.userId)}</span>
                         {comment.reported ? <span className="badge-warning">reported</span> : null}
                         {comment.spoiler ? <span className="badge-danger">spoiler</span> : null}
                         {comment.isEdited ? (
@@ -656,7 +658,7 @@ const ReaderCommentsPage = () => {
             {selectedComment && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-fg">{selectedComment.userId}</h3>
+                  <h3 className="font-semibold text-fg">{readerLabel(selectedComment.userId)}</h3>
                   <p className="text-sm text-fg-muted">{selectedComment.episodeKey}</p>
                 </div>
 

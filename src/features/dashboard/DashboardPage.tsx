@@ -60,6 +60,7 @@ const DashboardPage = () => {
     webtoons,
     episodes,
     users,
+    readerUsers,
     comments,
     readerComments,
     transactions,
@@ -84,8 +85,10 @@ const DashboardPage = () => {
   const totalRevenue = transactions
     .filter((tx) => tx.type === 'purchase' && tx.status === 'completed')
     .reduce((sum, tx) => sum + tx.amount, 0);
-  const activeUsers = users.filter((u) => u.status === 'active').length;
-  const commentCountCaption = isMockApi()
+  const mock = isMockApi();
+  const userCount = mock ? users.length : readerUsers.length;
+  const activeUsers = mock ? users.filter((u) => u.status === 'active').length : 0;
+  const commentCountCaption = mock
     ? `${comments.filter((c) => c.status === 'visible').length} visible comments`
     : `${readerComments.length} reader comments`;
   const growthRate =
@@ -112,9 +115,9 @@ const DashboardPage = () => {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Users"
-              value={formatNumber(users.length)}
+              value={formatNumber(userCount)}
               icon={<Users className="h-6 w-6" />}
-              change={`${activeUsers} active`}
+              change={mock ? `${activeUsers} active` : undefined}
               changeType="positive"
             />
             <StatCard

@@ -33,7 +33,7 @@ soft-gate-comic-admin-dashboard/
 │   ├── references/
 │   └── snippets/
 ├── backend/                  # npm workspace — Express + Prisma (Impl 29–49)
-│   ├── prisma/               # Meta + Staff + StaffPasswordReset + catalog + MediaAsset + CoinPackage + Comment + ReaderComment + StaffNotification + PlatformSettings
+│   ├── prisma/               # Meta + Staff + StaffPasswordReset + catalog + MediaAsset + CoinPackage + Comment + ReaderComment + ReaderUser + Wallet + StaffNotification + PlatformSettings
 │   ├── docker-compose.yml    # local Postgres 16
 │   ├── scripts/              # prisma-generate + copy-mail-templates
 │   ├── uploads/              # local ObjectStore files (gitignored except .gitkeep)
@@ -41,6 +41,7 @@ soft-gate-comic-admin-dashboard/
 │   ├── src/catalog/          # CatalogStore, rules, /api/authors|genres|webtoons|episodes
 │   ├── src/coins/            # CoinPackageStore + /api/coin-packages (Impl 44)
 │   ├── src/comments/         # CommentStore + /api/comments (Impl 53 ReaderComment)
+│   ├── src/users/            # ReaderUserStore + /api/users (Impl 54 ReaderUser)
 │   ├── src/notifications/    # NotificationStore + /api/notifications (Impl 46)
 │   ├── src/settings/         # PlatformSettingsStore + /api/settings (Impl 47)
 │   ├── src/media/            # ObjectStore + MediaAsset + /api/media (disk or R2)

@@ -7,6 +7,7 @@ import { createMemoryCoinPackageStore } from '../coins/memoryCoinPackageStore.js
 import { createMemoryCommentStore } from './memoryCommentStore.js';
 import { createMemoryNotificationStore } from '../notifications/memoryNotificationStore.js';
 import { createMemoryPlatformSettingsStore } from '../settings/memoryPlatformSettingsStore.js';
+import { createMemoryReaderUserStore } from '../users/memoryReaderUserStore.js';
 import type { CommentStore, CommentWrite } from './commentStore.js';
 
 const sampleWrite: CommentWrite = {
@@ -22,6 +23,7 @@ function appWithComments(comments: CommentStore) {
     catalog: createMemoryCatalogStore(),
     coinPackages: createMemoryCoinPackageStore(),
     comments,
+    readerUsers: createMemoryReaderUserStore(),
     notifications: createMemoryNotificationStore(),
     settings: createMemoryPlatformSettingsStore(),
   });

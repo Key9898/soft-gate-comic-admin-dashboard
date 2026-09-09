@@ -70,6 +70,12 @@ export {
   type CommentReportedBody,
 } from './comments';
 export {
+  deleteReaderUser,
+  listReaderUsers,
+  updateReaderUser,
+  type ReaderUserProfileBody,
+} from './users';
+export {
   deleteNotification,
   listNotifications,
   markAllNotificationsRead,

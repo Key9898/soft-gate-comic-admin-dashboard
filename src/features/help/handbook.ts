@@ -31,7 +31,7 @@ export const OVERVIEW_DATA_MOCK =
   'This browser keeps mock data. Saves stay here. They do not appear on the public site.';
 
 export const OVERVIEW_DATA_API =
-  'This desk is connected to the catalog API. Catalog, media, and coin packages you save can reach the reader site. Comments on this desk are portal ReaderComment rows. Reported is the moderation queue; delete removes the reader thread. Notifications you mark read or delete save on this desk’s notifications API; they are not the reader inbox. Super Admin and Admin can also send bilingual reader broadcasts when the website service is configured. Maintenance, registration, contact email, and default language save on this desk’s settings API; they can reach the reader site when the portal persist is on. Dashboard charts, users, revenue, and reports stay mock or local even then. Theme and the other Settings controls stay in this browser. Webtoon and episode counts on the Dashboard can be real; purchase and growth charts are not.';
+  'This desk is connected to the catalog API. Catalog, media, and coin packages you save can reach the reader site. Users on this desk are portal ReaderUser rows. Delete removes the reader; wallet coins are read-only. Team is still staff. Comments on this desk are portal ReaderComment rows. Reported is the moderation queue; delete removes the reader thread. Notifications you mark read or delete save on this desk’s notifications API; they are not the reader inbox. Super Admin and Admin can also send bilingual reader broadcasts when the website service is configured. Maintenance, registration, contact email, and default language save on this desk’s settings API; they can reach the reader site when the portal persist is on. Dashboard charts, revenue, and reports stay mock or local even then. Theme and the other Settings controls stay in this browser. Webtoon and episode counts on the Dashboard can be real; purchase and growth charts are not.';
 
 export const OVERVIEW_JUMP = 'Jump with Search or jump… in the header, or Ctrl+K (Mac: ⌘K).';
 
@@ -69,7 +69,7 @@ export const CATALOG_NOTES: ReadonlyArray<{ title: string; body: string }> = [
 
 export const COMMUNITY_NOTE = {
   title: 'Users, comments, reports',
-  body: 'Users and Reports are mock on this desk, even when the catalog API is on. Comments are portal ReaderComment rows when the catalog API is on: reported is the queue; delete removes the reader thread. Reader users are not Team staff. Ban, hide, and resolve or dismiss need Admin or Super Admin. Member and Viewer can look only. Report actions apply to pending items only.',
+  body: 'Live Users are portal ReaderUser rows when the catalog API is on: search email, username, and display name; coins are the wallet balance (read-only); delete removes the reader. Ban and suspend stay on the mock desk only. Team is still staff. Reports stay mock. Comments are portal ReaderComment rows when the catalog API is on: reported is the queue; delete removes the reader thread. Hide and resolve or dismiss need Admin or Super Admin. Member and Viewer can look only. Report actions apply to pending items only.',
 };
 
 export const BUSINESS_NOTE = {

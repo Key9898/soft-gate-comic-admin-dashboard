@@ -15,6 +15,7 @@ import {
   User,
   Comment,
   ReaderComment,
+  ReaderUser,
   DashboardStats,
   RevenueData,
   UserGrowthData,
@@ -60,6 +61,7 @@ import { listComments } from '@/lib/api/comments';
 import { listMedia } from '@/lib/api/media';
 import { listNotifications } from '@/lib/api/notifications';
 import { getPlatformSettings } from '@/lib/api/settings';
+import { listReaderUsers } from '@/lib/api/users';
 
 export interface PlatformSettings {
   siteName: string;
@@ -144,6 +146,7 @@ function emptyApiCatalog(): SharedData {
     mediaFiles: [],
     coinPackages: [],
     comments: [],
+    users: [],
     notifications: [],
   };
 }
@@ -171,6 +174,7 @@ interface DataContextType {
   setEpisodes: Dispatch<SetStateAction<Episode[]>>;
   users: User[];
   setUsers: Dispatch<SetStateAction<User[]>>;
+  readerUsers: ReaderUser[];
   comments: Comment[];
   setComments: Dispatch<SetStateAction<Comment[]>>;
   readerComments: ReaderComment[];
@@ -227,6 +231,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const mock = isMockApi();
   const [db, setDb] = useState<SharedData>(() => (mock ? loadMockDb() : emptyApiCatalog()));
   const [readerComments, setReaderComments] = useState<ReaderComment[]>([]);
+  const [readerUsers, setReaderUsers] = useState<ReaderUser[]>([]);
   const [isLoading, setIsLoading] = useState(() => !mock);
   const [error, setError] = useState<Error | null>(null);
 
@@ -247,15 +252,17 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
     setIsLoading(true);
     try {
-      const [catalog, media, packs, commentList, inbox, platform] = await Promise.all([
+      const [catalog, media, packs, commentList, readerList, inbox, platform] = await Promise.all([
         loadCatalog(),
         listMedia(),
         listCoinPackages(),
         listComments(),
+        listReaderUsers(),
         listNotifications(),
         getPlatformSettings(),
       ]);
       setReaderComments(commentList.comments);
+      setReaderUsers(readerList.users);
       setDb((prev) => ({
         ...prev,
         authors: catalog.authors,
@@ -265,6 +272,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         mediaFiles: media.files,
         coinPackages: packs.coinPackages,
         comments: [],
+        users: [],
         notifications: inbox.notifications,
       }));
       setSettings((prev) => overlayPortalSettings(prev, platform.settings));
@@ -273,6 +281,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       const nextError = err instanceof Error ? err : new Error('Failed to fetch catalog');
       setError(nextError);
       setReaderComments([]);
+      setReaderUsers([]);
       setDb((prev) => ({
         ...prev,
         authors: [],
@@ -282,6 +291,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         mediaFiles: [],
         coinPackages: [],
         comments: [],
+        users: [],
         notifications: [],
       }));
       setSettings((prev) => overlayPortalSettings(prev, FAIL_OPEN_PORTAL_SETTINGS));
@@ -425,6 +435,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setEpisodes,
     users: db.users,
     setUsers,
+    readerUsers,
     comments: db.comments,
     setComments,
     readerComments,

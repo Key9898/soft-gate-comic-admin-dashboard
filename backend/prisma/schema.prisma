@@ -231,6 +231,167 @@ model ReaderCommentLike {
   @@id([commentId, userId])
 }
 
+model ReaderUser {
+  id               String                   @id
+  email            String                   @unique
+  username         String                   @unique
+  displayName      String
+  avatar           String?
+  bio              String                   @default("")
+  passwordHash     String
+  createdAt        DateTime
+  lastLoginAt      DateTime?
+  refreshTokens    RefreshToken[]
+  passwordResets   ReaderPasswordReset[]
+  wallet           Wallet?
+  transactions     WalletTransaction[]
+  unlocks          WalletUnlock[]
+  librarySubscribes LibrarySubscribe[]
+  libraryHistory   LibraryHistory[]
+  libraryLikes     LibraryLike[]
+  notifications    ReaderNotification[]
+  prefs            ReaderUserPrefs?
+  pushSubscriptions ReaderPushSubscription[]
+}
+
+model RefreshToken {
+  jti    String     @id
+  userId String
+  user   ReaderUser @relation(fields: [userId], references: [id])
+}
+
+model ReaderPasswordReset {
+  id        String     @id
+  userId    String
+  tokenHash String     @unique
+  expiresAt DateTime
+  user      ReaderUser @relation(fields: [userId], references: [id])
+}
+
+model Wallet {
+  userId  String     @id
+  balance Int
+  seeded  Boolean
+  user    ReaderUser @relation(fields: [userId], references: [id])
+}
+
+enum WalletTxnType {
+  purchase
+  spend
+  refund
+  bonus
+  demo_topup
+}
+
+model WalletTransaction {
+  id          String        @id
+  userId      String
+  type        WalletTxnType
+  amount      Int
+  description String
+  balance     Int
+  createdAt   DateTime
+  packageId   String?
+  episodeKey  String?
+  user        ReaderUser    @relation(fields: [userId], references: [id])
+}
+
+model WalletUnlock {
+  userId     String
+  episodeKey String
+  user       ReaderUser @relation(fields: [userId], references: [id])
+
+  @@id([userId, episodeKey])
+}
+
+model LibrarySubscribe {
+  userId                    String
+  webtoonId                 String
+  addedAt                   DateTime
+  notifyMuted               Boolean @default(false)
+  lastNotifiedEpisodeNumber Int?
+  user                      ReaderUser @relation(fields: [userId], references: [id])
+
+  @@id([userId, webtoonId])
+}
+
+model LibraryHistory {
+  userId             String
+  webtoonId          String
+  episodeNumber      Int
+  lastReadAt         DateTime
+  scrollRatio        Float?
+  readEpisodeNumbers Int[]    @default([])
+  user               ReaderUser @relation(fields: [userId], references: [id])
+
+  @@id([userId, webtoonId])
+}
+
+model LibraryLike {
+  userId    String
+  webtoonId String
+  likedAt   DateTime
+  user      ReaderUser @relation(fields: [userId], references: [id])
+
+  @@id([userId, webtoonId])
+}
+
+enum ReaderNotificationType {
+  new_episode
+  comment_reply
+  system
+  promotion
+}
+
+model ReaderNotification {
+  userId        String
+  id            String
+  type          ReaderNotificationType
+  titleKey      String
+  message       String
+  isRead        Boolean
+  createdAt     DateTime
+  href          String?
+  webtoonId     String?
+  episodeNumber Int?
+  user          ReaderUser @relation(fields: [userId], references: [id])
+
+  @@id([userId, id])
+}
+
+model ReaderPushSubscription {
+  userId   String
+  endpoint String
+  p256dh   String
+  auth     String
+  user     ReaderUser @relation(fields: [userId], references: [id])
+
+  @@id([userId, endpoint])
+}
+
+enum ReaderFontSize {
+  sm
+  md
+  lg
+}
+
+enum ReaderImageFit {
+  fit
+  full
+}
+
+model ReaderUserPrefs {
+  userId       String         @id
+  newEpisode   Boolean        @default(true)
+  commentReply Boolean        @default(true)
+  promotion    Boolean        @default(true)
+  darkMode     Boolean        @default(true)
+  brightness   Float          @default(0.9)
+  fontSize     ReaderFontSize @default(md)
+  imageFit     ReaderImageFit @default(fit)
+  user         ReaderUser     @relation(fields: [userId], references: [id])
+}
+
 enum StaffNotificationType {
   system
   report

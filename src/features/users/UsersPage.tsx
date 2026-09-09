@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { Search, Filter, MoreVertical, UserX, UserCheck, Eye, Coins } from 'lucide-react';
+import {
+  Search,
+  Filter,
+  MoreVertical,
+  UserX,
+  UserCheck,
+  Eye,
+  Coins,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import {
   Card,
   Button,
@@ -14,11 +24,24 @@ import { useAuth } from '@/features/auth/useAuth';
 import { useStaffAccess } from '@/lib/auth/staffAccess';
 import { appendActivityLog } from '@/lib/activityLog';
 import { useData } from '@/lib/DataContext';
-import type { User } from '../../types';
+import type { ReaderUser, User } from '../../types';
 import { markIdLoaded } from '@/lib/imageLoaded';
 import UsersPageSkeleton from './components/UsersPageSkeleton';
+import { apiMessage, isMockApi } from '@/lib/api/http';
+import { deleteReaderUser, updateReaderUser } from '@/lib/api/users';
 
-const UsersPage = () => {
+const formatStamp = (value?: string) => {
+  if (!value) return 'Never';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const MockUsersPage = () => {
   const { user: admin } = useAuth();
   const { canWriteCommunity } = useStaffAccess();
   const { users, setUsers, setActivityLogs, isLoading } = useData();
@@ -433,5 +456,452 @@ const UsersPage = () => {
     </>
   );
 };
+
+const ReaderUsersPage = () => {
+  const { user: admin } = useAuth();
+  const { canWriteCommunity } = useStaffAccess();
+  const { readerUsers, setActivityLogs, isLoading, reloadCatalog } = useData();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loadedAvatars, setLoadedAvatars] = useState<Set<string>>(() => new Set());
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<ReaderUser | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [formError, setFormError] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+  const [bio, setBio] = useState('');
+  const [avatar, setAvatar] = useState('');
+
+  const filteredUsers = readerUsers.filter((user) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      !q ||
+      user.email.toLowerCase().includes(q) ||
+      user.username.toLowerCase().includes(q) ||
+      user.displayName.toLowerCase().includes(q)
+    );
+  });
+
+  const openDetailModal = (user: ReaderUser) => {
+    setSelectedUser(user);
+    setIsDetailModalOpen(true);
+    setOpenMenuId(null);
+  };
+
+  const openEditModal = (user: ReaderUser) => {
+    setSelectedUser(user);
+    setDisplayName(user.displayName);
+    setEmail(user.email);
+    setBio(user.bio);
+    setAvatar(user.avatar ?? '');
+    setFormError('');
+    setIsEditModalOpen(true);
+    setOpenMenuId(null);
+  };
+
+  const openDeleteModal = (user: ReaderUser) => {
+    setSelectedUser(user);
+    setFormError('');
+    setIsDeleteModalOpen(true);
+    setOpenMenuId(null);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!canWriteCommunity || !selectedUser) return;
+    try {
+      await updateReaderUser(selectedUser.id, {
+        displayName,
+        email,
+        bio,
+        avatar: avatar.trim() ? avatar.trim() : null,
+      });
+      await reloadCatalog();
+      appendActivityLog(setActivityLogs, {
+        action: 'update',
+        targetType: 'user',
+        targetId: selectedUser.id,
+        targetName: displayName,
+        admin,
+      });
+      setIsEditModalOpen(false);
+      setSelectedUser(null);
+      setFormError('');
+    } catch (err) {
+      setFormError(apiMessage(err, 'Could not update reader'));
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!canWriteCommunity || !selectedUser) return;
+    try {
+      await deleteReaderUser(selectedUser.id);
+      await reloadCatalog();
+      appendActivityLog(setActivityLogs, {
+        action: 'delete',
+        targetType: 'user',
+        targetId: selectedUser.id,
+        targetName: selectedUser.displayName,
+        admin,
+      });
+      setIsDeleteModalOpen(false);
+      setSelectedUser(null);
+      setFormError('');
+    } catch (err) {
+      setFormError(apiMessage(err, 'Could not delete reader'));
+    }
+  };
+
+  return (
+    <>
+      <PageSEO.Users />
+      {isLoading ? (
+        <UsersPageSkeleton />
+      ) : (
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-fg">Users</h1>
+              <p className="mt-1 text-fg-muted">Moderate portal readers</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Card>
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-primary-50 p-3 text-primary-600">
+                  <UserCheck className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-fg-muted">Readers</p>
+                  <p className="text-2xl font-bold text-fg">{readerUsers.length}</p>
+                </div>
+              </div>
+            </Card>
+            <Card>
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-yellow-50 p-3 text-yellow-600">
+                  <Coins className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-fg-muted">Wallet coins (read-only)</p>
+                  <p className="text-2xl font-bold text-fg">
+                    {readerUsers.reduce((sum, user) => sum + user.coinBalance, 0)}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <Card>
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search email, username, or display name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  leftIcon={<Search className="h-5 w-5" />}
+                />
+              </div>
+            </div>
+            {formError ? <p className="mb-4 text-sm text-red-600">{formError}</p> : null}
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-line">
+                    <th className="table-header">User</th>
+                    <th className="table-header">Email</th>
+                    <th className="table-header">Coins</th>
+                    <th className="table-header">Joined</th>
+                    <th className="table-header">Last Login</th>
+                    <th className="table-header text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="table-cell">
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-primary-100">
+                            {user.avatar ? (
+                              <>
+                                <img
+                                  src={user.avatar}
+                                  alt={user.displayName}
+                                  className="h-10 w-10 rounded-full object-cover"
+                                  onLoad={() => markIdLoaded(setLoadedAvatars, user.id)}
+                                  onError={() => markIdLoaded(setLoadedAvatars, user.id)}
+                                />
+                                {!loadedAvatars.has(user.id) && (
+                                  <span className={coverSheenClass} />
+                                )}
+                              </>
+                            ) : (
+                              <span className="font-medium text-primary-700">
+                                {user.displayName.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-fg">{user.displayName}</p>
+                            <p className="text-xs text-fg-muted">@{user.username}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="table-cell text-fg-muted">{user.email}</td>
+                      <td className="table-cell">
+                        <div className="flex items-center gap-1">
+                          <Coins className="h-4 w-4 text-yellow-500" />
+                          {user.coinBalance}
+                        </div>
+                      </td>
+                      <td className="table-cell text-fg-muted">{formatStamp(user.createdAt)}</td>
+                      <td className="table-cell text-fg-muted">{formatStamp(user.lastLoginAt)}</td>
+                      <td className="table-cell text-right">
+                        <div className="relative inline-block">
+                          <button
+                            type="button"
+                            title="User actions"
+                            aria-label="User actions menu"
+                            onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
+                            className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-gray-100 hover:text-fg-secondary"
+                          >
+                            <MoreVertical className="h-5 w-5" />
+                          </button>
+                          {openMenuId === user.id && (
+                            <div className="absolute right-0 z-10 mt-2 w-48 rounded-lg border border-line bg-white py-1 shadow-lg">
+                              <button
+                                type="button"
+                                onClick={() => openDetailModal(user)}
+                                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
+                              >
+                                <Eye className="h-4 w-4" />
+                                View Details
+                              </button>
+                              {canWriteCommunity ? (
+                                <button
+                                  type="button"
+                                  onClick={() => openEditModal(user)}
+                                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                  Edit profile
+                                </button>
+                              ) : null}
+                              {canWriteCommunity ? (
+                                <button
+                                  type="button"
+                                  onClick={() => openDeleteModal(user)}
+                                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Delete permanently
+                                </button>
+                              ) : null}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {readerUsers.length === 0 ? (
+              <EmptyState
+                title="No readers yet"
+                description="Portal readers will appear here once they join the site."
+              />
+            ) : filteredUsers.length === 0 ? (
+              <NoUsers
+                onClear={() => {
+                  setSearchQuery('');
+                }}
+              />
+            ) : null}
+          </Card>
+
+          <Modal
+            isOpen={isDetailModalOpen}
+            onClose={() => {
+              setIsDetailModalOpen(false);
+              setSelectedUser(null);
+            }}
+            title="Reader details"
+            size="lg"
+          >
+            {selectedUser && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
+                    {selectedUser.avatar ? (
+                      <img
+                        src={selectedUser.avatar}
+                        alt={selectedUser.displayName}
+                        className="h-16 w-16 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-xl font-bold text-primary-700">
+                        {selectedUser.displayName.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-fg">{selectedUser.displayName}</h3>
+                    <p className="text-fg-muted">@{selectedUser.username}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-lg bg-gray-50 p-4">
+                    <p className="text-sm text-fg-muted">Email</p>
+                    <p className="font-medium text-fg">{selectedUser.email}</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 p-4">
+                    <p className="text-sm text-fg-muted">Wallet coins</p>
+                    <p className="flex items-center gap-1 font-medium text-fg">
+                      <Coins className="h-4 w-4 text-yellow-500" />
+                      {selectedUser.coinBalance}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 p-4">
+                    <p className="text-sm text-fg-muted">Joined</p>
+                    <p className="font-medium text-fg">{formatStamp(selectedUser.createdAt)}</p>
+                  </div>
+                  <div className="rounded-lg bg-gray-50 p-4">
+                    <p className="text-sm text-fg-muted">Last Login</p>
+                    <p className="font-medium text-fg">{formatStamp(selectedUser.lastLoginAt)}</p>
+                  </div>
+                </div>
+
+                {selectedUser.bio ? (
+                  <div className="rounded-lg bg-gray-50 p-4">
+                    <p className="mb-1 text-sm text-fg-muted">Bio</p>
+                    <p className="text-fg">{selectedUser.bio}</p>
+                  </div>
+                ) : null}
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setIsDetailModalOpen(false);
+                      setSelectedUser(null);
+                    }}
+                  >
+                    Close
+                  </Button>
+                  {canWriteCommunity ? (
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setIsDetailModalOpen(false);
+                        openEditModal(selectedUser);
+                      }}
+                    >
+                      Edit profile
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            )}
+          </Modal>
+
+          <Modal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedUser(null);
+            }}
+            title="Edit profile"
+            size="lg"
+          >
+            {selectedUser && (
+              <div className="space-y-4">
+                {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
+                <Input
+                  label="Display name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+                <Input
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Input
+                  label="Avatar URL"
+                  value={avatar}
+                  onChange={(e) => setAvatar(e.target.value)}
+                />
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium text-fg-secondary">Bio</span>
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    rows={4}
+                    className="w-full rounded-lg border border-line-strong bg-surface px-4 py-2.5 text-fg placeholder:text-fg-muted focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  />
+                </label>
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setIsEditModalOpen(false);
+                      setSelectedUser(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button variant="primary" onClick={() => void handleSaveProfile()}>
+                    Save
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Modal>
+
+          <Modal
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedUser(null);
+            }}
+            title="Delete reader"
+            size="sm"
+          >
+            <div className="space-y-4">
+              {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
+              <p className="text-fg-secondary">
+                Permanently delete <strong>{selectedUser?.displayName}</strong>? The reader is
+                removed from the portal. Comments, wallet, and tokens cascade.
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setSelectedUser(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button variant="danger" onClick={() => void handleDeleteUser()}>
+                  Delete permanently
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        </div>
+      )}
+    </>
+  );
+};
+
+const UsersPage = () => (isMockApi() ? <MockUsersPage /> : <ReaderUsersPage />);
 
 export default UsersPage;

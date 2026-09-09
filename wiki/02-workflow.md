@@ -73,4 +73,4 @@ After implementation work: update **both** tracks + give the user a Lark Title +
 
 ## Current implementation status
 
-Impls **1–53** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 53 = moderate portal `ReaderComment` (reported queue + hard delete). Labels use **Impl N** (not Phase).
+Impls **1–54** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 54 = moderate portal `ReaderUser` (profile PATCH + hard delete; wallet read-only). Labels use **Impl N** (not Phase).
