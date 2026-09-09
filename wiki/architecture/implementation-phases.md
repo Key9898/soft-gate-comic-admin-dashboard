@@ -1,6 +1,6 @@
 # Implementation track — SoftGate Comic Admin
 
-> Numbering is sequential **Impl 1–49** (Lark-aligned). SoftGate name + logo = Impl 7; Profile polish + media-backed avatar = Impl 8.
+> Numbering is sequential **Impl 1–52** (Lark-aligned). SoftGate name + logo = Impl 7; Profile polish + media-backed avatar = Impl 8.
 > Terminology: work batches are labeled **Impl N** (not “Phase N”).
 
 ## Impl 1 — Documentation, architecture & SoftGate branding
@@ -361,3 +361,21 @@
 - [x] AuthLayout `isSplit` = `/login` or `/setup`; `/register` stays Outlet so it still redirects to login (2026-09-09)
 - [x] AuthSplitCard mounts Setup as the right pane; photo full-bleed slides 1.6s; card height follows the setup form (2026-09-09)
 - [x] After staff exists, the setup pane is not mounted; no public Sign Up (2026-09-09)
+
+## Impl 50 — Live R2 smoke + published title
+
+- [x] Live `isR2Configured` desk: `POST /api/media` writes `{R2_PUBLIC_BASE_URL}/{prefix}/{uuid}{ext}` (default prefix `admin`); not `/uploads/` (2026-09-10)
+- [x] One non-draft webtoon (`ongoing`) + `published` episode using those public URLs on the shared DB (2026-09-10)
+- [x] No new API or Prisma models; website repo untouched (2026-09-10)
+
+## Impl 51 — Reader broadcasts on `/notifications`
+
+- [x] Prisma `ReaderBroadcast` + `/api/reader-broadcasts` (list, reader search, preview, send); write = `canWriteBusiness`; staff inbox API unchanged (2026-09-10)
+- [x] Same `/notifications` page: bilingual compose + campaign log; mock desk cannot send; header bell stays staff unread (2026-09-10)
+- [x] Admin proxies the website service; does not write reader inbox rows; website repo untouched (2026-09-10)
+
+## Impl 52 — Live join desk (ops + honesty)
+
+- [x] Empty staff graph so `/setup` is available; catalog / media / coins / settings rows kept (2026-09-10)
+- [x] `PlatformSettings` `id=platform` present; at least one `CoinPackage`; Help copy: four settings can reach the reader when portal persist is on (2026-09-10)
+- [x] No new API or Prisma models; website repo untouched (2026-09-10)

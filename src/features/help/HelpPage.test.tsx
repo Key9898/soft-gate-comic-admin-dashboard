@@ -9,6 +9,7 @@ import { ROLE_BLURBS, SUPER_ADMIN_BLURB } from '@/lib/auth/staffAccess';
 import HelpPage from './HelpPage';
 import {
   ADMIN_INVITE,
+  ADMIN_SETTINGS,
   ADMIN_SIGNIN,
   BUSINESS_NOTE,
   CATALOG_NOTES,
@@ -106,6 +107,7 @@ describe('HelpPage', () => {
     expect(screen.getByText(ROLE_BLURBS.viewer)).toBeInTheDocument();
     expect(screen.getByText(ADMIN_SIGNIN)).toBeInTheDocument();
     expect(screen.getByText(ADMIN_INVITE)).toBeInTheDocument();
+    expect(screen.getByText(ADMIN_SETTINGS)).toBeInTheDocument();
   });
 
   it('hides Create slugs for a viewer on Commands', async () => {

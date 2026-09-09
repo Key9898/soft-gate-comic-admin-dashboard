@@ -31,7 +31,7 @@ export const OVERVIEW_DATA_MOCK =
   'This browser keeps mock data. Saves stay here. They do not appear on the public site.';
 
 export const OVERVIEW_DATA_API =
-  'This desk is connected to the catalog API. Catalog, media, and coin packages you save can reach the reader site. Comments you hide or delete save on this desk’s comments API; they do not change reader-site comments. Notifications you mark read or delete save on this desk’s notifications API; they are not the reader inbox. Maintenance, registration, contact email, and default language save on this desk’s settings API; they do not change the reader site. Dashboard charts, users, revenue, and reports stay mock or local even then. Theme and the other Settings controls stay in this browser. Webtoon and episode counts on the Dashboard can be real; purchase and growth charts are not.';
+  'This desk is connected to the catalog API. Catalog, media, and coin packages you save can reach the reader site. Comments you hide or delete save on this desk’s comments API; they do not change reader-site comments. Notifications you mark read or delete save on this desk’s notifications API; they are not the reader inbox. Super Admin and Admin can also send bilingual reader broadcasts when the website service is configured. Maintenance, registration, contact email, and default language save on this desk’s settings API; they can reach the reader site when the portal persist is on. Dashboard charts, users, revenue, and reports stay mock or local even then. Theme and the other Settings controls stay in this browser. Webtoon and episode counts on the Dashboard can be real; purchase and growth charts are not.';
 
 export const OVERVIEW_JUMP = 'Jump with Search or jump… in the header, or Ctrl+K (Mac: ⌘K).';
 
@@ -74,7 +74,7 @@ export const COMMUNITY_NOTE = {
 
 export const BUSINESS_NOTE = {
   title: 'Charts and money',
-  body: 'Analytics and Revenue are mock. Notifications save on this desk’s notifications API when the catalog API is on; they are not the reader inbox. Member and Viewer can look only. Delete is permanent. Revenue Export is a CSV of this desk’s list, not a bank. Payouts are demo. Activity Log is this browser’s trail, not a server audit API.',
+  body: 'Analytics and Revenue are mock. Notifications save on this desk’s notifications API when the catalog API is on; they are not the reader inbox. Super Admin and Admin can send bilingual reader broadcasts when the website service is configured; Member and Viewer look only. Delete on the staff inbox is permanent. Revenue Export is a CSV of this desk’s list, not a bank. Payouts are demo. Activity Log is this browser’s trail, not a server audit API.',
 };
 
 export const ADMIN_INVITE =
@@ -84,7 +84,7 @@ export const ADMIN_SIGNIN =
   'This desk has no public Sign up. Empty staff uses Create the first Super Admin. After that, Sign in only. New people join from Team invite. Reader registration is a website setting, not this desk.';
 
 export const ADMIN_SETTINGS =
-  'When the catalog API is on, Save writes maintenance, registration, contact email, and default language to this desk’s settings API; they do not change the reader site. Theme applies immediately for every role from the header, palette, or Settings, and is not the Save button. Site name, description, email-verification, and notification toggles stay in this browser. Member and Viewer can look only.';
+  'When the catalog API is on, Save writes maintenance, registration, contact email, and default language to this desk’s settings API; they can reach the reader site when the portal persist is on. Theme applies immediately for every role from the header, palette, or Settings, and is not the Save button. Site name, description, email-verification, and notification toggles stay in this browser. Member and Viewer can look only.';
 
 export const ADMIN_PROFILE =
   'Profile is not in the sidebar. Open it from the header or the profile command. Authenticator is optional: if you turn it on, Sign in asks for a 6-digit code. Against the catalog API, name and password stay in this session only; authenticator saves on the staff API.';

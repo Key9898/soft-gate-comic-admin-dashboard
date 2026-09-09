@@ -8,7 +8,7 @@ Welcome to the official developer wiki for the SoftGate Comic Admin Dashboard pr
 - [01-stack.md](01-stack.md) — Technical stack & core configurations
 - [02-workflow.md](02-workflow.md) — Git workflow, husky gates, dual-track docs
 - [03-folder-map.md](03-folder-map.md) — Codebase architecture and feature folders layout
-- [architecture/implementation-phases.md](architecture/implementation-phases.md) — Impl **1–49** (Impl 49 = Sign in ↔ `/setup` split card)
+- [architecture/implementation-phases.md](architecture/implementation-phases.md) — Impl **1–52** (Impl 52 = live join desk)
 - [references/website-integration.md](references/website-integration.md) — pre-backend Admin work list (21) so the portal can consume catalog/settings
 - [conventions/brand-color-tokens.md](conventions/brand-color-tokens.md) — Logo-aligned teal + `burst-*` magenta tokens
 - [conventions/backend-workspace.md](conventions/backend-workspace.md) — API in `backend/`; Admin SPA at repo root
@@ -16,6 +16,7 @@ Welcome to the official developer wiki for the SoftGate Comic Admin Dashboard pr
 - [conventions/loading-states.md](conventions/loading-states.md) — Sheen skeletons, no splash, empty ≠ loading ≠ error
 - [conventions/command-palette.md](conventions/command-palette.md) — Ctrl+K go/create/system commands
 - [conventions/staff-help.md](conventions/staff-help.md) — `/help` staff desk handbook (six Help-only tabs); no Help modal
+- [conventions/reader-broadcasts.md](conventions/reader-broadcasts.md) — staff inbox vs reader broadcast prefix
 - [decisions/001-theme-preference-system-default.md](decisions/001-theme-preference-system-default.md) — Brand fixed; theme Light/Dark/System
 - [decisions/002-admin-root-sibling-backend.md](decisions/002-admin-root-sibling-backend.md) — Admin SPA at root; API is sibling `backend/`
 - [decisions/003-postgresql-prisma.md](decisions/003-postgresql-prisma.md) — PostgreSQL + Prisma 6; not Mongo
@@ -71,6 +72,9 @@ Welcome to the official developer wiki for the SoftGate Comic Admin Dashboard pr
 - [notes/2026-09-09-platform-settings-api.md](notes/2026-09-09-platform-settings-api.md) — Impl 47 platform settings REST + SPA
 - [notes/2026-09-09-staff-setup-signin.md](notes/2026-09-09-staff-setup-signin.md) — Impl 48 staff Sign in, setup, invite
 - [notes/2026-09-09-auth-split-setup.md](notes/2026-09-09-auth-split-setup.md) — Impl 49 Sign in ↔ `/setup` split card
+- [notes/2026-09-10-r2-catalog-smoke.md](notes/2026-09-10-r2-catalog-smoke.md) — Impl 50 live R2 smoke + published title
+- [notes/2026-09-10-reader-broadcasts.md](notes/2026-09-10-reader-broadcasts.md) — Impl 51 reader broadcasts on `/notifications`
+- [notes/2026-09-10-live-join-desk.md](notes/2026-09-10-live-join-desk.md) — Impl 52 live join desk
 - [notes/2026-08-22-staff-auth.md](notes/2026-08-22-staff-auth.md) — Impl 20 staff auth (login/register/forgot OTP)
 
 ## Wiki taxonomy

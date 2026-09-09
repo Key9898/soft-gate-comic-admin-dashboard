@@ -73,4 +73,4 @@ After implementation work: update **both** tracks + give the user a Lark Title +
 
 ## Current implementation status
 
-Impls **1–49** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 49 = Sign in ↔ `/setup` split card. Labels use **Impl N** (not Phase).
+Impls **1–52** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 52 = live join desk (settings row, coin SKU, Help honesty, `/setup` unlocked). Labels use **Impl N** (not Phase).

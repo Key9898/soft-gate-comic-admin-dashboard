@@ -20,7 +20,7 @@ tags: [admin, help, commands, navigation]
 - Sign in: no public Sign up. Empty staff uses **Create the first Super Admin**. After that, Sign in + Team invite. Reader registration is a website setting.
 - Coin packages: shop SKUs, not a payments API. With the catalog API on, they save on `/api/coin-packages`. Super Admin and Admin can write.
 - Comments: desk moderation on `/api/comments` when the catalog API is on; not a reader-comments API. Soft-delete. Super Admin and Admin can write.
-- Notifications: desk inbox on `/api/notifications` when the catalog API is on; not the reader inbox. Hard-delete. Super Admin and Admin can write; Member and Viewer look only.
-- Settings: four portal-safe fields on `/api/settings` when the catalog API is on; they do not change the reader site. Theme is not Save. Super Admin and Admin can write; Member and Viewer look only.
+- Notifications: desk inbox on `/api/notifications` when the catalog API is on; not the reader inbox. Hard-delete. Super Admin and Admin can write; Member and Viewer look only. Super Admin and Admin can send bilingual reader broadcasts (`/api/reader-broadcasts`) when the website service is configured.
+- Settings: four portal-safe fields on `/api/settings` when the catalog API is on; they can reach the reader site when the portal persist is on. Theme is not Save. Super Admin and Admin can write; Member and Viewer look only.
 - Command list uses the same `filterCommands` / role hide as the palette. Go/Create rows navigate; System rows are read-only.
 - No Help modal. No `/commands` route. No Commands sidebar item.

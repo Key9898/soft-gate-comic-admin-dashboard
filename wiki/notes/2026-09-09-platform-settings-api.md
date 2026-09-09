@@ -13,6 +13,6 @@ Staff cookie API for the four portal-safe settings. `VITE_USE_MOCK_API=false` us
 - Prisma `PlatformSettings` singleton (`id` = `platform`): `maintenanceMode`, `allowRegistration`, `contactEmail`, `defaultLanguage` (`en` | `mm`).
 - Write: Super Admin and Admin (`canWriteSettings`). Member/Viewer GET only.
 - Empty table GET returns fail-open defaults. No insert on GET. No `POST` / `DELETE`.
-- Envelope `{ settings }`. Website public `GET /api/settings` `{ data }` stub is a different server and was not changed.
+- Envelope `{ settings }`. Website public `GET /api/settings` `{ data }` is a different server. Website Impl 200 later reads this table; Admin envelope is still `{ settings }`.
 - Theme, site name/description, email-verification, and notification toggles stay in this browser.
-- These saves do not change the reader site until the website persist reads the table.
+- These saves can reach the reader when the portal persist is on (website Impl 200). Theme and other Settings controls stay local.
