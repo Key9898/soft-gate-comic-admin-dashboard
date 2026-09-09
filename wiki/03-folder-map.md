@@ -32,7 +32,7 @@ soft-gate-comic-admin-dashboard/
 │   ├── notes/
 │   ├── references/
 │   └── snippets/
-├── backend/                  # npm workspace — Express + Prisma (Impl 29–48)
+├── backend/                  # npm workspace — Express + Prisma (Impl 29–49)
 │   ├── prisma/               # Meta + Staff + StaffPasswordReset + catalog + MediaAsset + CoinPackage + Comment + StaffNotification + PlatformSettings
 │   ├── docker-compose.yml    # local Postgres 16
 │   ├── scripts/              # prisma-generate + copy-mail-templates
