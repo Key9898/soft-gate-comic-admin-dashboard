@@ -6,6 +6,9 @@ export interface StaffUserRecord {
   displayName: string;
   role: StaffRole;
   passwordHash: string;
+  totpEnabled: boolean;
+  totpSecret: string | null;
+  totpBackupHashes: string[];
   createdAt: Date;
 }
 
@@ -21,6 +24,19 @@ export interface StaffInviteRecord {
   acceptedAt?: Date;
 }
 
+export interface StaffPasswordResetRecord {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  consumedAt?: Date;
+  createdAt: Date;
+}
+
+export type StaffUserPatch = Partial<
+  Pick<StaffUserRecord, 'passwordHash' | 'totpEnabled' | 'totpSecret' | 'totpBackupHashes'>
+>;
+
 export interface StaffStore {
   countUsers(): Promise<number>;
   findUserById(id: string): Promise<StaffUserRecord | null>;
@@ -33,6 +49,7 @@ export interface StaffStore {
     role: StaffRole;
     passwordHash: string;
   }): Promise<StaffUserRecord>;
+  updateUser(id: string, patch: StaffUserPatch): Promise<StaffUserRecord | null>;
   deleteUser(id: string): Promise<boolean>;
   createInvite(input: {
     id: string;
@@ -49,6 +66,14 @@ export interface StaffStore {
     id: string,
     patch: Partial<Pick<StaffInviteRecord, 'tokenHash' | 'status' | 'expiresAt' | 'acceptedAt'>>,
   ): Promise<StaffInviteRecord | null>;
+  createPasswordReset(input: {
+    id: string;
+    userId: string;
+    tokenHash: string;
+    expiresAt: Date;
+  }): Promise<StaffPasswordResetRecord>;
+  findPasswordResetByTokenHash(tokenHash: string): Promise<StaffPasswordResetRecord | null>;
+  consumePasswordReset(id: string): Promise<StaffPasswordResetRecord | null>;
 }
 
 export function publicUser(user: StaffUserRecord) {
@@ -57,6 +82,7 @@ export function publicUser(user: StaffUserRecord) {
     email: user.email,
     displayName: user.displayName,
     role: user.role,
+    totpEnabled: user.totpEnabled,
     createdAt: user.createdAt.toISOString(),
   };
 }

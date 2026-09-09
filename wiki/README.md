@@ -8,7 +8,7 @@ Welcome to the official developer wiki for the SoftGate Comic Admin Dashboard pr
 - [01-stack.md](01-stack.md) — Technical stack & core configurations
 - [02-workflow.md](02-workflow.md) — Git workflow, husky gates, dual-track docs
 - [03-folder-map.md](03-folder-map.md) — Codebase architecture and feature folders layout
-- [architecture/implementation-phases.md](architecture/implementation-phases.md) — Impl **1–43** (Impl 43 = Brevo mailer + staff invite HTML)
+- [architecture/implementation-phases.md](architecture/implementation-phases.md) — Impl **1–49** (Impl 49 = Sign in ↔ `/setup` split card)
 - [references/website-integration.md](references/website-integration.md) — pre-backend Admin work list (21) so the portal can consume catalog/settings
 - [conventions/brand-color-tokens.md](conventions/brand-color-tokens.md) — Logo-aligned teal + `burst-*` magenta tokens
 - [conventions/backend-workspace.md](conventions/backend-workspace.md) — API in `backend/`; Admin SPA at repo root
@@ -64,6 +64,13 @@ Welcome to the official developer wiki for the SoftGate Comic Admin Dashboard pr
 - [notes/2026-09-08-cors-cookie-env.md](notes/2026-09-08-cors-cookie-env.md) — Impl 42 CORS + cookie from env
 - [notes/2026-09-08-brevo-staff-invite.md](notes/2026-09-08-brevo-staff-invite.md) — Impl 43 Brevo mailer + staff invite HTML
 - [notes/2026-09-08-development-branch.md](notes/2026-09-08-development-branch.md) — long-lived `development` branch (not an Impl)
+- [notes/2026-09-09-leader-db-ssl-migrate.md](notes/2026-09-09-leader-db-ssl-migrate.md) — leader Railway SSL + Admin migrate deploy (not an Impl)
+- [notes/2026-09-09-coin-packages-api.md](notes/2026-09-09-coin-packages-api.md) — Impl 44 coin packages REST + SPA
+- [notes/2026-09-09-comments-api.md](notes/2026-09-09-comments-api.md) — Impl 45 comments moderation REST + SPA
+- [notes/2026-09-09-notifications-api.md](notes/2026-09-09-notifications-api.md) — Impl 46 staff notifications inbox REST + SPA
+- [notes/2026-09-09-platform-settings-api.md](notes/2026-09-09-platform-settings-api.md) — Impl 47 platform settings REST + SPA
+- [notes/2026-09-09-staff-setup-signin.md](notes/2026-09-09-staff-setup-signin.md) — Impl 48 staff Sign in, setup, invite
+- [notes/2026-09-09-auth-split-setup.md](notes/2026-09-09-auth-split-setup.md) — Impl 49 Sign in ↔ `/setup` split card
 - [notes/2026-08-22-staff-auth.md](notes/2026-08-22-staff-auth.md) — Impl 20 staff auth (login/register/forgot OTP)
 
 ## Wiki taxonomy

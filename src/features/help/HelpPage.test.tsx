@@ -9,6 +9,7 @@ import { ROLE_BLURBS, SUPER_ADMIN_BLURB } from '@/lib/auth/staffAccess';
 import HelpPage from './HelpPage';
 import {
   ADMIN_INVITE,
+  ADMIN_SIGNIN,
   BUSINESS_NOTE,
   CATALOG_NOTES,
   COMMUNITY_NOTE,
@@ -103,6 +104,7 @@ describe('HelpPage', () => {
     expect(screen.getByText(ROLE_BLURBS.admin)).toBeInTheDocument();
     expect(screen.getByText(ROLE_BLURBS.member)).toBeInTheDocument();
     expect(screen.getByText(ROLE_BLURBS.viewer)).toBeInTheDocument();
+    expect(screen.getByText(ADMIN_SIGNIN)).toBeInTheDocument();
     expect(screen.getByText(ADMIN_INVITE)).toBeInTheDocument();
   });
 

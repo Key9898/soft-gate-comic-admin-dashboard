@@ -2,8 +2,11 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import type { AdminUser } from '@softgate/shared';
 import {
   consumeInvite,
+  generateBackupCodes,
+  generateTotpSecret,
   getAccountByEmail,
   getAccountByUsername,
+  hashBackupCode,
   hasStaffAccount as readHasStaffAccount,
   hashPassword,
   migrateLegacyEmail,
@@ -15,18 +18,27 @@ import {
   readSession,
   seedAccountFromSessionIfNeeded,
   toPublicUser,
+  totpOtpauthUrl,
   upsertAccount,
   verifyPassword,
+  verifyTotpCode,
   writeCredential,
   type StaffAccount,
 } from '@/lib/auth';
 import { ApiError, isMockApi, mapStaffUser } from '@/lib/api/http';
 import {
   acceptStaffInvite,
+  completeStaffMfa,
+  confirmStaffTotp,
+  disableStaffTotp,
+  getStaffAuthOptions,
   getStaffMe,
   loginStaff,
   logoutStaff,
-  registerStaff,
+  requestStaffForgot,
+  resetStaffPassword,
+  setupStaff,
+  startStaffTotp,
 } from '@/lib/api/staff';
 
 export { hashPassword, verifyPassword, migrateLegacyEmail };
@@ -49,9 +61,17 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   hasStaffAccount: boolean;
+  ssoEnabled: boolean;
   login: (email: string, password: string) => Promise<void>;
+  completeMfa: (code: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   acceptInvite: (token: string, data: AcceptInviteData) => Promise<void>;
+  resetPassword: (email: string, password: string) => Promise<void>;
+  requestForgot: (email: string) => Promise<void>;
+  resetPasswordWithToken: (token: string, password: string) => Promise<void>;
+  startTotp: () => Promise<{ secret: string; otpauthUrl: string }>;
+  confirmTotp: (code: string) => Promise<string[]>;
+  disableTotp: (password: string) => Promise<void>;
   logout: () => void;
   updateUser: (patch: Partial<AdminUser>) => void;
 }
@@ -75,10 +95,17 @@ function acceptErrorCode(err: unknown): string {
   return 'INVITE_INVALID';
 }
 
+function loginErrorCode(err: unknown): string {
+  if (err instanceof ApiError && err.message === 'MFA_REQUIRED') return 'MFA_REQUIRED';
+  return 'INVALID_CREDENTIALS';
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasStaffAccount, setHasStaffAccount] = useState(false);
+  const [ssoEnabled, setSsoEnabled] = useState(false);
+  const [pendingMfaEmail, setPendingMfaEmail] = useState<string | null>(null);
 
   const refreshStaffFlag = useCallback(() => {
     setHasStaffAccount(readHasStaffAccount());
@@ -92,6 +119,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!isMockApi()) {
       let cancelled = false;
+      void getStaffAuthOptions()
+        .then((options) => {
+          if (cancelled) return;
+          setHasStaffAccount(!options.setupRequired);
+          setSsoEnabled(options.ssoEnabled);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setHasStaffAccount(false);
+          setSsoEnabled(false);
+        });
       getStaffMe()
         .then((payload) => {
           if (cancelled) return;
@@ -101,7 +139,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .catch(() => {
           if (cancelled) return;
           setUser(null);
-          setHasStaffAccount(false);
         })
         .finally(() => {
           if (!cancelled) setIsLoading(false);
@@ -114,10 +151,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     seedAccountFromSessionIfNeeded();
     const session = readSession();
     if (session) {
-      setUser(session);
-      persistSession(session);
+      const account = getAccountByEmail(session.email);
+      const next = account ? toPublicUser(account) : session;
+      setUser(next);
+      persistSession(next);
     }
     refreshStaffFlag();
+    setSsoEnabled(false);
     setIsLoading(false);
     return undefined;
   }, [refreshStaffFlag]);
@@ -128,8 +168,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const payload = await loginStaff(email, password);
         setUser(mapStaffUser(payload.user));
         setHasStaffAccount(true);
-      } catch {
-        throw new Error('INVALID_CREDENTIALS');
+        setPendingMfaEmail(null);
+      } catch (err) {
+        throw new Error(loginErrorCode(err));
       }
       return;
     }
@@ -145,14 +186,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!account?.passwordHash || !verifyPassword(password, account.passwordHash)) {
       throw new Error('INVALID_CREDENTIALS');
     }
+    if (account.totpEnabled && account.totpSecret) {
+      setPendingMfaEmail(normalizedEmail);
+      throw new Error('MFA_REQUIRED');
+    }
 
+    persistUser(toPublicUser(account));
+  };
+
+  const completeMfa = async (code: string) => {
+    if (!isMockApi()) {
+      try {
+        const payload = await completeStaffMfa(code);
+        setUser(mapStaffUser(payload.user));
+        setHasStaffAccount(true);
+        setPendingMfaEmail(null);
+      } catch {
+        throw new Error('INVALID_MFA');
+      }
+      return;
+    }
+    if (!pendingMfaEmail) {
+      throw new Error('INVALID_MFA');
+    }
+    const account = getAccountByEmail(pendingMfaEmail);
+    if (!account?.totpSecret) {
+      throw new Error('INVALID_MFA');
+    }
+    const totpOk = await verifyTotpCode(account.totpSecret, code);
+    const backupHash = hashBackupCode(code);
+    const backupIndex = (account.totpBackupHashes ?? []).indexOf(backupHash);
+    if (!totpOk && backupIndex < 0) {
+      throw new Error('INVALID_MFA');
+    }
+    if (backupIndex >= 0) {
+      const nextHashes = (account.totpBackupHashes ?? []).filter(
+        (_, index) => index !== backupIndex,
+      );
+      upsertAccount({ ...account, totpBackupHashes: nextHashes });
+    }
+    setPendingMfaEmail(null);
     persistUser(toPublicUser(account));
   };
 
   const register = async (data: RegisterData) => {
     if (!isMockApi()) {
       try {
-        const payload = await registerStaff({
+        const payload = await setupStaff({
           email: data.email,
           password: data.password,
           displayName: data.displayName.trim(),
@@ -257,6 +337,87 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refreshStaffFlag();
   };
 
+  const requestForgot = async (email: string) => {
+    if (!isMockApi()) {
+      await requestStaffForgot(email);
+    }
+  };
+
+  const resetPassword = async (email: string, password: string) => {
+    const normalized = normalizeEmailOnLogin(email);
+    const account = getAccountByEmail(normalized);
+    if (!account) return;
+    const passwordHash = hashPassword(password);
+    upsertAccount({ ...account, passwordHash });
+    writeCredential(normalized, passwordHash);
+  };
+
+  const resetPasswordWithToken = async (token: string, password: string) => {
+    if (!isMockApi()) {
+      await resetStaffPassword(token, password);
+    }
+  };
+
+  const startTotp = async () => {
+    if (!isMockApi()) {
+      return startStaffTotp();
+    }
+    const session = readSession();
+    if (!session) throw new Error('UNAUTHORIZED');
+    const account = getAccountByEmail(session.email);
+    if (!account) throw new Error('UNAUTHORIZED');
+    if (account.totpEnabled) throw new Error('MFA_ALREADY_ENABLED');
+    const secret = generateTotpSecret();
+    upsertAccount({ ...account, totpSecret: secret, totpEnabled: false });
+    return { secret, otpauthUrl: totpOtpauthUrl(account.email, secret) };
+  };
+
+  const confirmTotp = async (code: string) => {
+    if (!isMockApi()) {
+      const { backupCodes } = await confirmStaffTotp(code);
+      setUser((prev) => (prev ? { ...prev, totpEnabled: true } : prev));
+      return backupCodes;
+    }
+    const session = readSession();
+    if (!session) throw new Error('UNAUTHORIZED');
+    const account = getAccountByEmail(session.email);
+    if (!account?.totpSecret) throw new Error('MFA_NOT_STARTED');
+    if (!(await verifyTotpCode(account.totpSecret, code))) {
+      throw new Error('INVALID_MFA');
+    }
+    const backupCodes = generateBackupCodes();
+    const next = {
+      ...account,
+      totpEnabled: true,
+      totpBackupHashes: backupCodes.map(hashBackupCode),
+    };
+    upsertAccount(next);
+    persistUser(toPublicUser(next));
+    return backupCodes;
+  };
+
+  const disableTotp = async (password: string) => {
+    if (!isMockApi()) {
+      await disableStaffTotp(password);
+      setUser((prev) => (prev ? { ...prev, totpEnabled: false } : prev));
+      return;
+    }
+    const session = readSession();
+    if (!session) throw new Error('UNAUTHORIZED');
+    const account = getAccountByEmail(session.email);
+    if (!account?.passwordHash || !verifyPassword(password, account.passwordHash)) {
+      throw new Error('INVALID_CREDENTIALS');
+    }
+    const next = {
+      ...account,
+      totpEnabled: false,
+      totpSecret: undefined,
+      totpBackupHashes: [],
+    };
+    upsertAccount(next);
+    persistUser(toPublicUser(next));
+  };
+
   const logout = () => {
     if (!isMockApi()) {
       void logoutStaff().catch(() => undefined);
@@ -303,9 +464,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: !!user,
         isLoading,
         hasStaffAccount,
+        ssoEnabled,
         login,
+        completeMfa,
         register,
         acceptInvite,
+        resetPassword,
+        requestForgot,
+        resetPasswordWithToken,
+        startTotp,
+        confirmTotp,
+        disableTotp,
         logout,
         updateUser,
       }}

@@ -3,18 +3,22 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { Button, Input, PageSEO } from '../../components';
 import { MIN_PASSWORD_LENGTH } from '@/lib/auth';
+import { useAuth } from '@/features/auth/useAuth';
+import { isMockApi } from '@/lib/api/http';
 
 const ResetPasswordPage = () => {
   const { token } = useParams();
   const location = useLocation();
+  const { resetPasswordWithToken } = useAuth();
   const from = (location.state as { from?: { pathname?: string; search?: string } } | null)?.from;
   const hasToken = Boolean(token);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const next: Record<string, string> = {};
     if (!password) {
@@ -29,7 +33,16 @@ const ResetPasswordPage = () => {
     }
     setErrors(next);
     if (Object.keys(next).length > 0) return;
-    setSubmitted(true);
+    if (!token) return;
+    setSubmitting(true);
+    try {
+      await resetPasswordWithToken(token, password);
+      setSubmitted(true);
+    } catch {
+      setErrors({ form: 'This reset link is invalid or has expired.' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -39,12 +52,18 @@ const ResetPasswordPage = () => {
         <>
           <h1 className="text-2xl font-bold text-fg">Set new password</h1>
           <p className="mt-2 text-sm text-fg-secondary">
-            When mail is live, this page will save a new password from an emailed link. This demo
-            does not change your account yet.
+            {isMockApi()
+              ? 'Mock forgot-password uses the on-page code. This emailed-link form is for API mode.'
+              : 'Choose a new password for your staff account.'}
           </p>
+          {errors.form ? (
+            <p className="mt-4 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-600">
+              {errors.form}
+            </p>
+          ) : null}
           {submitted ? (
-            <p className="mt-6 rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-900">
-              Form saved for when mail ships. Your demo password is unchanged.
+            <p className="mt-6 rounded-2xl bg-primary-50 px-3 py-3 text-sm text-primary-800">
+              Your password was updated. Sign in with the new password.
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
@@ -80,7 +99,7 @@ const ResetPasswordPage = () => {
                 error={errors.confirmPassword}
                 leftIcon={<Lock className="h-5 w-5" />}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" isLoading={submitting}>
                 Set new password
               </Button>
             </form>
@@ -90,7 +109,7 @@ const ResetPasswordPage = () => {
         <>
           <h1 className="text-2xl font-bold text-fg">Incomplete link</h1>
           <p className="mt-2 text-sm text-fg-secondary">
-            This reset link has no token yet. Use Forgot password for the email and OTP steps.
+            This reset link has no token. Use Forgot password.
           </p>
         </>
       )}
@@ -100,7 +119,7 @@ const ResetPasswordPage = () => {
           state={{ from }}
           className="rounded-2xl font-medium text-primary-600 hover:text-primary-700"
         >
-          Go to forgot password
+          Forgot password
         </Link>
         <Link
           to="/login"

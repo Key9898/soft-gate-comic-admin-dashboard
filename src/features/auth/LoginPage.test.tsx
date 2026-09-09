@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { HelmetProvider } from 'react-helmet-async';
 import { MemoryRouter } from 'react-router-dom';
@@ -19,6 +19,10 @@ const wrap = (ui: React.ReactElement) =>
   );
 
 describe('LoginPage', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it('renders sign in form', () => {
     wrap(<LoginPage />);
     expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
@@ -32,6 +36,16 @@ describe('LoginPage', () => {
       'href',
       '/forgot-password',
     );
+  });
+
+  it('offers first Super Admin setup and no Sign Up', () => {
+    wrap(<LoginPage />);
+    expect(screen.getByRole('link', { name: /create the first super admin/i })).toHaveAttribute(
+      'href',
+      '/setup',
+    );
+    expect(screen.queryByRole('link', { name: /sign up/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /continue with sso/i })).not.toBeInTheDocument();
   });
 
   it('rejects passwords shorter than 8 characters', async () => {

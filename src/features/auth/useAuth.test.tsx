@@ -377,4 +377,76 @@ describe('useAuth', () => {
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.user).toBeNull();
   });
+
+  it('persists a mock password reset so the next login works', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.register({
+        username: 'admin',
+        displayName: 'Admin',
+        email: 'admin@test.com',
+        password: 'password1',
+      });
+    });
+
+    act(() => {
+      result.current.logout();
+    });
+
+    await act(async () => {
+      await result.current.resetPassword('admin@test.com', 'password2');
+    });
+
+    await act(async () => {
+      await result.current.login('admin@test.com', 'password2');
+    });
+    expect(result.current.user?.email).toBe('admin@test.com');
+  });
+
+  it('requires a TOTP code after password when MFA is on', async () => {
+    const { generateTotpCode } = await import('@/lib/auth');
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.register({
+        username: 'admin',
+        displayName: 'Admin',
+        email: 'admin@test.com',
+        password: 'password1',
+      });
+    });
+
+    let secret = '';
+    await act(async () => {
+      const started = await result.current.startTotp();
+      secret = started.secret;
+    });
+    await act(async () => {
+      await result.current.confirmTotp(await generateTotpCode(secret));
+    });
+
+    act(() => {
+      result.current.logout();
+    });
+
+    await act(async () => {
+      await expect(result.current.login('admin@test.com', 'password1')).rejects.toThrow(
+        'MFA_REQUIRED',
+      );
+    });
+
+    await act(async () => {
+      await result.current.completeMfa(await generateTotpCode(secret));
+    });
+    expect(result.current.user?.email).toBe('admin@test.com');
+  });
 });

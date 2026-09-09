@@ -20,6 +20,11 @@ export default defineConfig({
       BREVO_SENDER_EMAIL: '',
       BREVO_SENDER_NAME: 'SoftGate Comic',
       ADMIN_APP_URL: 'http://localhost:5173',
+      BOOTSTRAP_ADMIN_EMAIL: '',
+      BOOTSTRAP_ADMIN_PASSWORD: '',
+      OIDC_ISSUER: '',
+      OIDC_CLIENT_ID: 'fake',
+      OIDC_CLIENT_SECRET: 'fake',
     },
   },
 });

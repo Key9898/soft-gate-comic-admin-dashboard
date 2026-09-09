@@ -3,8 +3,7 @@ import AuthSplitCard, { type AuthReturnFrom } from '@/features/auth/AuthSplitCar
 
 const AuthLayout = () => {
   const location = useLocation();
-  const isSplit = location.pathname === '/login' || location.pathname === '/register';
-  const splitView = location.pathname === '/register' ? 'register' : 'login';
+  const isSplit = location.pathname === '/login' || location.pathname === '/setup';
   const from = (location.state as { from?: AuthReturnFrom } | null)?.from;
 
   return (
@@ -33,7 +32,7 @@ const AuthLayout = () => {
       <main id="main-content" tabIndex={-1} className="relative z-10 flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
           {isSplit ? (
-            <AuthSplitCard view={splitView} from={from} />
+            <AuthSplitCard from={from} />
           ) : (
             <div className="mx-auto max-w-lg rounded-3xl border border-line bg-surface p-6 shadow-sm sm:p-8">
               <Outlet />

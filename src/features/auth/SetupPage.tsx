@@ -6,7 +6,7 @@ import { Button, Input, PageSEO } from '../../components';
 import { MIN_PASSWORD_LENGTH, safeReturnTo } from '@/lib/auth';
 import { isMockApi } from '@/lib/api/http';
 
-const RegisterPage = ({
+const SetupPage = ({
   embedded = false,
   active = true,
 }: {
@@ -104,34 +104,17 @@ const RegisterPage = ({
   }
 
   if (hasStaffAccount && active) {
-    return (
-      <>
-        {embedded ? null : <PageSEO.Register />}
-        <h1 className="text-2xl font-bold text-fg">Registration is closed</h1>
-        <p className="mt-2 text-sm text-fg-secondary">
-          {isMockApi()
-            ? 'This browser already has a super admin. Ask them to invite you from Team.'
-            : 'This dashboard already has a super admin. Ask them to invite you from Team.'}
-        </p>
-        <Link
-          to="/login"
-          state={{ from }}
-          className="mt-6 inline-block rounded-2xl text-sm font-medium text-primary-600 hover:text-primary-700"
-        >
-          Back to Login
-        </Link>
-      </>
-    );
+    return <Navigate to="/login" replace />;
   }
 
   return (
     <>
-      {embedded ? null : <PageSEO.Register />}
-      <h1 className="text-2xl font-bold text-fg">Create a staff account</h1>
+      {embedded ? null : <PageSEO.Setup />}
+      <h1 className="text-2xl font-bold text-fg">Create the first Super Admin</h1>
       <p className="mt-2 text-sm text-fg-secondary">
         {isMockApi()
-          ? 'The first account is super admin for this browser.'
-          : 'The first account is super admin for this dashboard.'}
+          ? 'This is a one-time setup for this browser. Further staff join from Team invites.'
+          : 'This is a one-time setup for this dashboard. Further staff join from Team invites.'}
       </p>
       {isMockApi() ? (
         <p className="mt-2 text-xs text-fg-muted">Demo staff accounts stay on this browser only.</p>
@@ -142,7 +125,7 @@ const RegisterPage = ({
           <p className="rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-600">{errors.form}</p>
         ) : null}
         <Input
-          id="register-username"
+          id="setup-username"
           label="Username"
           type="text"
           name="username"
@@ -154,7 +137,7 @@ const RegisterPage = ({
           leftIcon={<User className="h-5 w-5" />}
         />
         <Input
-          id="register-display-name"
+          id="setup-display-name"
           label="Display Name"
           type="text"
           name="displayName"
@@ -166,7 +149,7 @@ const RegisterPage = ({
           leftIcon={<User className="h-5 w-5" />}
         />
         <Input
-          id="register-email"
+          id="setup-email"
           label="Email"
           type="email"
           name="email"
@@ -178,7 +161,7 @@ const RegisterPage = ({
           leftIcon={<Mail className="h-5 w-5" />}
         />
         <Input
-          id="register-password"
+          id="setup-password"
           label="Password"
           type="password"
           name="password"
@@ -190,7 +173,7 @@ const RegisterPage = ({
           leftIcon={<Lock className="h-5 w-5" />}
         />
         <Input
-          id="register-confirm-password"
+          id="setup-confirm-password"
           label="Confirm Password"
           type="password"
           name="confirmPassword"
@@ -205,7 +188,7 @@ const RegisterPage = ({
           <div className="flex min-h-11 items-start gap-3">
             <input
               type="checkbox"
-              id="register-terms"
+              id="setup-terms"
               checked={agreedToTerms}
               onChange={(e) => {
                 setAgreedToTerms(e.target.checked);
@@ -213,9 +196,9 @@ const RegisterPage = ({
               }}
               className="mt-1 h-5 w-5 shrink-0 rounded-2xl border-line-strong text-primary-600 focus-visible:ring-primary-500"
               aria-invalid={Boolean(errors.terms)}
-              aria-describedby={errors.terms ? 'register-terms-error' : undefined}
+              aria-describedby={errors.terms ? 'setup-terms-error' : undefined}
             />
-            <label htmlFor="register-terms" className="text-sm text-fg-secondary">
+            <label htmlFor="setup-terms" className="text-sm text-fg-secondary">
               I agree to the{' '}
               <Link to="/terms" className="text-primary-600 hover:text-primary-700">
                 Terms
@@ -227,17 +210,17 @@ const RegisterPage = ({
             </label>
           </div>
           {errors.terms ? (
-            <p id="register-terms-error" className="mt-1.5 text-sm text-red-500">
+            <p id="setup-terms-error" className="mt-1.5 text-sm text-red-500">
               {errors.terms}
             </p>
           ) : null}
         </div>
         <Button type="submit" className="w-full" isLoading={submitting}>
-          Create Account
+          Create Super Admin
         </Button>
       </form>
 
-      <p className="mt-6 text-sm text-fg-secondary lg:hidden">
+      <p className="mt-6 text-sm text-fg-secondary">
         Already have an account?{' '}
         <Link
           to="/login"
@@ -251,4 +234,4 @@ const RegisterPage = ({
   );
 };
 
-export default RegisterPage;
+export default SetupPage;

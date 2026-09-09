@@ -162,6 +162,7 @@ export function toPublicUser(account: StaffAccount): AdminUser {
     role: account.role,
     createdAt: account.createdAt,
     passwordHash: account.passwordHash,
+    totpEnabled: Boolean(account.totpEnabled),
   };
 }
 

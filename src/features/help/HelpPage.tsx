@@ -9,6 +9,7 @@ import {
   ADMIN_INVITE,
   ADMIN_PROFILE,
   ADMIN_SETTINGS,
+  ADMIN_SIGNIN,
   BUSINESS_NOTE,
   CATALOG_NOTES,
   COMMANDS_INTRO,
@@ -165,6 +166,10 @@ const HelpPage = () => {
                     );
                   })}
                 </ul>
+              </Card>
+              <Card>
+                <h2 className="text-lg font-semibold text-fg">Sign in</h2>
+                <p className="mt-2 text-sm text-fg-secondary">{ADMIN_SIGNIN}</p>
               </Card>
               <Card>
                 <h2 className="text-lg font-semibold text-fg">Invite</h2>

@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { createPrismaCatalogStore } from './catalog/prismaCatalogStore.js';
 import { createPrismaStaffStore } from './auth/prismaStaffStore.js';
+import { maybeBootstrapAdmin } from './auth/bootstrapAdmin.js';
 import { createApp } from './app.js';
 import { getPrisma, hasDatabaseUrl } from './db.js';
 import { createMediaServicesFromEnv } from './media/fromEnv.js';
@@ -36,9 +37,12 @@ async function main() {
     process.exit(1);
   }
 
+  const store = createPrismaStaffStore(prisma);
+  await maybeBootstrapAdmin(store);
+
   const port = Number(process.env.PORT) || 3000;
   const app = createApp({
-    store: createPrismaStaffStore(prisma),
+    store,
     catalog: createPrismaCatalogStore(prisma),
     media,
   });

@@ -8,6 +8,12 @@ export type ApiStaffUser = {
   displayName: string;
   role: AdminUser['role'];
   createdAt: string;
+  totpEnabled?: boolean;
+};
+
+export type ApiStaffAuthOptions = {
+  setupRequired: boolean;
+  ssoEnabled: boolean;
 };
 
 export type ApiStaffInvite = PublicStaffInvite;
@@ -26,10 +32,60 @@ export function loginStaff(email: string, password: string) {
   });
 }
 
-export function registerStaff(input: { email: string; password: string; displayName: string }) {
-  return apiRequest<{ user: ApiStaffUser }>('/api/staff/register', {
+export function completeStaffMfa(code: string) {
+  return apiRequest<{ user: ApiStaffUser }>('/api/staff/login/mfa', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}
+
+export function getStaffAuthOptions() {
+  return apiRequest<ApiStaffAuthOptions>('/api/staff/auth-options');
+}
+
+export function setupStaff(input: { email: string; password: string; displayName: string }) {
+  return apiRequest<{ user: ApiStaffUser }>('/api/staff/setup', {
     method: 'POST',
     body: JSON.stringify(input),
+  });
+}
+
+export function registerStaff(input: { email: string; password: string; displayName: string }) {
+  return setupStaff(input);
+}
+
+export function requestStaffForgot(email: string) {
+  return apiRequest<{ ok: true }>('/api/staff/forgot', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function resetStaffPassword(token: string, password: string) {
+  return apiRequest<{ ok: true }>('/api/staff/reset', {
+    method: 'POST',
+    body: JSON.stringify({ token, password }),
+  });
+}
+
+export function startStaffTotp() {
+  return apiRequest<{ secret: string; otpauthUrl: string }>('/api/staff/me/totp/start', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
+export function confirmStaffTotp(code: string) {
+  return apiRequest<{ backupCodes: string[] }>('/api/staff/me/totp/confirm', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}
+
+export function disableStaffTotp(password: string) {
+  return apiRequest<{ ok: true }>('/api/staff/me/totp', {
+    method: 'DELETE',
+    body: JSON.stringify({ password }),
   });
 }
 

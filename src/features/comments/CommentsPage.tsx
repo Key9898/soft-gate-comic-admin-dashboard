@@ -17,11 +17,13 @@ import { useData } from '@/lib/DataContext';
 import type { Comment } from '../../types';
 import { markIdLoaded } from '@/lib/imageLoaded';
 import CommentsPageSkeleton from './components/CommentsPageSkeleton';
+import { apiMessage, isMockApi } from '@/lib/api/http';
+import { deleteComment, updateCommentStatus } from '@/lib/api/comments';
 
 const CommentsPage = () => {
   const { user } = useAuth();
   const { canWriteCommunity } = useStaffAccess();
-  const { comments, setComments, setActivityLogs, isLoading } = useData();
+  const { comments, setComments, setActivityLogs, isLoading, reloadCatalog } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loadedAvatars, setLoadedAvatars] = useState<Set<string>>(() => new Set());
@@ -29,6 +31,7 @@ const CommentsPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [formError, setFormError] = useState('');
 
   const filteredComments = comments.filter((comment) => {
     const matchesSearch = comment.content.en.toLowerCase().includes(searchQuery.toLowerCase());
@@ -45,9 +48,28 @@ const CommentsPage = () => {
     return styles[status];
   };
 
-  const handleToggleVisibility = (comment: Comment) => {
+  const handleToggleVisibility = async (comment: Comment) => {
     if (!canWriteCommunity) return;
     const nextStatus = comment.status === 'visible' ? 'hidden' : 'visible';
+    if (!isMockApi()) {
+      try {
+        await updateCommentStatus(comment.id, { status: nextStatus });
+        await reloadCatalog();
+        appendActivityLog(setActivityLogs, {
+          action: 'update',
+          targetType: 'comment',
+          targetId: comment.id,
+          targetName: comment.content,
+          details: `Comment ${nextStatus}`,
+          admin: user,
+        });
+        setOpenMenuId(null);
+        setFormError('');
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not update comment'));
+      }
+      return;
+    }
     setComments(comments.map((c) => (c.id === comment.id ? { ...c, status: nextStatus } : c)));
     appendActivityLog(setActivityLogs, {
       action: 'update',
@@ -60,8 +82,27 @@ const CommentsPage = () => {
     setOpenMenuId(null);
   };
 
-  const handleDeleteComment = () => {
+  const handleDeleteComment = async () => {
     if (!canWriteCommunity || !selectedComment) return;
+    if (!isMockApi()) {
+      try {
+        await deleteComment(selectedComment.id);
+        await reloadCatalog();
+        appendActivityLog(setActivityLogs, {
+          action: 'delete',
+          targetType: 'comment',
+          targetId: selectedComment.id,
+          targetName: selectedComment.content,
+          admin: user,
+        });
+        setIsDeleteModalOpen(false);
+        setSelectedComment(null);
+        setFormError('');
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not delete comment'));
+      }
+      return;
+    }
     setComments(
       comments.map((c) => (c.id === selectedComment.id ? { ...c, status: 'deleted' as const } : c)),
     );
@@ -84,6 +125,7 @@ const CommentsPage = () => {
 
   const openDeleteModal = (comment: Comment) => {
     setSelectedComment(comment);
+    setFormError('');
     setIsDeleteModalOpen(true);
     setOpenMenuId(null);
   };
@@ -179,6 +221,7 @@ const CommentsPage = () => {
                 </select>
               </div>
             </div>
+            {formError ? <p className="mb-4 text-sm text-red-600">{formError}</p> : null}
 
             <div className="space-y-4">
               {filteredComments.map((comment) => (
@@ -352,15 +395,17 @@ const CommentsPage = () => {
                   >
                     Close
                   </Button>
-                  <Button
-                    variant="danger"
-                    onClick={() => {
-                      setIsDetailModalOpen(false);
-                      openDeleteModal(selectedComment);
-                    }}
-                  >
-                    Delete Comment
-                  </Button>
+                  {canWriteCommunity ? (
+                    <Button
+                      variant="danger"
+                      onClick={() => {
+                        setIsDetailModalOpen(false);
+                        openDeleteModal(selectedComment);
+                      }}
+                    >
+                      Delete Comment
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             )}
@@ -382,6 +427,7 @@ const CommentsPage = () => {
               <div className="rounded-lg bg-gray-50 p-3 text-sm text-fg-secondary">
                 "{selectedComment?.content.en}"
               </div>
+              {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
               <div className="flex justify-end gap-3">
                 <Button
                   variant="secondary"

@@ -10,16 +10,25 @@ export {
 } from './http';
 export {
   acceptStaffInvite,
+  completeStaffMfa,
+  confirmStaffTotp,
   createStaffInvite,
   deleteStaffUser,
+  disableStaffTotp,
+  getStaffAuthOptions,
   getStaffMe,
   listStaffInvites,
   listStaffUsers,
   loginStaff,
   logoutStaff,
   registerStaff,
+  requestStaffForgot,
   resendStaffInvite,
+  resetStaffPassword,
+  setupStaff,
+  startStaffTotp,
   toStaffAccount,
+  type ApiStaffAuthOptions,
   type ApiStaffInvite,
   type ApiStaffUser,
 } from './staff';
@@ -47,3 +56,23 @@ export {
   type WebtoonWriteBody,
 } from './catalog';
 export { deleteMedia, listMedia, uploadMedia } from './media';
+export {
+  createCoinPackage,
+  deleteCoinPackage,
+  listCoinPackages,
+  updateCoinPackage,
+  type CoinPackageWriteBody,
+} from './coinPackages';
+export {
+  deleteComment,
+  listComments,
+  updateCommentStatus,
+  type CommentStatusBody,
+} from './comments';
+export {
+  deleteNotification,
+  listNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from './notifications';
+export { getPlatformSettings, updatePlatformSettings } from './settings';

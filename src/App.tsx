@@ -4,7 +4,7 @@ import { DataProvider } from '@/lib/DataContext';
 import { ProtectedRoute } from './components';
 import { AdminLayout, AuthLayout } from './layouts';
 import LoginPage from '@/features/auth/LoginPage';
-import RegisterPage from '@/features/auth/RegisterPage';
+import SetupPage from '@/features/auth/SetupPage';
 import ForgotPasswordPage from '@/features/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/features/auth/ResetPasswordPage';
 import InvitePage from '@/features/auth/InvitePage';
@@ -43,7 +43,8 @@ function App() {
           <Routes>
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/setup" element={<SetupPage />} />
+              <Route path="/register" element={<Navigate to="/login" replace />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password/:token?" element={<ResetPasswordPage />} />
               <Route path="/invite/:token" element={<InvitePage />} />

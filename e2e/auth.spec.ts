@@ -8,6 +8,8 @@ test.describe('Authentication Flow', () => {
     await expect(page.locator('#login-email')).toBeVisible();
     await expect(page.locator('#login-password')).toBeVisible();
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /sign up/i })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /create the first super admin/i })).toBeVisible();
   });
 
   test('login with seeded staff credentials', async ({ page }) => {
@@ -40,21 +42,32 @@ test.describe('Authentication Flow', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('first register then second register is locked', async ({ page }) => {
+  test('sends /register to login', async ({ page }) => {
     await page.goto('/register');
-    await page.locator('#register-username').fill('admin');
-    await page.locator('#register-display-name').fill('Admin');
-    await page.locator('#register-email').fill('owner@example.com');
-    await page.locator('#register-password').fill('password123');
-    await page.locator('#register-confirm-password').fill('password123');
-    await page.locator('#register-terms').check();
-    await page.getByRole('button', { name: /create account/i }).click();
+    await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible();
+  });
+
+  test('first setup then later setup and register stay on login', async ({ page }) => {
+    await page.goto('/setup');
+    await page.locator('#setup-username').fill('admin');
+    await page.locator('#setup-display-name').fill('Admin');
+    await page.locator('#setup-email').fill('owner@example.com');
+    await page.locator('#setup-password').fill('password123');
+    await page.locator('#setup-confirm-password').fill('password123');
+    await page.locator('#setup-terms').check();
+    await page.getByRole('button', { name: /create super admin/i }).click();
     await expect(page).toHaveURL('/');
 
     await page.getByRole('button', { name: /admin/i }).click();
     await page.getByRole('button', { name: /logout/i }).click();
 
+    await page.goto('/setup');
+    await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByRole('link', { name: /create the first super admin/i })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /sign up/i })).toHaveCount(0);
+
     await page.goto('/register');
-    await expect(page.getByRole('heading', { name: /registration is closed/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
   });
 });

@@ -27,6 +27,8 @@ import {
   withExclusiveBadges,
   type CoinPackageBadge,
 } from '@/lib/coinPackages';
+import { apiMessage, isMockApi } from '@/lib/api/http';
+import { createCoinPackage, deleteCoinPackage, updateCoinPackage } from '@/lib/api/coinPackages';
 import { useOpenCreateQuery } from '@/lib/commands';
 
 type PackFormState = {
@@ -49,8 +51,8 @@ const formatMmk = (price: number): string => new Intl.NumberFormat('en-US').form
 
 const CoinPackagesPage = () => {
   const { user } = useAuth();
-  const { canWriteCatalog } = useStaffAccess();
-  const { coinPackages, setCoinPackages, setActivityLogs, isLoading } = useData();
+  const { canWriteBusiness } = useStaffAccess();
+  const { coinPackages, setCoinPackages, setActivityLogs, isLoading, reloadCatalog } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -60,7 +62,7 @@ const CoinPackagesPage = () => {
   const [formData, setFormData] = useState<PackFormState>(emptyForm);
   const [formError, setFormError] = useState('');
 
-  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteCatalog && !isLoading);
+  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteBusiness && !isLoading);
 
   const filteredPackages = coinPackages.filter((pack) => {
     const haystack = `${pack.coins} ${pack.price} ${pack.bonus ?? ''}`.toLowerCase();
@@ -74,7 +76,7 @@ const CoinPackagesPage = () => {
   };
 
   const persistPack = (pack: CoinPackage, isCreate: boolean) => {
-    if (!canWriteCatalog) return;
+    if (!canWriteBusiness) return;
     const stored = toPersistedPackage(pack);
     const flag = badgeFlag(Boolean(stored.popular), Boolean(stored.bestValue));
     const nextList = isCreate
@@ -116,26 +118,94 @@ const CoinPackagesPage = () => {
     };
   };
 
-  const handleAdd = () => {
-    if (!canWriteCatalog) return;
-    const created = readFormPack(nextCoinPackageId(coinPackages));
+  const handleAdd = async () => {
+    if (!canWriteBusiness) return;
+    const created = readFormPack(isMockApi() ? nextCoinPackageId(coinPackages) : 'pending');
     if (!created) return;
+    if (!isMockApi()) {
+      try {
+        const body = toPersistedPackage(created);
+        const { coinPackage } = await createCoinPackage({
+          coins: body.coins,
+          price: body.price,
+          bonus: body.bonus ?? 0,
+          popular: Boolean(body.popular),
+          bestValue: Boolean(body.bestValue),
+        });
+        await reloadCatalog();
+        appendActivityLog(setActivityLogs, {
+          action: 'create',
+          targetType: 'coin-package',
+          targetId: coinPackage.id,
+          targetName: packageLabel(coinPackage),
+          admin: user,
+        });
+        setIsAddModalOpen(false);
+        resetForm();
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not save package'));
+      }
+      return;
+    }
     persistPack(created, true);
     setIsAddModalOpen(false);
     resetForm();
   };
 
-  const handleEdit = () => {
-    if (!canWriteCatalog || !selectedPack) return;
+  const handleEdit = async () => {
+    if (!canWriteBusiness || !selectedPack) return;
     const updated = readFormPack(selectedPack.id);
     if (!updated) return;
+    if (!isMockApi()) {
+      try {
+        const body = toPersistedPackage(updated);
+        await updateCoinPackage(selectedPack.id, {
+          coins: body.coins,
+          price: body.price,
+          bonus: body.bonus ?? 0,
+          popular: Boolean(body.popular),
+          bestValue: Boolean(body.bestValue),
+        });
+        await reloadCatalog();
+        appendActivityLog(setActivityLogs, {
+          action: 'update',
+          targetType: 'coin-package',
+          targetId: selectedPack.id,
+          targetName: packageLabel(body),
+          admin: user,
+        });
+        setIsEditModalOpen(false);
+        resetForm();
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not save package'));
+      }
+      return;
+    }
     persistPack(updated, false);
     setIsEditModalOpen(false);
     resetForm();
   };
 
-  const handleDelete = () => {
-    if (!canWriteCatalog || !selectedPack) return;
+  const handleDelete = async () => {
+    if (!canWriteBusiness || !selectedPack) return;
+    if (!isMockApi()) {
+      try {
+        await deleteCoinPackage(selectedPack.id);
+        await reloadCatalog();
+        appendActivityLog(setActivityLogs, {
+          action: 'delete',
+          targetType: 'coin-package',
+          targetId: selectedPack.id,
+          targetName: packageLabel(selectedPack),
+          admin: user,
+        });
+        setIsDeleteModalOpen(false);
+        setSelectedPack(null);
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not delete package'));
+      }
+      return;
+    }
     setCoinPackages(coinPackages.filter((pack) => pack.id !== selectedPack.id));
     appendActivityLog(setActivityLogs, {
       action: 'delete',
@@ -164,6 +234,7 @@ const CoinPackagesPage = () => {
 
   const openDeleteModal = (pack: CoinPackage) => {
     setSelectedPack(pack);
+    setFormError('');
     setIsDeleteModalOpen(true);
     setOpenMenuId(null);
   };
@@ -242,7 +313,7 @@ const CoinPackagesPage = () => {
               <h1 className="text-2xl font-bold text-fg">Coin packages</h1>
               <p className="mt-1 text-fg-muted">Manage shop SKUs for the reader coin store</p>
             </div>
-            {canWriteCatalog ? (
+            {canWriteBusiness ? (
               <Button
                 leftIcon={<Plus className="h-4 w-4" />}
                 onClick={() => setIsAddModalOpen(true)}
@@ -285,7 +356,7 @@ const CoinPackagesPage = () => {
                         {pack.popular ? 'Popular' : pack.bestValue ? 'Best value' : '—'}
                       </td>
                       <td className="table-cell text-right">
-                        {canWriteCatalog ? (
+                        {canWriteBusiness ? (
                           <div className="relative inline-block">
                             <button
                               type="button"
@@ -331,7 +402,7 @@ const CoinPackagesPage = () => {
                 title="No coin packages yet"
                 description="Add a shop SKU before the reader store can list offers."
                 action={
-                  canWriteCatalog
+                  canWriteBusiness
                     ? { label: 'Add package', onClick: () => setIsAddModalOpen(true) }
                     : undefined
                 }
@@ -421,6 +492,7 @@ const CoinPackagesPage = () => {
                 Delete the {selectedPack?.coins.toLocaleString()} coin package? This cannot be
                 undone. Demo wallet credit already granted is not clawed back.
               </p>
+              {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
               <div className="flex justify-end gap-3">
                 <Button
                   variant="secondary"

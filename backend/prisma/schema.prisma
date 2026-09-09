@@ -55,13 +55,27 @@ model Meta {
 }
 
 model StaffUser {
-  id           String        @id @default(uuid())
-  email        String        @unique
-  displayName  String
-  role         StaffRole
-  passwordHash String
-  createdAt    DateTime      @default(now())
-  invites      StaffInvite[] @relation("StaffInviter")
+  id               String               @id @default(uuid())
+  email            String               @unique
+  displayName      String
+  role             StaffRole
+  passwordHash     String
+  totpEnabled      Boolean              @default(false)
+  totpSecret       String?
+  totpBackupHashes String[]             @default([])
+  createdAt        DateTime             @default(now())
+  invites          StaffInvite[]        @relation("StaffInviter")
+  passwordResets   StaffPasswordReset[]
+}
+
+model StaffPasswordReset {
+  id         String    @id @default(uuid())
+  userId     String
+  user       StaffUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
 }
 
 model StaffInvite {
@@ -163,4 +177,64 @@ model MediaAsset {
   size        Int
   category    String    @default("general")
   createdAt   DateTime  @default(now())
+}
+
+model CoinPackage {
+  id        String   @id @default(uuid())
+  coins     Int
+  price     Int
+  bonus     Int?
+  popular   Boolean?
+  bestValue Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum CommentStatus {
+  visible
+  hidden
+  deleted
+}
+
+model Comment {
+  id        String        @id @default(uuid())
+  userId    String
+  user      Json
+  webtoonId String
+  episodeId String
+  content   Json
+  likeCount Int           @default(0)
+  status    CommentStatus @default(visible)
+  createdAt DateTime      @default(now())
+}
+
+enum StaffNotificationType {
+  system
+  report
+  payment
+  content
+}
+
+model StaffNotification {
+  id        String                 @id @default(uuid())
+  type      StaffNotificationType
+  title     Json
+  message   Json
+  isRead    Boolean                @default(false)
+  createdAt DateTime               @default(now())
+  actionUrl String?
+}
+
+enum PlatformLanguage {
+  en
+  mm
+}
+
+model PlatformSettings {
+  id                 String           @id
+  maintenanceMode    Boolean
+  allowRegistration  Boolean
+  contactEmail       String
+  defaultLanguage    PlatformLanguage
+  updatedAt          DateTime         @updatedAt
 }

@@ -496,7 +496,6 @@
 @media (width >= 64rem) {
   .auth-split-card {
     max-width: 56rem;
-    height: min(40rem, calc(100dvh - 8rem));
   }
 }
 
@@ -518,7 +517,7 @@ html.dark .auth-split-bg {
 }
 
 .auth-split-bg-motion {
-  transition: transform 0.65s ease-in-out;
+  transition: transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

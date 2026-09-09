@@ -41,13 +41,13 @@ describe('ResetPasswordPage', () => {
   it('shows an incomplete link when no token is present', () => {
     renderReset('/reset-password');
     expect(screen.getByRole('heading', { name: /incomplete link/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /go to forgot password/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^forgot password$/i })).toHaveAttribute(
       'href',
       '/forgot-password',
     );
   });
 
-  it('accepts new password fields with a token without saving', async () => {
+  it('accepts new password fields with a token', async () => {
     const user = userEvent.setup({ delay: null });
     renderReset('/reset-password/future-token');
     await user.type(document.getElementById('reset-new-password') as HTMLInputElement, 'changed99');
@@ -56,7 +56,7 @@ describe('ResetPasswordPage', () => {
       'changed99',
     );
     await user.click(screen.getByRole('button', { name: /set new password/i }));
-    expect(screen.getByText(/demo password is unchanged/i)).toBeInTheDocument();
+    expect(screen.getByText(/your password was updated/i)).toBeInTheDocument();
     expect(getAccountByEmail('reader@softgate.test')?.passwordHash).toBe(hashPassword('secret12'));
   });
 });

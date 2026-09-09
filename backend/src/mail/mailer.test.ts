@@ -6,6 +6,7 @@ import {
   isMailerConfigured,
   renderStaffInviteHtml,
   staffInviteUrl,
+  staffResetUrl,
 } from './mailer.js';
 
 const configured = {
@@ -32,6 +33,7 @@ describe('mailer config', () => {
       'https://admin.example.com',
     );
     expect(staffInviteUrl('abc', configured)).toBe('https://admin.example.com/invite/abc');
+    expect(staffResetUrl('abc', configured)).toBe('https://admin.example.com/reset-password/abc');
   });
 
   it('capitalizes invite roles', () => {
@@ -118,5 +120,27 @@ describe('sendStaffInvite', () => {
     expect(html).toContain('Viewer');
     expect(html).not.toContain('{{email}}');
     expect(html).not.toContain('{{role}}');
+  });
+});
+
+describe('sendStaffForgot', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('posts the reset URL without a templateId', async () => {
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 201 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const mailer = createMailerFromEnv(configured);
+    const resetUrl = 'https://admin.example.com/reset-password/tok';
+    await mailer.sendStaffForgot({ to: 'owner@softgate.com', resetUrl });
+    const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body)) as {
+      subject: string;
+      htmlContent: string;
+    };
+    expect(body.subject).toBe('Reset your SoftGate Comic Admin password');
+    expect(body.htmlContent).toContain(resetUrl);
+    expect(body.htmlContent).toContain('owner@softgate.com');
+    expect(body.htmlContent).not.toContain('{{resetUrl}}');
   });
 });

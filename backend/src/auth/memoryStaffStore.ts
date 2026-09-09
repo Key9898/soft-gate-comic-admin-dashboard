@@ -1,9 +1,15 @@
 import { randomUUID } from 'node:crypto';
-import type { StaffInviteRecord, StaffStore, StaffUserRecord } from './staffStore.js';
+import type {
+  StaffInviteRecord,
+  StaffPasswordResetRecord,
+  StaffStore,
+  StaffUserRecord,
+} from './staffStore.js';
 
 export function createMemoryStaffStore(): StaffStore {
   const users = new Map<string, StaffUserRecord>();
   const invites = new Map<string, StaffInviteRecord>();
+  const resets = new Map<string, StaffPasswordResetRecord>();
 
   return {
     async countUsers() {
@@ -26,10 +32,20 @@ export function createMemoryStaffStore(): StaffStore {
       const user: StaffUserRecord = {
         ...input,
         email: input.email.toLowerCase(),
+        totpEnabled: false,
+        totpSecret: null,
+        totpBackupHashes: [],
         createdAt: new Date(),
       };
       users.set(user.id, user);
       return user;
+    },
+    async updateUser(id, patch) {
+      const current = users.get(id);
+      if (!current) return null;
+      const next = { ...current, ...patch };
+      users.set(id, next);
+      return next;
     },
     async deleteUser(id) {
       return users.delete(id);
@@ -61,6 +77,27 @@ export function createMemoryStaffStore(): StaffStore {
       if (!current) return null;
       const next = { ...current, ...patch };
       invites.set(id, next);
+      return next;
+    },
+    async createPasswordReset(input) {
+      const record: StaffPasswordResetRecord = {
+        ...input,
+        createdAt: new Date(),
+      };
+      resets.set(record.id, record);
+      return record;
+    },
+    async findPasswordResetByTokenHash(tokenHash) {
+      for (const record of resets.values()) {
+        if (record.tokenHash === tokenHash) return record;
+      }
+      return null;
+    },
+    async consumePasswordReset(id) {
+      const current = resets.get(id);
+      if (!current) return null;
+      const next = { ...current, consumedAt: new Date() };
+      resets.set(id, next);
       return next;
     },
   };

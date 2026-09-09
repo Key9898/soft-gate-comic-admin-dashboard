@@ -115,8 +115,17 @@ export const PageSEO = {
     <SEO title="Help" description="Staff desk how-to, commands, and desk owner contacts" />
   ),
   Login: () => <SEO title="Sign in" description="Admin sign in for SoftGate Comic platform" />,
+  Setup: () => (
+    <SEO
+      title="Create Super Admin"
+      description="One-time setup for the first SoftGate Comic Super Admin"
+    />
+  ),
   Register: () => (
-    <SEO title="Create account" description="Create the first SoftGate Comic admin account" />
+    <SEO
+      title="Create Super Admin"
+      description="One-time setup for the first SoftGate Comic Super Admin"
+    />
   ),
   Forgot: () => (
     <SEO title="Forgot password" description="Reset SoftGate Comic admin password (demo)" />

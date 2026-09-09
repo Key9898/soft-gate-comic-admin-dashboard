@@ -10,6 +10,7 @@ import {
   getAccountByEmail,
   hashPassword,
   upsertAccount,
+  verifyPassword,
 } from '@/lib/auth';
 import ForgotPasswordPage from './ForgotPasswordPage';
 
@@ -43,10 +44,10 @@ describe('ForgotPasswordPage', () => {
     });
   });
 
-  it('walks email, mock OTP, and password without saving a new password', async () => {
+  it('walks email, mock OTP, and saves the new password', async () => {
     const user = userEvent.setup({ delay: null });
     renderForgot();
-    await user.type(screen.getByLabelText(/email/i), 'anyone@example.com');
+    await user.type(screen.getByLabelText(/email/i), 'reader@softgate.test');
     await user.click(screen.getByRole('button', { name: /continue/i }));
     expect(screen.getByText(/not emailed/i)).toBeInTheDocument();
     await user.type(screen.getByLabelText(/one-time code/i), DEMO_PASSWORD_RESET_OTP);
@@ -60,8 +61,10 @@ describe('ForgotPasswordPage', () => {
       'changed99',
     );
     await user.click(screen.getByRole('button', { name: /set new password/i }));
-    expect(screen.getByText(/demo password is unchanged/i)).toBeInTheDocument();
-    expect(getAccountByEmail('reader@softgate.test')?.passwordHash).toBe(hashPassword('secret12'));
+    expect(screen.getByText(/password was updated in this browser/i)).toBeInTheDocument();
+    const account = getAccountByEmail('reader@softgate.test');
+    expect(account?.passwordHash).toBeTruthy();
+    expect(verifyPassword('changed99', account?.passwordHash ?? '')).toBe(true);
   });
 
   it('links back to login', () => {

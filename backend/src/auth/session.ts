@@ -38,6 +38,37 @@ export function verifyStaffToken(token: string): StaffJwtPayload | null {
   }
 }
 
+export const MFA_COOKIE = 'sg_staff_mfa';
+const MFA_EXPIRES = '5m';
+const MFA_MAX_AGE_MS = 5 * 60 * 1000;
+
+export type MfaJwtPayload = {
+  sub: string;
+  email: string;
+  role: StaffRole;
+  typ: 'mfa';
+};
+
+export function signMfaToken(payload: Omit<MfaJwtPayload, 'typ'>): string {
+  const secret = jwtSecret();
+  if (!secret) {
+    throw new Error('JWT_SECRET is required');
+  }
+  return jwt.sign({ ...payload, typ: 'mfa' }, secret, { expiresIn: MFA_EXPIRES });
+}
+
+export function verifyMfaToken(token: string): MfaJwtPayload | null {
+  const secret = jwtSecret();
+  if (!secret) return null;
+  try {
+    const decoded = jwt.verify(token, secret) as MfaJwtPayload;
+    if (decoded.typ !== 'mfa' || !decoded.sub || !decoded.email || !decoded.role) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
 export function setStaffCookie(res: Response, payload: StaffJwtPayload): void {
   const token = signStaffToken(payload);
   res.cookie(STAFF_COOKIE, token, staffCookieOptions());
@@ -45,4 +76,15 @@ export function setStaffCookie(res: Response, payload: StaffJwtPayload): void {
 
 export function clearStaffCookie(res: Response): void {
   res.clearCookie(STAFF_COOKIE, staffClearCookieOptions());
+}
+
+export function setMfaCookie(res: Response, payload: Omit<MfaJwtPayload, 'typ'>): void {
+  res.cookie(MFA_COOKIE, signMfaToken(payload), {
+    ...staffCookieOptions(),
+    maxAge: MFA_MAX_AGE_MS,
+  });
+}
+
+export function clearMfaCookie(res: Response): void {
+  res.clearCookie(MFA_COOKIE, staffClearCookieOptions());
 }

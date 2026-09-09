@@ -8,6 +8,14 @@ export {
 export { hashPassword, verifyPassword } from './passwordHash';
 export { MIN_PASSWORD_LENGTH } from './passwordPolicy';
 export { DEMO_PASSWORD_RESET_OTP, isDemoOtp } from './passwordResetMock';
+export {
+  generateBackupCodes,
+  generateTotpCode,
+  generateTotpSecret,
+  hashBackupCode,
+  totpOtpauthUrl,
+  verifyTotpCode,
+} from './totp';
 export { safeReturnTo, type ReturnFrom } from './safeReturnTo';
 export {
   migrateLegacyEmail,

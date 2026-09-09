@@ -1,6 +1,6 @@
 # Implementation track — SoftGate Comic Admin
 
-> Numbering is sequential **Impl 1–9** (Lark-aligned). SoftGate name + logo = Impl 7; Profile polish + media-backed avatar = Impl 8.
+> Numbering is sequential **Impl 1–49** (Lark-aligned). SoftGate name + logo = Impl 7; Profile polish + media-backed avatar = Impl 8.
 > Terminology: work batches are labeled **Impl N** (not “Phase N”).
 
 ## Impl 1 — Documentation, architecture & SoftGate branding
@@ -325,3 +325,39 @@
 - [x] Fail-soft invite/resend mail via in-repo HTML; `fake`/missing key or throw still returns the token (2026-09-08)
 - [x] Configured only when `BREVO_API_KEY` is real and `BREVO_SENDER_EMAIL` is set; `ADMIN_APP_URL` for email links (default `http://localhost:5173`); no `templateId`; no `VITE_BREVO_*` (2026-09-08)
 - [x] Forgot/reset HTML placeholders only; Team copy-link unchanged; website untouched (2026-09-08)
+
+## Impl 44 — Coin packages REST + SPA
+
+- [x] Prisma `CoinPackage` + `GET|POST|PATCH|DELETE /api/coin-packages`; write = `canWriteBusiness` (2026-09-09)
+- [x] `VITE_USE_MOCK_API=false` loads SKUs from REST; mock seeds kept; empty API catalog does not leak mock packs (2026-09-09)
+- [x] Admin-only; website `/coins` untouched (2026-09-09)
+
+## Impl 45 — Comments moderation REST + SPA
+
+- [x] Prisma `Comment` + `GET|PATCH|DELETE /api/comments`; write = `canWriteCommunity`; delete is soft (2026-09-09)
+- [x] `VITE_USE_MOCK_API=false` loads comments from REST; mock seeds kept; empty API catalog does not leak mock comments (2026-09-09)
+- [x] Admin-only; website `softgate_comments_v1` untouched (2026-09-09)
+
+## Impl 46 — Staff notifications inbox REST + SPA
+
+- [x] Prisma `StaffNotification` + `GET|PATCH|DELETE /api/notifications` and `PATCH /read-all`; write = `canWriteBusiness`; delete is hard (2026-09-09)
+- [x] `VITE_USE_MOCK_API=false` loads inbox from REST; mock seeds kept; empty API catalog does not leak mock notifications (2026-09-09)
+- [x] Admin-only; website `ReaderNotification` / `/api/notifications/me` untouched (2026-09-09)
+
+## Impl 47 — Platform settings REST + SPA
+
+- [x] Prisma `PlatformSettings` + `GET|PATCH /api/settings`; write = `canWriteSettings`; four portal-safe fields only (2026-09-09)
+- [x] `VITE_USE_MOCK_API=false` loads those fields from REST; theme and other Settings controls stay local; empty table returns fail-open defaults (2026-09-09)
+- [x] Admin-only; website `GET /api/settings` stub untouched (2026-09-09)
+
+## Impl 48 — Staff Sign in, setup, invite (no public Sign up)
+
+- [x] Empty-only `/setup` Super Admin; login has no Sign Up; `/register` redirects to `/login`; Team invite unchanged (2026-09-09)
+- [x] `GET /api/staff/auth-options`; `POST /setup` (+ `/register` alias); forgot/reset persist; optional TOTP; env-gated SSO, no JIT (2026-09-09)
+- [x] Admin-only; website reader registration untouched (2026-09-09)
+
+## Impl 49 — Sign in ↔ `/setup` split card
+
+- [x] AuthLayout `isSplit` = `/login` or `/setup`; `/register` stays Outlet so it still redirects to login (2026-09-09)
+- [x] AuthSplitCard mounts Setup as the right pane; photo full-bleed slides 1.6s; card height follows the setup form (2026-09-09)
+- [x] After staff exists, the setup pane is not mounted; no public Sign Up (2026-09-09)

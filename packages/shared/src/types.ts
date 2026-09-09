@@ -13,6 +13,7 @@ export interface AdminUser {
   createdAt?: string;
   /** Mock-only password digest; when set, login must match. */
   passwordHash?: string;
+  totpEnabled?: boolean;
 }
 
 export interface User {

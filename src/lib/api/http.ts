@@ -34,6 +34,7 @@ export function mapStaffUser(user: {
   displayName: string;
   role: AdminUser['role'];
   createdAt: string;
+  totpEnabled?: boolean;
 }): AdminUser {
   return {
     id: user.id,
@@ -42,6 +43,7 @@ export function mapStaffUser(user: {
     displayName: user.displayName,
     role: user.role,
     createdAt: user.createdAt.split('T')[0],
+    totpEnabled: Boolean(user.totpEnabled),
   };
 }
 

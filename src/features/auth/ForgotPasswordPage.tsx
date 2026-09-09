@@ -4,10 +4,11 @@ import { Lock, Mail } from 'lucide-react';
 import { Button, Input, PageSEO } from '../../components';
 import { DEMO_PASSWORD_RESET_OTP, isDemoOtp, MIN_PASSWORD_LENGTH } from '@/lib/auth';
 import { useAuth } from '@/features/auth/useAuth';
+import { isMockApi } from '@/lib/api/http';
 
 type Step = 'email' | 'otp' | 'password' | 'done';
 
-const STEPS: { id: Exclude<Step, 'done'>; label: string }[] = [
+const MOCK_STEPS: { id: Exclude<Step, 'done'>; label: string }[] = [
   { id: 'email', label: 'Email' },
   { id: 'otp', label: 'Code' },
   { id: 'password', label: 'New password' },
@@ -15,8 +16,9 @@ const STEPS: { id: Exclude<Step, 'done'>; label: string }[] = [
 
 const ForgotPasswordPage = () => {
   const location = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, resetPassword, requestForgot } = useAuth();
   const from = (location.state as { from?: { pathname?: string; search?: string } } | null)?.from;
+  const mock = isMockApi();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -24,6 +26,7 @@ const ForgotPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [resendNote, setResendNote] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && user?.email) {
@@ -33,7 +36,7 @@ const ForgotPasswordPage = () => {
 
   const emailLocked = isAuthenticated && Boolean(user?.email);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const next: Record<string, string> = {};
     if (!email) {
@@ -44,7 +47,19 @@ const ForgotPasswordPage = () => {
     setErrors(next);
     if (Object.keys(next).length > 0) return;
     setResendNote(false);
-    setStep('otp');
+    if (mock) {
+      setStep('otp');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await requestForgot(email);
+      setStep('done');
+    } catch {
+      setErrors({ form: 'Could not start a password reset.' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleOtpSubmit = (e: React.FormEvent) => {
@@ -61,7 +76,7 @@ const ForgotPasswordPage = () => {
     setStep('password');
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const next: Record<string, string> = {};
     if (!password) {
@@ -76,6 +91,7 @@ const ForgotPasswordPage = () => {
     }
     setErrors(next);
     if (Object.keys(next).length > 0) return;
+    await resetPassword(email, password);
     setStep('done');
   };
 
@@ -84,32 +100,40 @@ const ForgotPasswordPage = () => {
       <PageSEO.Forgot />
       <h1 className="text-2xl font-bold text-fg">Forgot password?</h1>
       <p className="mt-2 text-sm text-fg-secondary">
-        When mail is live, a code goes to your main email. This demo does not send mail or save a
-        new password yet.
+        {mock
+          ? 'This demo uses a one-time code, then saves the new password in this browser.'
+          : 'If that email has a staff account, we send a reset link. The same message is shown either way.'}
       </p>
 
-      <ol className="mt-6 flex gap-2" aria-label="Forgot password">
-        {STEPS.map((item, index) => {
-          const order = ['email', 'otp', 'password'] as const;
-          const currentIndex = step === 'done' ? 3 : order.indexOf(step as (typeof order)[number]);
-          const current = step === item.id;
-          const complete = currentIndex > index;
-          return (
-            <li
-              key={item.id}
-              className={`flex min-h-11 flex-1 items-center justify-center rounded-2xl px-2 text-center text-xs font-semibold ${
-                current
-                  ? 'bg-primary-600 text-white'
-                  : complete
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'bg-surface-muted text-fg-muted'
-              }`}
-            >
-              {index + 1}. {item.label}
-            </li>
-          );
-        })}
-      </ol>
+      {mock ? (
+        <ol className="mt-6 flex gap-2" aria-label="Forgot password">
+          {MOCK_STEPS.map((item, index) => {
+            const order = ['email', 'otp', 'password'] as const;
+            const currentIndex =
+              step === 'done' ? 3 : order.indexOf(step as (typeof order)[number]);
+            const current = step === item.id;
+            const complete = currentIndex > index;
+            return (
+              <li
+                key={item.id}
+                className={`flex min-h-11 flex-1 items-center justify-center rounded-2xl px-2 text-center text-xs font-semibold ${
+                  current
+                    ? 'bg-primary-600 text-white'
+                    : complete
+                      ? 'bg-primary-50 text-primary-700'
+                      : 'bg-surface-muted text-fg-muted'
+                }`}
+              >
+                {index + 1}. {item.label}
+              </li>
+            );
+          })}
+        </ol>
+      ) : null}
+
+      {errors.form ? (
+        <p className="mt-4 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-600">{errors.form}</p>
+      ) : null}
 
       {step === 'email' ? (
         <form onSubmit={handleEmailSubmit} className="mt-6 space-y-5">
@@ -129,7 +153,7 @@ const ForgotPasswordPage = () => {
             readOnly={emailLocked}
             leftIcon={<Mail className="h-5 w-5" />}
           />
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" isLoading={submitting}>
             Continue
           </Button>
         </form>
@@ -138,8 +162,7 @@ const ForgotPasswordPage = () => {
       {step === 'otp' ? (
         <form onSubmit={handleOtpSubmit} className="mt-6 space-y-5">
           <p className="rounded-2xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            Demo code for this UI — not emailed. Mail ships with the backend. Use{' '}
-            {DEMO_PASSWORD_RESET_OTP}.
+            Demo code for this UI — not emailed. Use {DEMO_PASSWORD_RESET_OTP}.
           </p>
           <Input
             id="forgot-otp"
@@ -215,15 +238,12 @@ const ForgotPasswordPage = () => {
       ) : null}
 
       {step === 'done' ? (
-        <p className="mt-6 rounded-2xl bg-amber-50 px-3 py-3 text-sm text-amber-900">
-          Form saved for when mail ships. Your demo password is unchanged. This demo does not email
-          you or save a new password yet.
+        <p className="mt-6 rounded-2xl bg-primary-50 px-3 py-3 text-sm text-primary-800">
+          {mock
+            ? 'Your password was updated in this browser. Sign in with the new password.'
+            : 'If that email has a staff account, a reset link is on its way.'}
         </p>
-      ) : (
-        <p className="mt-6 text-sm text-fg-muted">
-          This demo does not email you or save a new password yet.
-        </p>
-      )}
+      ) : null}
 
       <div className="mt-6 text-sm">
         <Link

@@ -54,7 +54,11 @@ import {
 } from '@/data';
 import { isMockApi } from '@/lib/api/http';
 import { loadCatalog } from '@/lib/api/catalog';
+import { listCoinPackages } from '@/lib/api/coinPackages';
+import { listComments } from '@/lib/api/comments';
 import { listMedia } from '@/lib/api/media';
+import { listNotifications } from '@/lib/api/notifications';
+import { getPlatformSettings } from '@/lib/api/settings';
 
 export interface PlatformSettings {
   siteName: string;
@@ -88,6 +92,31 @@ const defaultSettings: PlatformSettings = {
   },
 };
 
+const FAIL_OPEN_PORTAL_SETTINGS = toPortalSettings({
+  maintenanceMode: false,
+  allowRegistration: true,
+  contactEmail: 'admin@softgatecomic.com',
+  defaultLanguage: 'en',
+});
+
+function overlayPortalSettings(
+  prev: PlatformSettings,
+  portal: {
+    maintenanceMode: boolean;
+    allowRegistration: boolean;
+    contactEmail: string;
+    defaultLanguage: 'en' | 'mm';
+  },
+): PlatformSettings {
+  return {
+    ...prev,
+    maintenanceMode: portal.maintenanceMode,
+    allowRegistration: portal.allowRegistration,
+    contactEmail: portal.contactEmail,
+    defaultLanguage: portal.defaultLanguage,
+  };
+}
+
 const mockNonCatalog = {
   dashboardStats: mockDashboardStats,
   revenueData: mockRevenueData,
@@ -112,6 +141,9 @@ function emptyApiCatalog(): SharedData {
     webtoons: [],
     episodes: [],
     mediaFiles: [],
+    coinPackages: [],
+    comments: [],
+    notifications: [],
   };
 }
 
@@ -212,7 +244,14 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
     setIsLoading(true);
     try {
-      const [catalog, media] = await Promise.all([loadCatalog(), listMedia()]);
+      const [catalog, media, packs, commentList, inbox, platform] = await Promise.all([
+        loadCatalog(),
+        listMedia(),
+        listCoinPackages(),
+        listComments(),
+        listNotifications(),
+        getPlatformSettings(),
+      ]);
       setDb((prev) => ({
         ...prev,
         authors: catalog.authors,
@@ -220,7 +259,11 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         webtoons: catalog.webtoons,
         episodes: catalog.episodes,
         mediaFiles: media.files,
+        coinPackages: packs.coinPackages,
+        comments: commentList.comments,
+        notifications: inbox.notifications,
       }));
+      setSettings((prev) => overlayPortalSettings(prev, platform.settings));
       setError(null);
     } catch (err: unknown) {
       const nextError = err instanceof Error ? err : new Error('Failed to fetch catalog');
@@ -232,7 +275,11 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         webtoons: [],
         episodes: [],
         mediaFiles: [],
+        coinPackages: [],
+        comments: [],
+        notifications: [],
       }));
+      setSettings((prev) => overlayPortalSettings(prev, FAIL_OPEN_PORTAL_SETTINGS));
     } finally {
       setIsLoading(false);
     }

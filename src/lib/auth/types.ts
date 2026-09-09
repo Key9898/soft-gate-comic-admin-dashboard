@@ -7,6 +7,9 @@ export const CREDENTIALS_STORAGE_KEY = 'softgate_admin_credentials';
 
 export type StaffAccount = AdminUser & {
   passwordHash: string;
+  totpEnabled?: boolean;
+  totpSecret?: string;
+  totpBackupHashes?: string[];
 };
 
 export interface StaffAccountsStore {

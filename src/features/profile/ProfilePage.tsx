@@ -14,7 +14,7 @@ import { markIdLoaded } from '@/lib/imageLoaded';
 import ProfilePageSkeleton from './components/ProfilePageSkeleton';
 
 const ProfilePage = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, startTotp, confirmTotp, disableTotp } = useAuth();
   const { setMediaFiles, setActivityLogs, isLoading } = useData();
   const { addToast } = useToast();
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -29,6 +29,11 @@ const ProfilePage = () => {
     new: '',
     confirm: '',
   });
+  const [totpSecret, setTotpSecret] = useState('');
+  const [totpOtpauth, setTotpOtpauth] = useState('');
+  const [totpConfirmCode, setTotpConfirmCode] = useState('');
+  const [totpDisablePassword, setTotpDisablePassword] = useState('');
+  const [totpBackupCodes, setTotpBackupCodes] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isEditing && user) {
@@ -306,6 +311,113 @@ const ProfilePage = () => {
                 </div>
               </div>
             )}
+          </Card>
+
+          <Card className="p-6">
+            <div className="mb-2 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-semibold text-fg">Authenticator</h3>
+            </div>
+            <p className="text-sm text-fg-muted">
+              Optional. If you turn this on, Sign in asks for a 6-digit code. First Super Admin
+              setup does not require it.
+            </p>
+            {user?.totpEnabled ? (
+              <form
+                className="mt-4 space-y-4"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  try {
+                    await disableTotp(totpDisablePassword);
+                    setTotpDisablePassword('');
+                    setTotpBackupCodes([]);
+                    addToast('Authenticator turned off', 'success');
+                  } catch {
+                    addToast('Could not turn off authenticator', 'error');
+                  }
+                }}
+              >
+                <Input
+                  id="profile-totp-disable-password"
+                  label="Current password"
+                  type="password"
+                  value={totpDisablePassword}
+                  onChange={(e) => setTotpDisablePassword(e.target.value)}
+                />
+                <Button type="submit" variant="outline">
+                  Turn off authenticator
+                </Button>
+              </form>
+            ) : totpSecret ? (
+              <div className="mt-4 space-y-4">
+                <p className="break-all rounded-2xl bg-surface-muted px-3 py-2 font-mono text-xs text-fg">
+                  {totpSecret}
+                </p>
+                <p className="break-all text-xs text-fg-muted">{totpOtpauth}</p>
+                <Input
+                  id="profile-totp-confirm"
+                  label="Authenticator code"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={totpConfirmCode}
+                  onChange={(e) => setTotpConfirmCode(e.target.value)}
+                />
+                <div className="flex gap-3">
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const codes = await confirmTotp(totpConfirmCode);
+                        setTotpBackupCodes(codes);
+                        setTotpSecret('');
+                        setTotpOtpauth('');
+                        setTotpConfirmCode('');
+                        addToast('Authenticator is on. Save the backup codes.', 'success');
+                      } catch {
+                        addToast('That code did not match.', 'error');
+                      }
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setTotpSecret('');
+                      setTotpOtpauth('');
+                      setTotpConfirmCode('');
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                className="mt-4"
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    const started = await startTotp();
+                    setTotpSecret(started.secret);
+                    setTotpOtpauth(started.otpauthUrl);
+                    setTotpBackupCodes([]);
+                  } catch {
+                    addToast('Could not start authenticator setup', 'error');
+                  }
+                }}
+              >
+                Set up authenticator
+              </Button>
+            )}
+            {totpBackupCodes.length > 0 ? (
+              <ul className="mt-4 grid grid-cols-2 gap-2 font-mono text-sm text-fg">
+                {totpBackupCodes.map((code) => (
+                  <li key={code} className="rounded-2xl bg-surface-muted px-3 py-2">
+                    {code}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </Card>
         </div>
       )}

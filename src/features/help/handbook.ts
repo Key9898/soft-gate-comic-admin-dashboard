@@ -31,7 +31,7 @@ export const OVERVIEW_DATA_MOCK =
   'This browser keeps mock data. Saves stay here. They do not appear on the public site.';
 
 export const OVERVIEW_DATA_API =
-  'This desk is connected to the catalog API. Catalog and media you save can reach the reader site. Dashboard charts, users, revenue, community, coin packages, settings, and notifications stay mock or local even then. Webtoon and episode counts on the Dashboard can be real; purchase and growth charts are not.';
+  'This desk is connected to the catalog API. Catalog, media, and coin packages you save can reach the reader site. Comments you hide or delete save on this desk’s comments API; they do not change reader-site comments. Notifications you mark read or delete save on this desk’s notifications API; they are not the reader inbox. Maintenance, registration, contact email, and default language save on this desk’s settings API; they do not change the reader site. Dashboard charts, users, revenue, and reports stay mock or local even then. Theme and the other Settings controls stay in this browser. Webtoon and episode counts on the Dashboard can be real; purchase and growth charts are not.';
 
 export const OVERVIEW_JUMP = 'Jump with Search or jump… in the header, or Ctrl+K (Mac: ⌘K).';
 
@@ -63,28 +63,31 @@ export const CATALOG_NOTES: ReadonlyArray<{ title: string; body: string }> = [
   },
   {
     title: 'Coin packages',
-    body: 'Coin packages are shop SKUs on this desk, not a payments API. They are not server-backed.',
+    body: 'Coin packages are shop SKUs on this desk, not a payments API. When the catalog API is on, packages save on the server. Super Admin and Admin can write; Member and Viewer look only.',
   },
 ];
 
 export const COMMUNITY_NOTE = {
   title: 'Users, comments, reports',
-  body: 'Users, Comments, and Reports are mock on this desk, even when the catalog API is on. Reader users are not Team staff. Ban, hide, and resolve or dismiss need Admin or Super Admin. Member and Viewer can look only. Comment delete is soft. Report actions apply to pending items only.',
+  body: 'Users and Reports are mock on this desk, even when the catalog API is on. Comments save on this desk’s comments API when the catalog API is on; they are not a reader-comments API. Reader users are not Team staff. Ban, hide, and resolve or dismiss need Admin or Super Admin. Member and Viewer can look only. Comment delete is soft. Report actions apply to pending items only.',
 };
 
 export const BUSINESS_NOTE = {
   title: 'Charts and money',
-  body: 'Analytics, Revenue, and Notifications are mock. Revenue Export is a CSV of this desk’s list, not a bank. Payouts are demo. Activity Log is this browser’s trail, not a server audit API.',
+  body: 'Analytics and Revenue are mock. Notifications save on this desk’s notifications API when the catalog API is on; they are not the reader inbox. Member and Viewer can look only. Delete is permanent. Revenue Export is a CSV of this desk’s list, not a bank. Payouts are demo. Activity Log is this browser’s trail, not a server audit API.',
 };
 
 export const ADMIN_INVITE =
   'Copy the invite link and share it; that always works. The API may also email the invite when mail is configured. Super Admin cannot be invited. Revoke on a pending invite is mock-only.';
 
+export const ADMIN_SIGNIN =
+  'This desk has no public Sign up. Empty staff uses Create the first Super Admin. After that, Sign in only. New people join from Team invite. Reader registration is a website setting, not this desk.';
+
 export const ADMIN_SETTINGS =
-  'Settings Save stays in this browser. Theme applies immediately for every role from the header, palette, or Settings, and is not the Save button.';
+  'When the catalog API is on, Save writes maintenance, registration, contact email, and default language to this desk’s settings API; they do not change the reader site. Theme applies immediately for every role from the header, palette, or Settings, and is not the Save button. Site name, description, email-verification, and notification toggles stay in this browser. Member and Viewer can look only.';
 
 export const ADMIN_PROFILE =
-  'Profile is not in the sidebar. Open it from the header or the profile command. Against the catalog API, name and password stay in this session only.';
+  'Profile is not in the sidebar. Open it from the header or the profile command. Authenticator is optional: if you turn it on, Sign in asks for a 6-digit code. Against the catalog API, name and password stay in this session only; authenticator saves on the staff API.';
 
 export const COMMANDS_INTRO =
   'Go and Create rows open the same destinations as the command palette. System rows are listed for reference.';

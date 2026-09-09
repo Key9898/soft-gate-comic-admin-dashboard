@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { render, screen } from '@testing-library/react';
 import { AuthProvider } from '@/features/auth/useAuth';
 import { ThemeProvider } from '@/lib/theme';
 import AuthLayout from '@/layouts/AuthLayout';
 import LoginPage from '@/features/auth/LoginPage';
-import RegisterPage from '@/features/auth/RegisterPage';
+import SetupPage from '@/features/auth/SetupPage';
 import ForgotPasswordPage from '@/features/auth/ForgotPasswordPage';
 
 function renderAuth(path: string) {
@@ -18,7 +18,8 @@ function renderAuth(path: string) {
             <Routes>
               <Route element={<AuthLayout />}>
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/setup" element={<SetupPage />} />
+                <Route path="/register" element={<Navigate to="/login" replace />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               </Route>
             </Routes>
@@ -30,6 +31,10 @@ function renderAuth(path: string) {
 }
 
 describe('AuthLayout', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it('shows skip link, logo, and no catalog nav', () => {
     renderAuth('/login');
     expect(screen.getByRole('link', { name: /skip to content/i })).toBeInTheDocument();
@@ -42,24 +47,32 @@ describe('AuthLayout', () => {
     expect(screen.queryByTestId('auth-split-card')).not.toBeInTheDocument();
   });
 
-  it('keeps both forms glued and only slides the photo on login', () => {
+  it('uses the split card on login without Sign Up', () => {
     renderAuth('/login');
-    const loginPane = screen.getByTestId('auth-split-form-login');
-    const registerPane = screen.getByTestId('auth-split-form-register');
-    expect(loginPane.className).not.toMatch(/translate-x-full/);
-    expect(registerPane.className).not.toMatch(/translate-x-full/);
+    expect(screen.getByTestId('auth-split-card')).toHaveAttribute('data-view', 'login');
+    expect(screen.getByTestId('auth-split-form-login')).toBeInTheDocument();
+    expect(screen.getByTestId('auth-split-form-setup')).toBeInTheDocument();
+    expect(screen.queryByTestId('auth-split-form-register')).not.toBeInTheDocument();
     expect(screen.getByTestId('auth-split-bg').className).toMatch(/translate-x-full/);
     expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /sign up/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /create the first super admin/i })).toBeInTheDocument();
   });
 
-  it('slides the photo left on register without moving the form panes', () => {
-    renderAuth('/register');
-    expect(screen.getByTestId('auth-split-card')).toHaveAttribute('data-view', 'register');
-    expect(screen.getByTestId('auth-split-form-login').className).not.toMatch(/translate-x-full/);
-    expect(screen.getByTestId('auth-split-form-register').className).not.toMatch(
-      /translate-x-full/,
-    );
+  it('slides the photo over sign in on setup', () => {
+    renderAuth('/setup');
+    expect(screen.getByTestId('auth-split-card')).toHaveAttribute('data-view', 'setup');
+    expect(screen.getByTestId('auth-split-form-setup')).toBeInTheDocument();
     expect(screen.getByTestId('auth-split-bg').className).not.toMatch(/translate-x-full/);
-    expect(screen.getByRole('heading', { name: /create a staff account/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /create the first super admin/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /sign up/i })).not.toBeInTheDocument();
+  });
+
+  it('sends /register to login', () => {
+    renderAuth('/register');
+    expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByTestId('auth-split-card')).toBeInTheDocument();
   });
 });

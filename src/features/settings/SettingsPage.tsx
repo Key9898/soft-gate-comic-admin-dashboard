@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Save, Bell, Shield, Globe, Palette } from 'lucide-react';
 import { Card, Button, Input, Toggle, PageSEO } from '../../components';
 
@@ -7,6 +7,9 @@ import { useStaffAccess } from '@/lib/auth/staffAccess';
 import { appendActivityLog } from '@/lib/activityLog';
 import { useData } from '@/lib/DataContext';
 import { ThemePreference, useTheme } from '@/lib/theme';
+import { apiMessage, isMockApi } from '@/lib/api/http';
+import { updatePlatformSettings } from '@/lib/api/settings';
+import { toPortalSettings } from '@/data';
 import SettingsPageSkeleton from './components/SettingsPageSkeleton';
 
 const SettingsPage = () => {
@@ -18,11 +21,35 @@ const SettingsPage = () => {
     setSettings: saveSettings,
     setActivityLogs,
     isLoading,
+    reloadCatalog,
   } = useData();
   const [settings, setSettings] = useState(initialSettings);
+  const [formError, setFormError] = useState('');
 
-  const handleSave = () => {
+  useEffect(() => {
+    setSettings(initialSettings);
+  }, [initialSettings]);
+
+  const handleSave = async () => {
     if (!canWriteSettings) return;
+    if (!isMockApi()) {
+      try {
+        await updatePlatformSettings(toPortalSettings(settings));
+        saveSettings(settings);
+        await reloadCatalog();
+        appendActivityLog(setActivityLogs, {
+          action: 'update',
+          targetType: 'settings',
+          targetId: 'platform-settings',
+          targetName: 'Platform settings',
+          admin: user,
+        });
+        setFormError('');
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not save settings'));
+      }
+      return;
+    }
     saveSettings(settings);
     appendActivityLog(setActivityLogs, {
       action: 'update',
@@ -31,7 +58,7 @@ const SettingsPage = () => {
       targetName: 'Platform settings',
       admin: user,
     });
-    alert('Settings saved successfully!');
+    setFormError('');
   };
 
   return (
@@ -47,11 +74,13 @@ const SettingsPage = () => {
               <p className="mt-1 text-fg-secondary">Manage platform settings</p>
             </div>
             {canWriteSettings ? (
-              <Button leftIcon={<Save className="h-4 w-4" />} onClick={handleSave}>
+              <Button leftIcon={<Save className="h-4 w-4" />} onClick={() => void handleSave()}>
                 Save Changes
               </Button>
             ) : null}
           </div>
+
+          {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>

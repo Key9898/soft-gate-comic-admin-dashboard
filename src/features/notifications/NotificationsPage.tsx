@@ -14,6 +14,12 @@ import {
 import { Card, Button, Modal, PageSEO, EmptyState } from '../../components';
 import { useData } from '@/lib/DataContext';
 import { useStaffAccess } from '@/lib/auth/staffAccess';
+import { apiMessage, isMockApi } from '@/lib/api/http';
+import {
+  deleteNotification as deleteNotificationApi,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from '@/lib/api/notifications';
 
 import type { Notification } from '../../types';
 import NotificationsPageSkeleton from './components/NotificationsPageSkeleton';
@@ -21,11 +27,12 @@ import NotificationsPageSkeleton from './components/NotificationsPageSkeleton';
 const NotificationsPage = () => {
   const navigate = useNavigate();
   const { canWriteBusiness } = useStaffAccess();
-  const { notifications, setNotifications, isLoading } = useData();
+  const { notifications, setNotifications, isLoading, reloadCatalog } = useData();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -60,24 +67,80 @@ const NotificationsPage = () => {
     return styles[type] || 'bg-gray-100 text-fg-secondary';
   };
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
+    if (!canWriteBusiness) return;
+    if (!isMockApi()) {
+      try {
+        await markNotificationRead(id);
+        await reloadCatalog();
+        setFormError('');
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not mark notification as read'));
+      }
+      return;
+    }
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    if (!canWriteBusiness) return;
+    if (!isMockApi()) {
+      try {
+        await markAllNotificationsRead();
+        await reloadCatalog();
+        setFormError('');
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not mark notifications as read'));
+      }
+      return;
+    }
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
-  const deleteNotification = (id: string) => {
+  const deleteNotification = async (id: string) => {
     if (!canWriteBusiness) return;
+    if (!isMockApi()) {
+      try {
+        await deleteNotificationApi(id);
+        await reloadCatalog();
+        setSelectedNotifications((prev) => prev.filter((selected) => selected !== id));
+        setFormError('');
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not delete notification'));
+      }
+      return;
+    }
     setNotifications((prev) => prev.filter((n) => n.id !== id));
+    setSelectedNotifications((prev) => prev.filter((selected) => selected !== id));
   };
 
-  const deleteSelected = () => {
+  const deleteSelected = async () => {
     if (!canWriteBusiness) return;
+    if (!isMockApi()) {
+      try {
+        for (const id of selectedNotifications) {
+          await deleteNotificationApi(id);
+        }
+        await reloadCatalog();
+        setSelectedNotifications([]);
+        setIsDeleteModalOpen(false);
+        setFormError('');
+      } catch (err) {
+        setFormError(apiMessage(err, 'Could not delete notifications'));
+        await reloadCatalog();
+      }
+      return;
+    }
     setNotifications((prev) => prev.filter((n) => !selectedNotifications.includes(n.id)));
     setSelectedNotifications([]);
     setIsDeleteModalOpen(false);
+  };
+
+  const openDetails = async (notification: Notification) => {
+    if (canWriteBusiness) {
+      await markAsRead(notification.id);
+    }
+    navigate(notification.actionUrl!);
   };
 
   const toggleSelect = (id: string) => {
@@ -122,8 +185,8 @@ const NotificationsPage = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              {unreadCount > 0 && (
-                <Button variant="outline" onClick={markAllAsRead}>
+              {canWriteBusiness && unreadCount > 0 && (
+                <Button variant="outline" onClick={() => void markAllAsRead()}>
                   <CheckCheck className="mr-2 h-4 w-4" />
                   Mark All Read
                 </Button>
@@ -136,6 +199,8 @@ const NotificationsPage = () => {
               )}
             </div>
           </div>
+
+          {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
 
           <Card>
             <div className="border-b border-line p-4">
@@ -240,18 +305,18 @@ const NotificationsPage = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          {!notification.isRead && (
+                          {canWriteBusiness && !notification.isRead ? (
                             <button
-                              onClick={() => markAsRead(notification.id)}
+                              onClick={() => void markAsRead(notification.id)}
                               className="rounded p-1.5 text-fg-muted hover:bg-gray-100 hover:text-fg-secondary"
                               title="Mark as read"
                             >
                               <Check className="h-4 w-4" />
                             </button>
-                          )}
+                          ) : null}
                           {canWriteBusiness ? (
                             <button
-                              onClick={() => deleteNotification(notification.id)}
+                              onClick={() => void deleteNotification(notification.id)}
                               className="rounded p-1.5 text-fg-muted hover:bg-red-50 hover:text-red-500"
                               title="Delete"
                             >
@@ -263,10 +328,7 @@ const NotificationsPage = () => {
                       {notification.actionUrl && (
                         <button
                           type="button"
-                          onClick={() => {
-                            markAsRead(notification.id);
-                            navigate(notification.actionUrl!);
-                          }}
+                          onClick={() => void openDetails(notification)}
                           className="mt-2 inline-block text-sm text-primary-600 hover:text-primary-700"
                         >
                           View details →
@@ -305,6 +367,7 @@ const NotificationsPage = () => {
             size="sm"
           >
             <div className="space-y-4">
+              {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
               <p className="text-fg-secondary">
                 Are you sure you want to delete {selectedNotifications.length} notification(s)? This
                 action cannot be undone.
@@ -313,7 +376,7 @@ const NotificationsPage = () => {
                 <Button variant="secondary" onClick={() => setIsDeleteModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button variant="danger" onClick={deleteSelected}>
+                <Button variant="danger" onClick={() => void deleteSelected()}>
                   Delete
                 </Button>
               </div>

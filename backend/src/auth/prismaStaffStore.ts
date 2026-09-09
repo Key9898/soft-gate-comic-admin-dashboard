@@ -1,5 +1,10 @@
 import type { PrismaClient } from '@prisma/client';
-import type { StaffInviteRecord, StaffStore, StaffUserRecord } from './staffStore.js';
+import type {
+  StaffInviteRecord,
+  StaffPasswordResetRecord,
+  StaffStore,
+  StaffUserRecord,
+} from './staffStore.js';
 
 function toUser(row: {
   id: string;
@@ -7,6 +12,9 @@ function toUser(row: {
   displayName: string;
   role: StaffUserRecord['role'];
   passwordHash: string;
+  totpEnabled: boolean;
+  totpSecret: string | null;
+  totpBackupHashes: string[];
   createdAt: Date;
 }): StaffUserRecord {
   return row;
@@ -26,6 +34,20 @@ function toInvite(row: {
   return {
     ...row,
     acceptedAt: row.acceptedAt ?? undefined,
+  };
+}
+
+function toReset(row: {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  consumedAt: Date | null;
+  createdAt: Date;
+}): StaffPasswordResetRecord {
+  return {
+    ...row,
+    consumedAt: row.consumedAt ?? undefined,
   };
 }
 
@@ -57,6 +79,17 @@ export function createPrismaStaffStore(prisma: PrismaClient): StaffStore {
         },
       });
       return toUser(row);
+    },
+    async updateUser(id, patch) {
+      try {
+        const row = await prisma.staffUser.update({
+          where: { id },
+          data: patch,
+        });
+        return toUser(row);
+      } catch {
+        return null;
+      }
     },
     async deleteUser(id) {
       try {
@@ -98,6 +131,32 @@ export function createPrismaStaffStore(prisma: PrismaClient): StaffStore {
           data: patch,
         });
         return toInvite(row);
+      } catch {
+        return null;
+      }
+    },
+    async createPasswordReset(input) {
+      const row = await prisma.staffPasswordReset.create({
+        data: {
+          id: input.id,
+          userId: input.userId,
+          tokenHash: input.tokenHash,
+          expiresAt: input.expiresAt,
+        },
+      });
+      return toReset(row);
+    },
+    async findPasswordResetByTokenHash(tokenHash) {
+      const row = await prisma.staffPasswordReset.findUnique({ where: { tokenHash } });
+      return row ? toReset(row) : null;
+    },
+    async consumePasswordReset(id) {
+      try {
+        const row = await prisma.staffPasswordReset.update({
+          where: { id },
+          data: { consumedAt: new Date() },
+        });
+        return toReset(row);
       } catch {
         return null;
       }

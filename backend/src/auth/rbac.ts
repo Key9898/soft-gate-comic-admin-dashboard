@@ -11,6 +11,18 @@ export function canWriteCatalog(role?: string | null): boolean {
   return role === 'super_admin' || role === 'admin' || role === 'member';
 }
 
+export function canWriteBusiness(role?: string | null): boolean {
+  return role === 'super_admin' || role === 'admin';
+}
+
+export function canWriteCommunity(role?: string | null): boolean {
+  return role === 'super_admin' || role === 'admin';
+}
+
+export function canWriteSettings(role?: string | null): boolean {
+  return role === 'super_admin' || role === 'admin';
+}
+
 export function canManageTeam(role?: string | null): boolean {
   return role === 'super_admin' || role === 'admin';
 }

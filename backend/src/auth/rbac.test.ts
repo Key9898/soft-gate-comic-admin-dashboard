@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { canInviteRole, canManageTeam, canRemoveStaff, canWriteCatalog } from './rbac.js';
+import {
+  canInviteRole,
+  canManageTeam,
+  canRemoveStaff,
+  canWriteBusiness,
+  canWriteCatalog,
+  canWriteCommunity,
+  canWriteSettings,
+} from './rbac.js';
 
 describe('staff RBAC', () => {
   it('locks Super Admin from invite and remove', () => {
@@ -22,5 +30,26 @@ describe('staff RBAC', () => {
     expect(canWriteCatalog('admin')).toBe(true);
     expect(canWriteCatalog('member')).toBe(true);
     expect(canWriteCatalog('viewer')).toBe(false);
+  });
+
+  it('matches Admin mock business write rules', () => {
+    expect(canWriteBusiness('super_admin')).toBe(true);
+    expect(canWriteBusiness('admin')).toBe(true);
+    expect(canWriteBusiness('member')).toBe(false);
+    expect(canWriteBusiness('viewer')).toBe(false);
+  });
+
+  it('matches Admin mock community write rules', () => {
+    expect(canWriteCommunity('super_admin')).toBe(true);
+    expect(canWriteCommunity('admin')).toBe(true);
+    expect(canWriteCommunity('member')).toBe(false);
+    expect(canWriteCommunity('viewer')).toBe(false);
+  });
+
+  it('matches Admin mock settings write rules', () => {
+    expect(canWriteSettings('super_admin')).toBe(true);
+    expect(canWriteSettings('admin')).toBe(true);
+    expect(canWriteSettings('member')).toBe(false);
+    expect(canWriteSettings('viewer')).toBe(false);
   });
 });
