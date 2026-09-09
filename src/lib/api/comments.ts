@@ -1,16 +1,16 @@
-import type { Comment } from '@softgate/shared';
+import type { ReaderComment } from '@softgate/shared';
 import { apiRequest } from './http';
 
-export type CommentStatusBody = {
-  status: Comment['status'];
+export type CommentReportedBody = {
+  reported: boolean;
 };
 
 export function listComments() {
-  return apiRequest<{ comments: Comment[] }>('/api/comments');
+  return apiRequest<{ comments: ReaderComment[] }>('/api/comments');
 }
 
-export function updateCommentStatus(id: string, body: CommentStatusBody) {
-  return apiRequest<{ comment: Comment }>(`/api/comments/${id}`, {
+export function updateCommentReported(id: string, body: CommentReportedBody) {
+  return apiRequest<{ comment: ReaderComment }>(`/api/comments/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
   });

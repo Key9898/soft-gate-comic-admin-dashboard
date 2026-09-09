@@ -7,6 +7,7 @@ export type {
   Genre,
   CoinPackage,
   Comment,
+  ReaderComment,
   DashboardStats,
   RevenueData,
   UserGrowthData,

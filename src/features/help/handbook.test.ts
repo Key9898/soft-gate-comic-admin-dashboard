@@ -9,9 +9,11 @@ describe('handbook honesty', () => {
     expect(ADMIN_SETTINGS).not.toMatch(/they do not change the reader site/);
   });
 
-  it('keeps comments, staff inbox, and users off the reader join', () => {
-    expect(OVERVIEW_DATA_API).toMatch(/do not change reader-site comments/);
+  it('says live comments are portal ReaderComment and keeps inbox and users mock', () => {
+    expect(OVERVIEW_DATA_API).toMatch(/ReaderComment/);
+    expect(OVERVIEW_DATA_API).toMatch(/delete removes the reader thread/);
     expect(OVERVIEW_DATA_API).toMatch(/they are not the reader inbox/);
     expect(OVERVIEW_DATA_API).toMatch(/users, revenue, and reports stay mock/);
+    expect(OVERVIEW_DATA_API).not.toMatch(/do not change reader-site comments/);
   });
 });

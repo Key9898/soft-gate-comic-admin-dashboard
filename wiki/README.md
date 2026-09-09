@@ -8,7 +8,7 @@ Welcome to the official developer wiki for the SoftGate Comic Admin Dashboard pr
 - [01-stack.md](01-stack.md) — Technical stack & core configurations
 - [02-workflow.md](02-workflow.md) — Git workflow, husky gates, dual-track docs
 - [03-folder-map.md](03-folder-map.md) — Codebase architecture and feature folders layout
-- [architecture/implementation-phases.md](architecture/implementation-phases.md) — Impl **1–52** (Impl 52 = live join desk)
+- [architecture/implementation-phases.md](architecture/implementation-phases.md) — Impl **1–53** (Impl 53 = moderate portal `ReaderComment`)
 - [references/website-integration.md](references/website-integration.md) — pre-backend Admin work list (21) so the portal can consume catalog/settings
 - [conventions/brand-color-tokens.md](conventions/brand-color-tokens.md) — Logo-aligned teal + `burst-*` magenta tokens
 - [conventions/backend-workspace.md](conventions/backend-workspace.md) — API in `backend/`; Admin SPA at repo root
@@ -75,6 +75,7 @@ Welcome to the official developer wiki for the SoftGate Comic Admin Dashboard pr
 - [notes/2026-09-10-r2-catalog-smoke.md](notes/2026-09-10-r2-catalog-smoke.md) — Impl 50 live R2 smoke + published title
 - [notes/2026-09-10-reader-broadcasts.md](notes/2026-09-10-reader-broadcasts.md) — Impl 51 reader broadcasts on `/notifications`
 - [notes/2026-09-10-live-join-desk.md](notes/2026-09-10-live-join-desk.md) — Impl 52 live join desk
+- [notes/2026-09-10-reader-comment-moderation.md](notes/2026-09-10-reader-comment-moderation.md) — Impl 53 moderate portal `ReaderComment`
 - [notes/2026-08-22-staff-auth.md](notes/2026-08-22-staff-auth.md) — Impl 20 staff auth (login/register/forgot OTP)
 
 ## Wiki taxonomy

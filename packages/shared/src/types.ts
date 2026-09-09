@@ -113,6 +113,18 @@ export interface Comment {
   createdAt: string;
 }
 
+export interface ReaderComment {
+  id: string;
+  episodeKey: string;
+  userId: string;
+  content: string;
+  parentId?: string;
+  spoiler: boolean;
+  reported: boolean;
+  isEdited: boolean;
+  createdAt: string;
+}
+
 export interface DashboardStats {
   totalUsers: number;
   totalWebtoons: number;

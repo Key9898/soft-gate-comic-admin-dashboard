@@ -1,91 +1,90 @@
-import type { Prisma, PrismaClient } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
+import type { PrismaClient } from '@prisma/client';
 import {
   publicComment,
-  readCommentContent,
-  readUserSnapshot,
   type CommentRecord,
-  type CommentStatus,
   type CommentStore,
   type CommentWrite,
 } from './commentStore.js';
 
 function toRecord(row: {
   id: string;
+  episodeKey: string;
   userId: string;
-  user: Prisma.JsonValue;
-  webtoonId: string;
-  episodeId: string;
-  content: Prisma.JsonValue;
-  likeCount: number;
-  status: CommentStatus;
+  content: string;
+  parentId: string | null;
+  spoiler: boolean;
+  reported: boolean;
+  isEdited: boolean;
   createdAt: Date;
 }): CommentRecord {
-  const user = readUserSnapshot(row.user);
-  const content = readCommentContent(row.content);
   return publicComment({
     id: row.id,
+    episodeKey: row.episodeKey,
     userId: row.userId,
-    user: user ?? {
-      id: row.userId,
-      email: '',
-      username: 'unknown',
-      displayName: 'Unknown',
-      coinBalance: 0,
-      status: 'active',
-      createdAt: row.createdAt.toISOString(),
-    },
-    webtoonId: row.webtoonId,
-    episodeId: row.episodeId,
-    content: content ?? { en: '', mm: '' },
-    likeCount: row.likeCount,
-    status: row.status,
+    content: row.content,
+    parentId: row.parentId ?? undefined,
+    spoiler: row.spoiler,
+    reported: row.reported,
+    isEdited: row.isEdited,
     createdAt: row.createdAt.toISOString(),
   });
 }
 
 export function createPrismaCommentStore(prisma: PrismaClient): CommentStore {
   return {
-    async list() {
-      const rows = await prisma.comment.findMany({ orderBy: { createdAt: 'asc' } });
+    async list(filter) {
+      const rows = await prisma.readerComment.findMany({
+        where: filter?.reported === undefined ? undefined : { reported: filter.reported },
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+      });
       return rows.map(toRecord);
     },
     async findById(id) {
-      const row = await prisma.comment.findUnique({ where: { id } });
+      const row = await prisma.readerComment.findUnique({ where: { id } });
       return row ? toRecord(row) : null;
     },
     async create(input: CommentWrite) {
       const stored = publicComment({
-        id: 'pending',
+        id: input.id ?? randomUUID(),
+        episodeKey: input.episodeKey,
         userId: input.userId,
-        user: input.user,
-        webtoonId: input.webtoonId,
-        episodeId: input.episodeId,
         content: input.content,
-        likeCount: input.likeCount ?? 0,
-        status: input.status ?? 'visible',
-        createdAt: new Date().toISOString(),
+        parentId: input.parentId,
+        spoiler: input.spoiler ?? false,
+        reported: input.reported ?? false,
+        isEdited: input.isEdited ?? false,
+        createdAt: input.createdAt ?? new Date().toISOString(),
       });
-      const row = await prisma.comment.create({
+      const row = await prisma.readerComment.create({
         data: {
+          id: stored.id,
+          episodeKey: stored.episodeKey,
           userId: stored.userId,
-          user: stored.user,
-          webtoonId: stored.webtoonId,
-          episodeId: stored.episodeId,
           content: stored.content,
-          likeCount: stored.likeCount,
-          status: stored.status,
+          parentId: stored.parentId ?? null,
+          spoiler: stored.spoiler,
+          reported: stored.reported,
+          isEdited: stored.isEdited,
+          createdAt: new Date(stored.createdAt),
         },
       });
       return toRecord(row);
     },
-    async updateStatus(id, status: CommentStatus) {
-      const current = await prisma.comment.findUnique({ where: { id } });
+    async updateReported(id, reported) {
+      const current = await prisma.readerComment.findUnique({ where: { id } });
       if (!current) return null;
-      const row = await prisma.comment.update({
+      const row = await prisma.readerComment.update({
         where: { id },
-        data: { status },
+        data: { reported },
       });
       return toRecord(row);
+    },
+    async delete(id) {
+      const current = await prisma.readerComment.findUnique({ where: { id } });
+      if (!current) return false;
+      await prisma.readerComment.delete({ where: { id } });
+      return true;
     },
   };
 }

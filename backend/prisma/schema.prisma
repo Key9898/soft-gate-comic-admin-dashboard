@@ -208,6 +208,29 @@ model Comment {
   createdAt DateTime      @default(now())
 }
 
+model ReaderComment {
+  id         String               @id
+  episodeKey String
+  userId     String
+  content    String
+  parentId   String?
+  spoiler    Boolean              @default(false)
+  reported   Boolean              @default(false)
+  isEdited   Boolean              @default(false)
+  createdAt  DateTime
+  likes      ReaderCommentLike[]
+
+  @@index([episodeKey])
+}
+
+model ReaderCommentLike {
+  commentId String
+  userId    String
+  comment   ReaderComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, userId])
+}
+
 enum StaffNotificationType {
   system
   report

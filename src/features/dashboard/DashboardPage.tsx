@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import { Card, PageSEO } from '../../components';
 import { useData } from '@/lib/DataContext';
+import { isMockApi } from '@/lib/api/http';
 import { readSgVar, useTheme } from '@/lib/theme';
 import DashboardPageSkeleton from './components/DashboardPageSkeleton';
 
@@ -60,6 +61,7 @@ const DashboardPage = () => {
     episodes,
     users,
     comments,
+    readerComments,
     transactions,
     isLoading,
   } = useData();
@@ -83,7 +85,9 @@ const DashboardPage = () => {
     .filter((tx) => tx.type === 'purchase' && tx.status === 'completed')
     .reduce((sum, tx) => sum + tx.amount, 0);
   const activeUsers = users.filter((u) => u.status === 'active').length;
-  const visibleComments = comments.filter((c) => c.status === 'visible').length;
+  const commentCountCaption = isMockApi()
+    ? `${comments.filter((c) => c.status === 'visible').length} visible comments`
+    : `${readerComments.length} reader comments`;
   const growthRate =
     userGrowthData.length >= 2
       ? (
@@ -122,7 +126,7 @@ const DashboardPage = () => {
               title="Total Episodes"
               value={formatNumber(episodes.length)}
               icon={<FileText className="h-6 w-6" />}
-              change={`${visibleComments} visible comments`}
+              change={commentCountCaption}
               changeType="neutral"
             />
             <StatCard

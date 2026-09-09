@@ -66,8 +66,8 @@ export {
 export {
   deleteComment,
   listComments,
-  updateCommentStatus,
-  type CommentStatusBody,
+  updateCommentReported,
+  type CommentReportedBody,
 } from './comments';
 export {
   deleteNotification,

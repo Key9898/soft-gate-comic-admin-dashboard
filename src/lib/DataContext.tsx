@@ -14,6 +14,7 @@ import {
   Episode,
   User,
   Comment,
+  ReaderComment,
   DashboardStats,
   RevenueData,
   UserGrowthData,
@@ -172,6 +173,7 @@ interface DataContextType {
   setUsers: Dispatch<SetStateAction<User[]>>;
   comments: Comment[];
   setComments: Dispatch<SetStateAction<Comment[]>>;
+  readerComments: ReaderComment[];
   dashboardStats: DashboardStats;
   setDashboardStats: Dispatch<SetStateAction<DashboardStats>>;
   revenueData: RevenueData[];
@@ -224,6 +226,7 @@ function readAdminSettings(): Partial<PlatformSettings> {
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const mock = isMockApi();
   const [db, setDb] = useState<SharedData>(() => (mock ? loadMockDb() : emptyApiCatalog()));
+  const [readerComments, setReaderComments] = useState<ReaderComment[]>([]);
   const [isLoading, setIsLoading] = useState(() => !mock);
   const [error, setError] = useState<Error | null>(null);
 
@@ -252,6 +255,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         listNotifications(),
         getPlatformSettings(),
       ]);
+      setReaderComments(commentList.comments);
       setDb((prev) => ({
         ...prev,
         authors: catalog.authors,
@@ -260,7 +264,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         episodes: catalog.episodes,
         mediaFiles: media.files,
         coinPackages: packs.coinPackages,
-        comments: commentList.comments,
+        comments: [],
         notifications: inbox.notifications,
       }));
       setSettings((prev) => overlayPortalSettings(prev, platform.settings));
@@ -268,6 +272,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     } catch (err: unknown) {
       const nextError = err instanceof Error ? err : new Error('Failed to fetch catalog');
       setError(nextError);
+      setReaderComments([]);
       setDb((prev) => ({
         ...prev,
         authors: [],
@@ -422,6 +427,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setUsers,
     comments: db.comments,
     setComments,
+    readerComments,
     dashboardStats: db.dashboardStats,
     setDashboardStats,
     revenueData: db.revenueData,

@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { canWriteCommunity } from '../auth/rbac.js';
 import { createRequireStaff, type AuthedRequest } from '../auth/requireStaff.js';
 import type { StaffStore } from '../auth/staffStore.js';
-import { isCommentStatus, publicComment, type CommentStore } from './commentStore.js';
+import { publicComment, type CommentStore } from './commentStore.js';
 
 function requireCommunityWrite(req: AuthedRequest, res: Response, next: NextFunction) {
   if (!canWriteCommunity(req.staff?.role)) {
@@ -13,17 +13,17 @@ function requireCommunityWrite(req: AuthedRequest, res: Response, next: NextFunc
   next();
 }
 
-function readStatus(
+function readReported(
   body: unknown,
-): { ok: true; status: 'visible' | 'hidden' | 'deleted' } | { ok: false; error: string } {
+): { ok: true; reported: boolean } | { ok: false; error: string } {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     return { ok: false, error: 'Invalid body' };
   }
-  const row = body as Record<string, unknown>;
-  if (!isCommentStatus(row.status)) {
-    return { ok: false, error: 'status must be visible, hidden, or deleted' };
+  const reported = (body as { reported?: unknown }).reported;
+  if (typeof reported !== 'boolean') {
+    return { ok: false, error: 'reported must be a boolean' };
   }
-  return { ok: true, status: row.status };
+  return { ok: true, reported };
 }
 
 export function mountCommentRoutes(app: Express, staff: StaffStore, comments: CommentStore) {
@@ -31,18 +31,21 @@ export function mountCommentRoutes(app: Express, staff: StaffStore, comments: Co
   const router = Router();
   router.use(requireStaff);
 
-  router.get('/', async (_req, res) => {
-    const list = await comments.list();
+  router.get('/', async (req, res) => {
+    const raw = req.query.reported;
+    const filter =
+      raw === 'true' ? { reported: true } : raw === 'false' ? { reported: false } : undefined;
+    const list = await comments.list(filter);
     res.json({ comments: list.map(publicComment) });
   });
 
   router.patch('/:id', requireCommunityWrite, async (req: AuthedRequest, res) => {
-    const parsed = readStatus(req.body);
+    const parsed = readReported(req.body);
     if (!parsed.ok) {
       res.status(400).json({ error: parsed.error });
       return;
     }
-    const updated = await comments.updateStatus(String(req.params.id), parsed.status);
+    const updated = await comments.updateReported(String(req.params.id), parsed.reported);
     if (!updated) {
       res.status(404).json({ error: 'Not found' });
       return;
@@ -51,12 +54,11 @@ export function mountCommentRoutes(app: Express, staff: StaffStore, comments: Co
   });
 
   router.delete('/:id', requireCommunityWrite, async (req: AuthedRequest, res) => {
-    const current = await comments.findById(String(req.params.id));
-    if (!current) {
+    const ok = await comments.delete(String(req.params.id));
+    if (!ok) {
       res.status(404).json({ error: 'Not found' });
       return;
     }
-    await comments.updateStatus(String(req.params.id), 'deleted');
     res.json({ ok: true });
   });
 

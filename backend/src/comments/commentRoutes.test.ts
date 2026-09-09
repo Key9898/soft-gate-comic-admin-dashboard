@@ -9,24 +9,11 @@ import { createMemoryNotificationStore } from '../notifications/memoryNotificati
 import { createMemoryPlatformSettingsStore } from '../settings/memoryPlatformSettingsStore.js';
 import type { CommentStore, CommentWrite } from './commentStore.js';
 
-const sampleUser = {
-  id: 'u1',
-  email: 'reader@softgate.com',
-  username: 'reader',
-  displayName: 'Reader',
-  coinBalance: 0,
-  status: 'active' as const,
-  createdAt: '2026-04-25T10:00:00.000Z',
-};
-
 const sampleWrite: CommentWrite = {
+  episodeKey: 'series-1:1',
   userId: 'u1',
-  user: sampleUser,
-  webtoonId: 'w1',
-  episodeId: 'e1',
-  content: { en: 'Hello', mm: '' },
-  likeCount: 2,
-  status: 'visible',
+  content: 'Hello',
+  reported: true,
 };
 
 function appWithComments(comments: CommentStore) {
@@ -76,45 +63,53 @@ describe('comment routes', () => {
     const listed = await request(app).get('/api/comments').set('Cookie', memberCookie);
     expect(listed.status).toBe(200);
     expect(listed.body.comments).toHaveLength(1);
+    expect(listed.body.comments[0].reported).toBe(true);
 
     const denied = await request(app)
       .patch(`/api/comments/${listed.body.comments[0].id}`)
       .set('Cookie', memberCookie)
-      .send({ status: 'hidden' });
+      .send({ reported: false });
     expect(denied.status).toBe(403);
   });
 
-  it('hides, shows, and soft-deletes for admin', async () => {
+  it('toggles reported and hard-deletes for admin', async () => {
     const comments = createMemoryCommentStore();
     const seeded = await comments.create(sampleWrite);
     const app = appWithComments(comments);
     const cookie = await registerOwner(app);
 
-    const hidden = await request(app)
+    const cleared = await request(app)
       .patch(`/api/comments/${seeded.id}`)
       .set('Cookie', cookie)
-      .send({ status: 'hidden' });
-    expect(hidden.status).toBe(200);
-    expect(hidden.body.comment.status).toBe('hidden');
-    expect(hidden.body.comment.createdAt).toBe(seeded.createdAt);
+      .send({ reported: false });
+    expect(cleared.status).toBe(200);
+    expect(cleared.body.comment.reported).toBe(false);
+    expect(cleared.body.comment.createdAt).toBe(seeded.createdAt);
+    expect(cleared.body.comment.content).toBe('Hello');
 
-    const shown = await request(app)
+    const flagged = await request(app)
       .patch(`/api/comments/${seeded.id}`)
       .set('Cookie', cookie)
-      .send({ status: 'visible' });
-    expect(shown.status).toBe(200);
-    expect(shown.body.comment.status).toBe('visible');
+      .send({ reported: true });
+    expect(flagged.status).toBe(200);
+    expect(flagged.body.comment.reported).toBe(true);
+
+    const reportedOnly = await request(app)
+      .get('/api/comments?reported=true')
+      .set('Cookie', cookie);
+    expect(reportedOnly.status).toBe(200);
+    expect(reportedOnly.body.comments).toHaveLength(1);
 
     const bad = await request(app)
       .patch(`/api/comments/${seeded.id}`)
       .set('Cookie', cookie)
-      .send({ status: 'archived' });
+      .send({ status: 'hidden' });
     expect(bad.status).toBe(400);
 
     const missing = await request(app)
       .patch('/api/comments/missing')
       .set('Cookie', cookie)
-      .send({ status: 'hidden' });
+      .send({ reported: true });
     expect(missing.status).toBe(404);
 
     const deleted = await request(app).delete(`/api/comments/${seeded.id}`).set('Cookie', cookie);
@@ -123,11 +118,10 @@ describe('comment routes', () => {
 
     const listed = await request(app).get('/api/comments').set('Cookie', cookie);
     expect(listed.status).toBe(200);
-    expect(listed.body.comments).toHaveLength(1);
-    expect(listed.body.comments[0].status).toBe('deleted');
+    expect(listed.body.comments).toHaveLength(0);
 
     const again = await request(app).delete(`/api/comments/${seeded.id}`).set('Cookie', cookie);
-    expect(again.status).toBe(200);
+    expect(again.status).toBe(404);
 
     const gone = await request(app).delete('/api/comments/missing').set('Cookie', cookie);
     expect(gone.status).toBe(404);
