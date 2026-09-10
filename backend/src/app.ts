@@ -20,9 +20,34 @@ import { createPrismaReaderUserStore } from './users/prismaReaderUserStore.js';
 import { mountNotificationRoutes } from './notifications/notificationRoutes.js';
 import type { NotificationStore } from './notifications/notificationStore.js';
 import { createPrismaNotificationStore } from './notifications/prismaNotificationStore.js';
+import { mountReaderBroadcastRoutes } from './broadcasts/readerBroadcastRoutes.js';
+import type { ReaderBroadcastStore } from './broadcasts/broadcastStore.js';
+import { createPrismaBroadcastStore } from './broadcasts/prismaBroadcastStore.js';
+import {
+  createWebsiteBroadcastClientFromEnv,
+  type WebsiteBroadcastClient,
+} from './broadcasts/websiteBroadcastClient.js';
 import { mountPlatformSettingsRoutes } from './settings/platformSettingsRoutes.js';
 import type { PlatformSettingsStore } from './settings/platformSettingsStore.js';
 import { createPrismaPlatformSettingsStore } from './settings/prismaPlatformSettingsStore.js';
+import { mountAboutHistoryRoutes } from './about/aboutHistoryRoutes.js';
+import type { AboutHistoryStore } from './about/aboutHistoryStore.js';
+import { createPrismaAboutHistoryStore } from './about/prismaAboutHistoryStore.js';
+import { mountAboutTeamRoutes } from './about/aboutTeamRoutes.js';
+import type { AboutTeamStore } from './about/aboutTeamStore.js';
+import { createPrismaAboutTeamStore } from './about/prismaAboutTeamStore.js';
+import { mountPressRoutes } from './press/pressRoutes.js';
+import type { PressStore } from './press/pressStore.js';
+import { createPrismaPressStore } from './press/prismaPressStore.js';
+import { mountFaqRoutes } from './faq/faqRoutes.js';
+import type { FaqStore } from './faq/faqStore.js';
+import { createPrismaFaqStore } from './faq/prismaFaqStore.js';
+import { mountCookieRoutes } from './cookiePolicy/cookieRoutes.js';
+import type { CookieStore } from './cookiePolicy/cookieStore.js';
+import { createPrismaCookieStore } from './cookiePolicy/prismaCookieStore.js';
+import { mountLegalRoutes } from './legal/legalRoutes.js';
+import type { LegalStore } from './legal/legalStore.js';
+import { createPrismaLegalStore } from './legal/prismaLegalStore.js';
 import { getPrisma, pingDb } from './db.js';
 import { createMailerFromEnv, type StaffMailer } from './mail/mailer.js';
 import { createMediaServicesFromEnv } from './media/fromEnv.js';
@@ -35,7 +60,15 @@ export type CreateAppOptions = {
   comments?: CommentStore;
   readerUsers?: ReaderUserStore;
   notifications?: NotificationStore;
+  broadcasts?: ReaderBroadcastStore;
+  websiteBroadcasts?: WebsiteBroadcastClient;
   settings?: PlatformSettingsStore;
+  aboutHistory?: AboutHistoryStore;
+  aboutTeam?: AboutTeamStore;
+  press?: PressStore;
+  faq?: FaqStore;
+  cookies?: CookieStore;
+  legal?: LegalStore;
   media?: MediaServices;
   mailer?: StaffMailer;
 };
@@ -50,7 +83,15 @@ export function createApp(options: CreateAppOptions = {}) {
   const comments = options.comments ?? prismaCommentsFromEnv();
   const readerUsers = options.readerUsers ?? prismaReaderUsersFromEnv();
   const notifications = options.notifications ?? prismaNotificationsFromEnv();
+  const broadcasts = options.broadcasts ?? prismaBroadcastsFromEnv();
+  const websiteBroadcasts = options.websiteBroadcasts ?? createWebsiteBroadcastClientFromEnv();
   const settings = options.settings ?? prismaSettingsFromEnv();
+  const aboutHistory = options.aboutHistory ?? prismaAboutHistoryFromEnv();
+  const aboutTeam = options.aboutTeam ?? prismaAboutTeamFromEnv();
+  const press = options.press ?? prismaPressFromEnv();
+  const faq = options.faq ?? prismaFaqFromEnv();
+  const cookies = options.cookies ?? prismaCookiesFromEnv();
+  const legal = options.legal ?? prismaLegalFromEnv();
   const media = options.media ?? createMediaServicesFromEnv();
 
   const allowedOrigins = parseCorsOrigins();
@@ -130,11 +171,67 @@ export function createApp(options: CreateAppOptions = {}) {
     });
   }
 
+  if (store && broadcasts) {
+    mountReaderBroadcastRoutes(app, store, broadcasts, websiteBroadcasts);
+  } else {
+    app.use('/api/reader-broadcasts', (_req, res) => {
+      res.status(503).json({ error: 'Reader broadcasts unavailable' });
+    });
+  }
+
   if (store && settings) {
     mountPlatformSettingsRoutes(app, store, settings);
   } else {
     app.use('/api/settings', (_req, res) => {
       res.status(503).json({ error: 'Settings store unavailable' });
+    });
+  }
+
+  if (store && aboutHistory) {
+    mountAboutHistoryRoutes(app, store, aboutHistory);
+  } else {
+    app.use('/api/about/history', (_req, res) => {
+      res.status(503).json({ error: 'About history unavailable' });
+    });
+  }
+
+  if (store && aboutTeam) {
+    mountAboutTeamRoutes(app, store, aboutTeam);
+  } else {
+    app.use('/api/about/team', (_req, res) => {
+      res.status(503).json({ error: 'About team unavailable' });
+    });
+  }
+
+  if (store && press) {
+    mountPressRoutes(app, store, press);
+  } else {
+    app.use('/api/press', (_req, res) => {
+      res.status(503).json({ error: 'Press store unavailable' });
+    });
+  }
+
+  if (store && faq) {
+    mountFaqRoutes(app, store, faq);
+  } else {
+    app.use('/api/faq', (_req, res) => {
+      res.status(503).json({ error: 'FAQ store unavailable' });
+    });
+  }
+
+  if (store && cookies) {
+    mountCookieRoutes(app, store, cookies);
+  } else {
+    app.use('/api/cookies', (_req, res) => {
+      res.status(503).json({ error: 'Cookie policy store unavailable' });
+    });
+  }
+
+  if (store && legal) {
+    mountLegalRoutes(app, store, legal);
+  } else {
+    app.use('/api/legal', (_req, res) => {
+      res.status(503).json({ error: 'Legal store unavailable' });
     });
   }
 
@@ -185,8 +282,50 @@ function prismaNotificationsFromEnv(): NotificationStore | undefined {
   return createPrismaNotificationStore(prisma);
 }
 
+function prismaBroadcastsFromEnv(): ReaderBroadcastStore | undefined {
+  const prisma = getPrisma();
+  if (!prisma) return undefined;
+  return createPrismaBroadcastStore(prisma);
+}
+
 function prismaSettingsFromEnv(): PlatformSettingsStore | undefined {
   const prisma = getPrisma();
   if (!prisma) return undefined;
   return createPrismaPlatformSettingsStore(prisma);
+}
+
+function prismaAboutHistoryFromEnv(): AboutHistoryStore | undefined {
+  const prisma = getPrisma();
+  if (!prisma) return undefined;
+  return createPrismaAboutHistoryStore(prisma);
+}
+
+function prismaAboutTeamFromEnv(): AboutTeamStore | undefined {
+  const prisma = getPrisma();
+  if (!prisma) return undefined;
+  return createPrismaAboutTeamStore(prisma);
+}
+
+function prismaPressFromEnv(): PressStore | undefined {
+  const prisma = getPrisma();
+  if (!prisma) return undefined;
+  return createPrismaPressStore(prisma);
+}
+
+function prismaFaqFromEnv(): FaqStore | undefined {
+  const prisma = getPrisma();
+  if (!prisma) return undefined;
+  return createPrismaFaqStore(prisma);
+}
+
+function prismaCookiesFromEnv(): CookieStore | undefined {
+  const prisma = getPrisma();
+  if (!prisma) return undefined;
+  return createPrismaCookieStore(prisma);
+}
+
+function prismaLegalFromEnv(): LegalStore | undefined {
+  const prisma = getPrisma();
+  if (!prisma) return undefined;
+  return createPrismaLegalStore(prisma);
 }

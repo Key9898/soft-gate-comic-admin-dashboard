@@ -55,6 +55,36 @@ test.describe('Navigation', () => {
     await expect(page.getByRole('heading', { name: /settings/i })).toBeVisible();
   });
 
+  test('navigates to about', async ({ page }) => {
+    await page.getByRole('link', { name: /^about$/i }).click();
+    await expect(page).toHaveURL('/about');
+    await expect(page.getByRole('heading', { name: /^about$/i })).toBeVisible();
+  });
+
+  test('navigates to press', async ({ page }) => {
+    await page.getByRole('link', { name: /^press$/i }).click();
+    await expect(page).toHaveURL('/press');
+    await expect(page.getByRole('heading', { name: /^press$/i })).toBeVisible();
+  });
+
+  test('navigates to faq', async ({ page }) => {
+    await page.getByRole('link', { name: /^faq$/i }).click();
+    await expect(page).toHaveURL('/faq');
+    await expect(page.getByRole('heading', { name: /^faq$/i })).toBeVisible();
+  });
+
+  test('navigates to cookies', async ({ page }) => {
+    await page.getByRole('link', { name: /^cookies$/i }).click();
+    await expect(page).toHaveURL('/cookies');
+    await expect(page.getByRole('heading', { name: /^cookies$/i })).toBeVisible();
+  });
+
+  test('navigates to legal', async ({ page }) => {
+    await page.getByRole('link', { name: /^legal$/i }).click();
+    await expect(page).toHaveURL('/legal');
+    await expect(page.getByRole('heading', { name: /^legal$/i })).toBeVisible();
+  });
+
   test('navigates to help', async ({ page }) => {
     await page.getByRole('link', { name: /^help$/i }).click();
     await expect(page).toHaveURL('/help');

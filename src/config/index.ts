@@ -51,6 +51,11 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     items: [
       { title: 'Team', icon: 'UserPlus', path: '/team' },
       { title: 'Settings', icon: 'Settings', path: '/settings' },
+      { title: 'About', icon: 'Compass', path: '/about' },
+      { title: 'Press', icon: 'Newspaper', path: '/press' },
+      { title: 'FAQ', icon: 'MessageCircleQuestion', path: '/faq' },
+      { title: 'Cookies', icon: 'Cookie', path: '/cookies' },
+      { title: 'Legal', icon: 'Scale', path: '/legal' },
       { title: 'Help', icon: 'HelpCircle', path: '/help' },
     ],
   },

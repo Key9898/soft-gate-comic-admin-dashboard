@@ -7,18 +7,21 @@ test.describe('CRUD Operations', () => {
     await expect(page).toHaveURL('/');
   });
 
-  test('open add webtoon modal', async ({ page }) => {
+  test('open add webtoon editor', async ({ page }) => {
     await page.goto('/webtoons');
     await page.getByRole('button', { name: /add webtoon/i }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByLabel(/title/i)).toBeVisible();
+    await expect(page).toHaveURL('/webtoons/new');
+    await expect(page.getByRole('heading', { name: /add webtoon/i })).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
-  test('open add episode modal', async ({ page }) => {
+  test('open add episode editor', async ({ page }) => {
     await page.goto('/episodes');
     await page.getByRole('button', { name: /add episode/i }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByLabel(/title/i)).toBeVisible();
+    await expect(page).toHaveURL('/episodes/new');
+    await expect(page.getByRole('heading', { name: /add episode/i })).toBeVisible();
+    await expect(page.getByLabel(/title \(en\)/i)).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
   test('view user details', async ({ page }) => {
@@ -46,14 +49,5 @@ test.describe('CRUD Operations', () => {
     await expect(page.getByText(/revenue trend/i)).toBeVisible();
     await expect(page.getByText(/user growth/i)).toBeVisible();
     await expect(page.getByText(/genre distribution/i)).toBeVisible();
-  });
-
-  test('close modal with escape key', async ({ page }) => {
-    await page.goto('/webtoons');
-    await page.getByRole('button', { name: /add webtoon/i }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-
-    await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog')).not.toBeVisible();
   });
 });

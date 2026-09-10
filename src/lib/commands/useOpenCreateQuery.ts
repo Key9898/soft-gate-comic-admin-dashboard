@@ -3,7 +3,7 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 
 const pendingCreateByPath = new Set<string>();
 
-export const useOpenCreateQuery = (onOpen: () => void, enabled = true) => {
+export const useOpenCreateQuery = (onOpen: () => void, enabled = true, kind = '1') => {
   const { pathname } = useLocation();
   const [params, setParams] = useSearchParams();
   const onOpenRef = useRef(onOpen);
@@ -13,8 +13,9 @@ export const useOpenCreateQuery = (onOpen: () => void, enabled = true) => {
   useEffect(() => {
     if (!enabled) return;
 
-    const fromQuery = params.get('new') === '1';
-    const fromPending = pendingCreateByPath.has(pathname);
+    const pendingKey = `${pathname}::${kind}`;
+    const fromQuery = params.get('new') === kind;
+    const fromPending = pendingCreateByPath.has(pendingKey);
     if (!fromQuery && !fromPending) return;
 
     if (!openedThisMount.current) {
@@ -23,13 +24,13 @@ export const useOpenCreateQuery = (onOpen: () => void, enabled = true) => {
     }
 
     if (fromQuery) {
-      pendingCreateByPath.add(pathname);
+      pendingCreateByPath.add(pendingKey);
       const next = new URLSearchParams(params);
       next.delete('new');
       setParams(next, { replace: true });
       return;
     }
 
-    pendingCreateByPath.delete(pathname);
-  }, [enabled, params, pathname, setParams]);
+    pendingCreateByPath.delete(pendingKey);
+  }, [enabled, kind, params, pathname, setParams]);
 };

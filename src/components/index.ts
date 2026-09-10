@@ -15,6 +15,7 @@ export { default as Header } from './Header';
 export { default as CommandPalette, CommandPaletteProvider } from './CommandPalette';
 export { default as ProtectedRoute } from './ProtectedRoute';
 export { default as CatalogStatus } from './CatalogStatus';
+export { default as LaneStatus } from './LaneStatus';
 export { default as Toggle } from './Toggle';
 export type { ToggleProps } from './Toggle';
 export { default as ProgressBar } from './ProgressBar';

@@ -111,6 +111,33 @@ export const PageSEO = {
       description="Configure SoftGate Comic platform settings and preferences"
     />
   ),
+  About: () => (
+    <SEO
+      title="About"
+      description="Manage the SoftGate Comic About history timeline and team roster for the reader site"
+    />
+  ),
+  Press: () => (
+    <SEO
+      title="Press"
+      description="Manage SoftGate Comic Press kit copy, news, stills, and file URLs for the reader site"
+    />
+  ),
+  Legal: () => (
+    <SEO
+      title="Legal"
+      description="Manage SoftGate Comic Privacy Policy and Terms of Service copy for the reader site"
+    />
+  ),
+  Faq: () => (
+    <SEO title="FAQ" description="Manage SoftGate Comic reader FAQ questions and answers" />
+  ),
+  Cookies: () => (
+    <SEO
+      title="Cookies"
+      description="Manage SoftGate Comic Cookie Policy copy and browser storage rows"
+    />
+  ),
   Help: () => (
     <SEO title="Help" description="Staff desk how-to, commands, and desk owner contacts" />
   ),

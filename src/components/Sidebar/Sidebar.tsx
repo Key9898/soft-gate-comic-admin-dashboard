@@ -22,6 +22,11 @@ import {
   Calendar,
   UserPlus,
   HelpCircle,
+  Compass,
+  Newspaper,
+  Scale,
+  MessageCircleQuestion,
+  Cookie,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/features/auth/useAuth';
@@ -49,6 +54,11 @@ const iconMap: Record<string, ComponentType<{ className?: string }>> = {
   Calendar,
   UserPlus,
   HelpCircle,
+  Compass,
+  Newspaper,
+  Scale,
+  MessageCircleQuestion,
+  Cookie,
 };
 
 const Sidebar = () => {

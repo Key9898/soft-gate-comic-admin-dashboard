@@ -9,6 +9,11 @@ import {
   ADMIN_INVITE,
   ADMIN_PROFILE,
   ADMIN_SETTINGS,
+  ADMIN_ABOUT,
+  ADMIN_PRESS,
+  ADMIN_FAQ,
+  ADMIN_COOKIES,
+  ADMIN_LEGAL,
   ADMIN_SIGNIN,
   BUSINESS_NOTE,
   CATALOG_NOTES,
@@ -29,11 +34,11 @@ const HelpPage = () => {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const tab = parseHelpTab(params.get('tab'));
-  const { role, canWriteCatalog, canManageTeam, inviteRoles } = useStaffAccess();
+  const { role, canWriteCatalog, canManageTeam, canWriteSettings, inviteRoles } = useStaffAccess();
   const canInvite = canManageTeam && inviteRoles.length > 0;
   const grouped = useMemo(
-    () => groupCommands(filterCommands('', { canWriteCatalog, canInvite })),
-    [canWriteCatalog, canInvite],
+    () => groupCommands(filterCommands('', { canWriteCatalog, canInvite, canWriteSettings })),
+    [canWriteCatalog, canInvite, canWriteSettings],
   );
 
   const selectTab = (id: HelpTabId) => {
@@ -178,6 +183,26 @@ const HelpPage = () => {
               <Card>
                 <h2 className="text-lg font-semibold text-fg">Settings</h2>
                 <p className="mt-2 text-sm text-fg-secondary">{ADMIN_SETTINGS}</p>
+              </Card>
+              <Card>
+                <h2 className="text-lg font-semibold text-fg">About</h2>
+                <p className="mt-2 text-sm text-fg-secondary">{ADMIN_ABOUT}</p>
+              </Card>
+              <Card>
+                <h2 className="text-lg font-semibold text-fg">Press</h2>
+                <p className="mt-2 text-sm text-fg-secondary">{ADMIN_PRESS}</p>
+              </Card>
+              <Card>
+                <h2 className="text-lg font-semibold text-fg">FAQ</h2>
+                <p className="mt-2 text-sm text-fg-secondary">{ADMIN_FAQ}</p>
+              </Card>
+              <Card>
+                <h2 className="text-lg font-semibold text-fg">Cookies</h2>
+                <p className="mt-2 text-sm text-fg-secondary">{ADMIN_COOKIES}</p>
+              </Card>
+              <Card>
+                <h2 className="text-lg font-semibold text-fg">Legal</h2>
+                <p className="mt-2 text-sm text-fg-secondary">{ADMIN_LEGAL}</p>
               </Card>
               <Card>
                 <h2 className="text-lg font-semibold text-fg">Profile</h2>

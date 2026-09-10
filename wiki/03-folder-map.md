@@ -33,12 +33,16 @@ soft-gate-comic-admin-dashboard/
 │   ├── references/
 │   └── snippets/
 ├── backend/                  # npm workspace — Express + Prisma (Impl 29–49)
-│   ├── prisma/               # Meta + Staff + StaffPasswordReset + catalog + MediaAsset + CoinPackage + Comment + ReaderComment + ReaderUser + Wallet + StaffNotification + PlatformSettings
+│   ├── prisma/               # Meta + Staff + StaffPasswordReset + catalog + MediaAsset + CoinPackage + Comment + ReaderComment + ReaderUser + Wallet + StaffNotification + PlatformSettings + AboutHistory + AboutTeamMember + AboutTeamMeta + PressMeta + PressNews + PressStill + FaqMeta + FaqItem + CookieMeta + CookieStorageRow + PrivacyMeta + PrivacySection + TermsMeta + TermsSection
 │   ├── docker-compose.yml    # local Postgres 16
 │   ├── scripts/              # prisma-generate + copy-mail-templates
 │   ├── uploads/              # local ObjectStore files (gitignored except .gitkeep)
 │   ├── src/auth/             # cookie JWT, bcrypt, StaffStore, /api/staff
 │   ├── src/catalog/          # CatalogStore, rules, /api/authors|genres|webtoons|episodes
+│   ├── src/press/            # PressStore + /api/press (Impl 63)
+│   ├── src/faq/              # FaqStore + /api/faq (Impl 66)
+│   ├── src/cookiePolicy/     # CookieStore + /api/cookies (Impl 66)
+│   ├── src/legal/            # LegalStore + /api/legal (Impl 67)
 │   ├── src/coins/            # CoinPackageStore + /api/coin-packages (Impl 44)
 │   ├── src/comments/         # CommentStore + /api/comments (Impl 53 ReaderComment)
 │   ├── src/users/            # ReaderUserStore + /api/users (Impl 54 ReaderUser)
@@ -62,19 +66,19 @@ soft-gate-comic-admin-dashboard/
 └── src/
     ├── main.tsx
     ├── App.tsx
-    ├── components/           # shared UI primitives (incl. CatalogStatus, Skeleton, CommandPalette)
+    ├── components/           # shared UI primitives (incl. CatalogStatus, LaneStatus, Skeleton, CommandPalette)
     ├── config/
     ├── data/
     ├── features/             # feature-sliced pages
     ├── layouts/              # AdminLayout, AuthLayout
-    ├── lib/                  # DataContext, api/, theme, yangonDate, episodeImages, spotlight, authors, genres, coinPackages, formatters, auth (staffAccess), commands
+    ├── lib/                  # DataContext, deskLoad, api/, theme, yangonDate, episodeImages, episodePageUpload, spotlight, authors, genres, coinPackages, aboutHistory, aboutTeam, press, faq, cookiesPolicy, legal, formatters, auth (staffAccess), commands
     ├── test/
     └── types/
 ```
 
 ## `src/features/`
 
-`activity-log`, `analytics`, `auth`, `authors`, `coin-packages`, `comments`, `dashboard`, `episodes`, `genres`, `help`, `media`, `notifications`, `profile`, `reports`, `revenue`, `schedule`, `settings`, `team`, `users`, `webtoons`
+`activity-log`, `about`, `analytics`, `auth`, `authors`, `coin-packages`, `comments`, `cookies`, `dashboard`, `episodes`, `faq`, `genres`, `help`, `legal`, `media`, `notifications`, `press`, `profile`, `reports`, `revenue`, `schedule`, `settings`, `team`, `users`, `webtoons`
 
 ## Aliases
 

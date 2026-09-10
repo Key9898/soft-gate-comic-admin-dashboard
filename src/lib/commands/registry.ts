@@ -1,6 +1,6 @@
 export type CommandGroup = 'Catalog' | 'Community' | 'Business' | 'Admin' | 'Create' | 'System';
 export type CommandKind = 'go' | 'create' | 'system';
-export type CommandRequires = 'catalog' | 'invite';
+export type CommandRequires = 'catalog' | 'invite' | 'settings';
 export type SystemAction = 'commands' | 'theme.light' | 'theme.dark' | 'theme.system' | 'logout';
 
 export type CommandEntry = {
@@ -64,6 +64,11 @@ export const COMMANDS: CommandEntry[] = [
   },
   { slug: 'team', title: 'Go to Team', group: 'Admin', kind: 'go', path: '/team' },
   { slug: 'settings', title: 'Go to Settings', group: 'Admin', kind: 'go', path: '/settings' },
+  { slug: 'about', title: 'Go to About', group: 'Admin', kind: 'go', path: '/about' },
+  { slug: 'press', title: 'Go to Press', group: 'Admin', kind: 'go', path: '/press' },
+  { slug: 'faq', title: 'Go to FAQ', group: 'Admin', kind: 'go', path: '/faq' },
+  { slug: 'cookies', title: 'Go to Cookies', group: 'Admin', kind: 'go', path: '/cookies' },
+  { slug: 'legal', title: 'Go to Legal', group: 'Admin', kind: 'go', path: '/legal' },
   { slug: 'profile', title: 'Go to Profile', group: 'Admin', kind: 'go', path: '/profile' },
   { slug: 'help', title: 'Go to Help', group: 'Admin', kind: 'go', path: '/help' },
   {
@@ -71,7 +76,7 @@ export const COMMANDS: CommandEntry[] = [
     title: 'Add Webtoon',
     group: 'Create',
     kind: 'create',
-    path: '/webtoons?new=1',
+    path: '/webtoons/new',
     requires: 'catalog',
   },
   {
@@ -79,7 +84,7 @@ export const COMMANDS: CommandEntry[] = [
     title: 'Add Episode',
     group: 'Create',
     kind: 'create',
-    path: '/episodes?new=1',
+    path: '/episodes/new',
     requires: 'catalog',
   },
   {
@@ -122,6 +127,38 @@ export const COMMANDS: CommandEntry[] = [
     path: '/team?new=1',
     requires: 'invite',
   },
+  {
+    slug: 'history.new',
+    title: 'Add history',
+    group: 'Create',
+    kind: 'create',
+    path: '/about?new=1',
+    requires: 'settings',
+  },
+  {
+    slug: 'member.new',
+    title: 'Add member',
+    group: 'Create',
+    kind: 'create',
+    path: '/about?new=member',
+    requires: 'settings',
+  },
+  {
+    slug: 'press.news',
+    title: 'Add press news',
+    group: 'Create',
+    kind: 'create',
+    path: '/press?new=1',
+    requires: 'settings',
+  },
+  {
+    slug: 'faq.new',
+    title: 'Add FAQ',
+    group: 'Create',
+    kind: 'create',
+    path: '/faq?new=1',
+    requires: 'settings',
+  },
   { slug: 'commands', title: 'Commands', group: 'System', kind: 'system', action: 'commands' },
   {
     slug: 'theme.light',
@@ -150,11 +187,13 @@ export const COMMANDS: CommandEntry[] = [
 export type CommandAccess = {
   canWriteCatalog: boolean;
   canInvite: boolean;
+  canWriteSettings: boolean;
 };
 
 export const isCommandVisible = (command: CommandEntry, access: CommandAccess): boolean => {
   if (command.requires === 'catalog' && !access.canWriteCatalog) return false;
   if (command.requires === 'invite' && !access.canInvite) return false;
+  if (command.requires === 'settings' && !access.canWriteSettings) return false;
   return true;
 };
 

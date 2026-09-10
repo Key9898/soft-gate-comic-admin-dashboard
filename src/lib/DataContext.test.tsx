@@ -16,6 +16,14 @@ describe('DataContext catalog loading', () => {
 
     expect(result.current.error).toBeNull();
     expect(typeof result.current.retry).toBe('function');
+    expect(result.current.popularWebtoons.some((row) => row.title.en === 'The Last Horizon')).toBe(
+      true,
+    );
+    expect(result.current.transactions.some((row) => row.userName.en === 'john_doe')).toBe(true);
+    expect(result.current.reports.some((row) => row.reporterName === 'john_doe')).toBe(true);
+    expect(
+      result.current.activityLogs.some((row) => row.targetName.en === 'The Last Horizon'),
+    ).toBe(true);
   });
 
   it('merges portal-safe settings into the schema 14 blob', async () => {

@@ -13,13 +13,17 @@ import {
   LogIn,
   LogOut,
   UserPlus,
+  Compass,
+  Users,
 } from 'lucide-react';
 import { Card, Button, Input, PageSEO, EmptyState } from '../../components';
+import { isMockApi } from '@/lib/api/http';
 import { useData } from '@/lib/DataContext';
 import ActivityLogPageSkeleton from './components/ActivityLogPageSkeleton';
 
 const ActivityLogPage = () => {
   const { activityLogs: logs, isLoading } = useData();
+  const mock = isMockApi();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterAction, setFilterAction] = useState('all');
@@ -70,6 +74,8 @@ const ActivityLogPage = () => {
       user: <User className="h-4 w-4 text-orange-500" />,
       comment: <MessageSquare className="h-4 w-4 text-green-500" />,
       settings: <Settings className="h-4 w-4 text-fg-muted" />,
+      'about-history': <Compass className="h-4 w-4 text-primary-500" />,
+      'about-team': <Users className="h-4 w-4 text-primary-500" />,
       staff: <UserPlus className="h-4 w-4 text-primary-500" />,
     };
     return icons[type] || null;
@@ -105,10 +111,13 @@ const ActivityLogPage = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-fg">Activity Log</h1>
-            <Button variant="outline" onClick={exportToCSV}>
-              <Download className="mr-2 h-4 w-4" />
-              Export CSV
-            </Button>
+            <div className="flex items-center gap-4">
+              {!mock && <span className="text-sm text-fg-muted">This session only</span>}
+              <Button variant="outline" onClick={exportToCSV}>
+                <Download className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
+            </div>
           </div>
 
           <Card className="p-4">
@@ -137,6 +146,8 @@ const ActivityLogPage = () => {
                 <option value="user">Users</option>
                 <option value="comment">Comments</option>
                 <option value="settings">Settings</option>
+                <option value="about-history">About history</option>
+                <option value="about-team">About team</option>
                 <option value="auth">Auth</option>
                 <option value="staff">Staff</option>
               </select>

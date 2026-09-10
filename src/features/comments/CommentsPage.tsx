@@ -8,6 +8,7 @@ import {
   PageSEO,
   EmptyState,
   NoComments,
+  LaneStatus,
   coverSheenClass,
 } from '../../components';
 import { useAuth } from '@/features/auth/useAuth';
@@ -415,7 +416,15 @@ const MockCommentsPage = () => {
 const ReaderCommentsPage = () => {
   const { user } = useAuth();
   const { canWriteCommunity } = useStaffAccess();
-  const { readerComments, readerUsers, setActivityLogs, isLoading, reloadCatalog } = useData();
+  const {
+    readerComments,
+    readerUsers,
+    setActivityLogs,
+    commentsLoading,
+    commentsError,
+    reloadCatalog,
+    retry,
+  } = useData();
   const readerLabel = (userId: string) =>
     readerUsers.find((user) => user.id === userId)?.displayName ?? userId;
   const [searchQuery, setSearchQuery] = useState('');
@@ -493,8 +502,16 @@ const ReaderCommentsPage = () => {
   return (
     <>
       <PageSEO.Comments />
-      {isLoading ? (
+      {commentsLoading ? (
         <CommentsPageSkeleton />
+      ) : commentsError ? (
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-fg">Comments</h1>
+            <p className="mt-1 text-fg-muted">Moderate reader comments</p>
+          </div>
+          <LaneStatus message="Comments request failed." onRetry={retry} />
+        </div>
       ) : (
         <div className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

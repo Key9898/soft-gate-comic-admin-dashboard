@@ -128,4 +128,18 @@ describe('comment routes', () => {
     const gone = await request(app).delete('/api/comments/missing').set('Cookie', cookie);
     expect(gone.status).toBe(404);
   });
+
+  it('returns an empty list when ReaderComment is missing', async () => {
+    const comments: CommentStore = {
+      ...createMemoryCommentStore(),
+      list: async () => {
+        throw { code: 'P2021' };
+      },
+    };
+    const app = appWithComments(comments);
+    const cookie = await registerOwner(app);
+    const listed = await request(app).get('/api/comments').set('Cookie', cookie);
+    expect(listed.status).toBe(200);
+    expect(listed.body.comments).toEqual([]);
+  });
 });

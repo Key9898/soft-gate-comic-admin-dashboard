@@ -66,6 +66,7 @@ model StaffUser {
   createdAt        DateTime             @default(now())
   invites          StaffInvite[]        @relation("StaffInviter")
   passwordResets   StaffPasswordReset[]
+  readerBroadcasts ReaderBroadcast[]
 }
 
 model StaffPasswordReset {
@@ -421,4 +422,203 @@ model PlatformSettings {
   contactEmail       String
   defaultLanguage    PlatformLanguage
   updatedAt          DateTime         @updatedAt
+}
+
+enum ReaderBroadcastType {
+  system
+  promotion
+}
+
+enum ReaderBroadcastAudience {
+  all
+  selected
+}
+
+enum ReaderBroadcastStatus {
+  sending
+  sent
+  failed
+}
+
+model ReaderBroadcast {
+  id            String                   @id @default(uuid())
+  type          ReaderBroadcastType
+  title         Json
+  message       Json
+  href          String?
+  audience      ReaderBroadcastAudience
+  readerIds     Json
+  status        ReaderBroadcastStatus    @default(sending)
+  createdById   String
+  createdBy     StaffUser                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  inboxCount    Int                      @default(0)
+  emailed       Int                      @default(0)
+  pushed        Int                      @default(0)
+  skippedPref   Int                      @default(0)
+  failureReason String?
+  createdAt     DateTime                 @default(now())
+}
+
+model AboutHistory {
+  id          String   @id @default(uuid())
+  year        Int
+  month       Int
+  title       Json
+  description Json
+  photoUrl    String?
+  sortOrder   Int
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([year, month])
+}
+
+model AboutTeamMember {
+  id        String   @id @default(uuid())
+  name      Json
+  role      Json
+  photoUrl  String?
+  sortOrder Int
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model AboutTeamMeta {
+  id             String   @id
+  deck           Json
+  standInNote    Json
+  standInVisible Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+}
+
+model PressMeta {
+  id                   String   @id
+  copy                 Json
+  zipUrl               String
+  contactEmail         String
+  facts                Json
+  palette              Json
+  assets               Json
+  spokespersonMemberId String?
+  updatedAt            DateTime @updatedAt
+}
+
+model PressNews {
+  id        String   @id @default(uuid())
+  title     Json
+  body      Json
+  href      String?
+  sortOrder Int
+  published Boolean  @default(true)
+  demoBadge Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model PressStill {
+  id        String   @id @default(uuid())
+  title     Json
+  imageUrl  String
+  sortOrder Int
+  published Boolean  @default(true)
+  demoBadge Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model FaqMeta {
+  id             String   @id
+  nextItemNumber Int
+  updatedAt      DateTime @updatedAt
+}
+
+model FaqItem {
+  id           String   @id
+  category     String
+  question     Json
+  answer       Json
+  relatedTo    String?
+  relatedLabel Json?
+  sortOrder    Int
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model CookieMeta {
+  id            String   @id
+  effectiveDate String
+  copy          Json
+  glance        Json
+  updatedAt     DateTime @updatedAt
+}
+
+model CookieStorageRow {
+  id          String   @id
+  storageKey  String   @unique
+  label       Json
+  description Json
+  sortOrder   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model PrivacyMeta {
+  id            String   @id
+  seoDesc       Json
+  glance        Json
+  effectiveDate DateTime
+  updatedAt     DateTime @updatedAt
+}
+
+model PrivacySection {
+  id           String   @id @default(uuid())
+  slug         String   @unique
+  kind         String
+  headingLevel String
+  title        Json
+  body         Json
+  bullets      Json
+  sortOrder    Int
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model TermsMeta {
+  id            String   @id
+  seoDesc       Json
+  glance        Json
+  effectiveDate DateTime
+  updatedAt     DateTime @updatedAt
+}
+
+model TermsSection {
+  id           String   @id @default(uuid())
+  slug         String   @unique
+  kind         String
+  headingLevel String
+  title        Json
+  body         Json
+  bullets      Json
+  sortOrder    Int
+  published    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([sortOrder])
 }

@@ -207,6 +207,8 @@ export interface ActivityLog {
     | 'schedule'
     | 'transaction'
     | 'coin-package'
+    | 'about-history'
+    | 'about-team'
     | 'staff';
   targetId: string;
   targetName: BilingualText;
@@ -258,6 +260,32 @@ export interface CoinPackage {
   bonus?: number;
   popular?: boolean;
   bestValue?: boolean;
+}
+
+export interface AboutHistory {
+  id: string;
+  year: number;
+  month: number;
+  title: BilingualText;
+  description: BilingualText;
+  photoUrl?: string;
+  sortOrder: number;
+  published: boolean;
+}
+
+export interface AboutTeamMember {
+  id: string;
+  name: BilingualText;
+  role: BilingualText;
+  photoUrl?: string;
+  sortOrder: number;
+  published: boolean;
+}
+
+export interface AboutTeamMeta {
+  deck: BilingualText;
+  standInNote: BilingualText;
+  standInVisible: boolean;
 }
 
 export interface SharedData {

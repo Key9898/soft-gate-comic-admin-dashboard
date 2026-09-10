@@ -63,7 +63,8 @@ describe('media routes', () => {
   });
 
   it('lists files for any staff and forbids viewer writes', async () => {
-    const app = appWithMedia();
+    const files = new Map<string, { body: Buffer; contentType: string }>();
+    const app = appWithMedia({ files });
     const ownerCookie = await registerOwner(app);
 
     const invited = await request(app)
@@ -96,7 +97,12 @@ describe('media routes', () => {
     expect(created.body.file.name).toBe('dot.png');
     expect(created.body.file.type).toBe('image');
     expect(created.body.file.category).toBe('covers');
-    expect(created.body.file.size).toBe(PNG.length);
+    expect(created.body.file).not.toHaveProperty('contentType');
+    expect(String(created.body.file.url)).toMatch(/\.webp$/);
+    expect([...files.keys()][0]).toMatch(/\.webp$/);
+    expect([...files.values()][0]?.contentType).toBe('image/webp');
+    expect([...files.values()][0]?.body.subarray(0, 4).toString('ascii')).toBe('RIFF');
+    expect([...files.values()][0]?.body.subarray(8, 12).toString('ascii')).toBe('WEBP');
 
     const viewerDelete = await request(app)
       .delete(`/api/media/${created.body.file.id}`)
@@ -138,6 +144,7 @@ describe('media routes', () => {
       .attach('file', PDF, { filename: 'note.pdf', contentType: 'application/pdf' });
     expect(pdf.status).toBe(201);
     expect(pdf.body.file.type).toBe('pdf');
+    expect(String(pdf.body.file.url)).toMatch(/\.pdf$/);
   });
 
   it('deletes the object then the row and 404s only when the row is missing', async () => {
@@ -213,9 +220,19 @@ describe('media routes', () => {
     expect(created.status).toBe(201);
     const url = new URL(created.body.file.url);
     expect(url.pathname.startsWith('/uploads/')).toBe(true);
+    expect(url.pathname.endsWith('.webp')).toBe(true);
 
-    const served = await request(app).get(url.pathname);
+    const served = await request(app)
+      .get(url.pathname)
+      .buffer(true)
+      .parse((res, callback) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('end', () => callback(null, Buffer.concat(chunks)));
+      });
     expect(served.status).toBe(200);
-    expect(Buffer.from(served.body)).toEqual(PNG);
+    const body = Buffer.isBuffer(served.body) ? served.body : Buffer.from(served.body);
+    expect(body.subarray(0, 4).toString('ascii')).toBe('RIFF');
+    expect(body.subarray(8, 12).toString('ascii')).toBe('WEBP');
   });
 });

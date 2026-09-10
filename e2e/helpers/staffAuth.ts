@@ -1,4 +1,4 @@
-import { hashPassword } from '../src/lib/auth/passwordHash';
+import { hashPassword } from '../../src/lib/auth/passwordHash';
 import type { Page } from '@playwright/test';
 
 const STAFF_EMAIL = 'admin@example.com';

@@ -19,6 +19,7 @@ import { useAuth } from '@/features/auth/useAuth';
 import { useStaffAccess } from '@/lib/auth/staffAccess';
 import { appendActivityLog } from '@/lib/activityLog';
 import { useData } from '@/lib/DataContext';
+import { isMockApi } from '@/lib/api/http';
 
 import type { Transaction } from '../../types';
 import RevenuePageSkeleton from './components/RevenuePageSkeleton';
@@ -27,6 +28,8 @@ const RevenuePage = () => {
   const { user: admin } = useAuth();
   const { canWriteBusiness } = useStaffAccess();
   const { transactions, setTransactions, setActivityLogs, isLoading } = useData();
+  const mock = isMockApi();
+  const liveEmpty = !mock && transactions.length === 0;
   const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'payouts'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -205,7 +208,9 @@ const RevenuePage = () => {
                       <p className="text-2xl font-bold text-fg">
                         {formatCurrency(stats.totalRevenue)}
                       </p>
-                      <p className="mt-1 text-sm text-fg-muted">Completed purchases</p>
+                      <p className="mt-1 text-sm text-fg-muted">
+                        {mock ? 'Completed purchases' : 'Not wired on live'}
+                      </p>
                     </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
                       <DollarSign className="h-6 w-6 text-green-600" />
@@ -218,7 +223,9 @@ const RevenuePage = () => {
                     <div>
                       <p className="text-sm text-fg-muted">Completed Purchases</p>
                       <p className="text-2xl font-bold text-fg">{completedPurchases.length}</p>
-                      <p className="mt-1 text-sm text-fg-muted">Successful transactions</p>
+                      <p className="mt-1 text-sm text-fg-muted">
+                        {mock ? 'Successful transactions' : 'Not wired on live'}
+                      </p>
                     </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
                       <CreditCard className="h-6 w-6 text-blue-600" />
@@ -233,9 +240,12 @@ const RevenuePage = () => {
                       <p className="text-2xl font-bold text-fg">
                         {formatCurrency(stats.pendingPayouts)}
                       </p>
-                      <p className="mt-1 text-sm text-orange-600">
-                        {stats.pendingPayoutCount}{' '}
-                        {stats.pendingPayoutCount === 1 ? 'request' : 'requests'} pending
+                      <p className="mt-1 text-sm text-fg-muted">
+                        {mock
+                          ? `${stats.pendingPayoutCount} ${
+                              stats.pendingPayoutCount === 1 ? 'request' : 'requests'
+                            } pending`
+                          : 'Not wired on live'}
                       </p>
                     </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100">
@@ -251,7 +261,9 @@ const RevenuePage = () => {
                       <p className="text-2xl font-bold text-fg">
                         {formatNumber(stats.totalCoinsSold)}
                       </p>
-                      <p className="mt-1 text-sm text-fg-muted">From completed purchases</p>
+                      <p className="mt-1 text-sm text-fg-muted">
+                        {mock ? 'From completed purchases' : 'Not wired on live'}
+                      </p>
                     </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-burst-100">
                       <Coins className="h-6 w-6 text-burst-600" />
@@ -265,73 +277,95 @@ const RevenuePage = () => {
                   <div className="border-b border-line p-4">
                     <h3 className="font-semibold text-fg">Recent Transactions</h3>
                   </div>
-                  <div className="divide-y divide-gray-100">
-                    {transactions.slice(0, 5).map((tx) => (
-                      <div key={tx.id} className="flex items-center justify-between p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
-                            {getTypeIcon(tx.type)}
+                  {liveEmpty ? (
+                    <EmptyState
+                      title="Not wired on live"
+                      description="This desk has no payments API."
+                      className="py-8"
+                    />
+                  ) : (
+                    <>
+                      <div className="divide-y divide-gray-100">
+                        {transactions.slice(0, 5).map((tx) => (
+                          <div key={tx.id} className="flex items-center justify-between p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
+                                {getTypeIcon(tx.type)}
+                              </div>
+                              <div>
+                                <p className="font-medium text-fg">{tx.userName.en}</p>
+                                <p className="text-sm text-fg-muted">{tx.description.en}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p
+                                className={`font-medium ${tx.type === 'purchase' || tx.type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}
+                              >
+                                {tx.type === 'purchase' || tx.type === 'deposit' ? '+' : '-'}
+                                {formatCurrency(tx.amount)}
+                              </p>
+                              <p className="text-xs text-fg-muted">{tx.createdAt}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-fg">{tx.userName.en}</p>
-                            <p className="text-sm text-fg-muted">{tx.description.en}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p
-                            className={`font-medium ${tx.type === 'purchase' || tx.type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}
-                          >
-                            {tx.type === 'purchase' || tx.type === 'deposit' ? '+' : '-'}
-                            {formatCurrency(tx.amount)}
-                          </p>
-                          <p className="text-xs text-fg-muted">{tx.createdAt}</p>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                  <div className="border-t border-line p-4">
-                    <Button
-                      variant="ghost"
-                      className="w-full"
-                      onClick={() => setActiveTab('transactions')}
-                    >
-                      View All Transactions
-                    </Button>
-                  </div>
+                      <div className="border-t border-line p-4">
+                        <Button
+                          variant="ghost"
+                          className="w-full"
+                          onClick={() => setActiveTab('transactions')}
+                        >
+                          View All Transactions
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </Card>
 
                 <Card>
                   <div className="border-b border-line p-4">
                     <h3 className="font-semibold text-fg">Pending Payout Requests</h3>
                   </div>
-                  <div className="divide-y divide-gray-100">
-                    {payoutRequests
-                      .filter((p) => p.status === 'pending')
-                      .slice(0, 5)
-                      .map((payout) => (
-                        <div key={payout.id} className="flex items-center justify-between p-4">
-                          <div>
-                            <p className="font-medium text-fg">{payout.userName.en}</p>
-                            <p className="text-sm text-fg-muted">
-                              Payment: {payout.paymentMethod || 'Not provided'}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium text-fg">{formatCurrency(payout.amount)}</p>
-                            <p className="text-xs text-fg-muted">{payout.createdAt}</p>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                  <div className="border-t border-line p-4">
-                    <Button
-                      variant="ghost"
-                      className="w-full"
-                      onClick={() => setActiveTab('payouts')}
-                    >
-                      View All Payouts
-                    </Button>
-                  </div>
+                  {liveEmpty ? (
+                    <EmptyState
+                      title="Not wired on live"
+                      description="This desk has no payments API."
+                      className="py-8"
+                    />
+                  ) : (
+                    <>
+                      <div className="divide-y divide-gray-100">
+                        {payoutRequests
+                          .filter((p) => p.status === 'pending')
+                          .slice(0, 5)
+                          .map((payout) => (
+                            <div key={payout.id} className="flex items-center justify-between p-4">
+                              <div>
+                                <p className="font-medium text-fg">{payout.userName.en}</p>
+                                <p className="text-sm text-fg-muted">
+                                  Payment: {payout.paymentMethod || 'Not provided'}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-medium text-fg">
+                                  {formatCurrency(payout.amount)}
+                                </p>
+                                <p className="text-xs text-fg-muted">{payout.createdAt}</p>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                      <div className="border-t border-line p-4">
+                        <Button
+                          variant="ghost"
+                          className="w-full"
+                          onClick={() => setActiveTab('payouts')}
+                        >
+                          View All Payouts
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </Card>
               </div>
             </>
@@ -433,107 +467,120 @@ const RevenuePage = () => {
                 </table>
               </div>
 
-              {filteredTransactions.length === 0 && (
-                <EmptyState
-                  title="No transactions found"
-                  description="Try a different search or filter."
-                  action={{
-                    label: 'Clear Filters',
-                    onClick: () => {
-                      setSearchQuery('');
-                      setTypeFilter('all');
-                      setStatusFilter('all');
-                    },
-                  }}
-                />
-              )}
+              {filteredTransactions.length === 0 &&
+                (liveEmpty ? (
+                  <EmptyState
+                    title="Not wired on live"
+                    description="This desk has no payments API."
+                  />
+                ) : (
+                  <EmptyState
+                    title="No transactions found"
+                    description="Try a different search or filter."
+                    action={{
+                      label: 'Clear Filters',
+                      onClick: () => {
+                        setSearchQuery('');
+                        setTypeFilter('all');
+                        setStatusFilter('all');
+                      },
+                    }}
+                  />
+                ))}
             </Card>
           )}
 
           {activeTab === 'payouts' && (
             <Card>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-line">
-                      <th className="table-header">Author</th>
-                      <th className="table-header">Amount</th>
-                      <th className="table-header">Payment Method</th>
-                      <th className="table-header">Status</th>
-                      <th className="table-header">Requested</th>
-                      <th className="table-header text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-line">
-                    {payoutRequests.map((payout) => (
-                      <tr key={payout.id} className="hover:bg-gray-50">
-                        <td className="table-cell font-medium">{payout.userName.en}</td>
-                        <td className="table-cell font-medium text-fg">
-                          {formatCurrency(payout.amount)}
-                        </td>
-                        <td className="table-cell text-fg-muted">
-                          {payout.paymentMethod || 'Not provided'}
-                        </td>
-                        <td className="table-cell">
-                          <span className={getStatusBadge(payout.status)}>{payout.status}</span>
-                        </td>
-                        <td className="table-cell text-fg-muted">{payout.createdAt}</td>
-                        <td className="table-cell text-right">
-                          {payout.status === 'pending' && (
-                            <div className="relative inline-block">
-                              <button
-                                type="button"
-                                title="Payout actions"
-                                onClick={() =>
-                                  setOpenMenuId(openMenuId === payout.id ? null : payout.id)
-                                }
-                                className="rounded-lg p-2 text-fg-muted hover:bg-gray-100 hover:text-fg-secondary"
-                              >
-                                <MoreVertical className="h-5 w-5" />
-                              </button>
-                              {openMenuId === payout.id && (
-                                <div className="absolute right-0 z-10 mt-2 w-40 rounded-lg border border-line bg-white py-1 shadow-lg">
-                                  <button
-                                    type="button"
-                                    onClick={() => openPayoutModal(payout)}
-                                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                    View Details
-                                  </button>
-                                  {canWriteBusiness ? (
-                                    <>
-                                      <button
-                                        type="button"
-                                        onClick={() => handlePayoutAction(payout.id, 'approve')}
-                                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-green-600 hover:bg-green-50"
-                                      >
-                                        <CheckCircle className="h-4 w-4" />
-                                        Approve
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handlePayoutAction(payout.id, 'reject')}
-                                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                                      >
-                                        <XCircle className="h-4 w-4" />
-                                        Reject
-                                      </button>
-                                    </>
-                                  ) : null}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          {payout.status !== 'pending' && (
-                            <span className="text-sm text-fg-muted">-</span>
-                          )}
-                        </td>
+              {liveEmpty ? (
+                <EmptyState
+                  title="Not wired on live"
+                  description="This desk has no payments API."
+                />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-line">
+                        <th className="table-header">Author</th>
+                        <th className="table-header">Amount</th>
+                        <th className="table-header">Payment Method</th>
+                        <th className="table-header">Status</th>
+                        <th className="table-header">Requested</th>
+                        <th className="table-header text-right">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-line">
+                      {payoutRequests.map((payout) => (
+                        <tr key={payout.id} className="hover:bg-gray-50">
+                          <td className="table-cell font-medium">{payout.userName.en}</td>
+                          <td className="table-cell font-medium text-fg">
+                            {formatCurrency(payout.amount)}
+                          </td>
+                          <td className="table-cell text-fg-muted">
+                            {payout.paymentMethod || 'Not provided'}
+                          </td>
+                          <td className="table-cell">
+                            <span className={getStatusBadge(payout.status)}>{payout.status}</span>
+                          </td>
+                          <td className="table-cell text-fg-muted">{payout.createdAt}</td>
+                          <td className="table-cell text-right">
+                            {payout.status === 'pending' && (
+                              <div className="relative inline-block">
+                                <button
+                                  type="button"
+                                  title="Payout actions"
+                                  onClick={() =>
+                                    setOpenMenuId(openMenuId === payout.id ? null : payout.id)
+                                  }
+                                  className="rounded-lg p-2 text-fg-muted hover:bg-gray-100 hover:text-fg-secondary"
+                                >
+                                  <MoreVertical className="h-5 w-5" />
+                                </button>
+                                {openMenuId === payout.id && (
+                                  <div className="absolute right-0 z-10 mt-2 w-40 rounded-lg border border-line bg-white py-1 shadow-lg">
+                                    <button
+                                      type="button"
+                                      onClick={() => openPayoutModal(payout)}
+                                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                      View Details
+                                    </button>
+                                    {canWriteBusiness ? (
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={() => handlePayoutAction(payout.id, 'approve')}
+                                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-green-600 hover:bg-green-50"
+                                        >
+                                          <CheckCircle className="h-4 w-4" />
+                                          Approve
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handlePayoutAction(payout.id, 'reject')}
+                                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                        >
+                                          <XCircle className="h-4 w-4" />
+                                          Reject
+                                        </button>
+                                      </>
+                                    ) : null}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            {payout.status !== 'pending' && (
+                              <span className="text-sm text-fg-muted">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </Card>
           )}
 

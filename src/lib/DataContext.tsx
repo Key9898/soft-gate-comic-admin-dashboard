@@ -4,6 +4,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useRef,
   ReactNode,
   Dispatch,
   SetStateAction,
@@ -23,12 +24,16 @@ import {
   Author,
   Genre,
   CoinPackage,
+  AboutHistory,
+  AboutTeamMember,
+  AboutTeamMeta,
   MediaFile,
   ActivityLog,
   Report,
   Transaction,
   ScheduledEpisode,
   Notification,
+  mockAboutTeamMeta,
 } from '@softgate/shared';
 import {
   loadFromLocalStorage,
@@ -62,6 +67,11 @@ import { listMedia } from '@/lib/api/media';
 import { listNotifications } from '@/lib/api/notifications';
 import { getPlatformSettings } from '@/lib/api/settings';
 import { listReaderUsers } from '@/lib/api/users';
+import { listAboutHistories } from '@/lib/api/aboutHistory';
+import { getAboutTeamMeta, listAboutTeamMembers } from '@/lib/api/aboutTeam';
+import { loadAboutHistories, saveAboutHistories } from '@/lib/aboutHistory';
+import { loadAboutTeam, saveAboutTeam } from '@/lib/aboutTeam';
+import { applyLaneSettle, mapFulfilled } from '@/lib/deskLoad';
 
 export interface PlatformSettings {
   siteName: string;
@@ -101,6 +111,12 @@ const FAIL_OPEN_PORTAL_SETTINGS = toPortalSettings({
   contactEmail: 'admin@softgatecomic.com',
   defaultLanguage: 'en',
 });
+
+const EMPTY_ABOUT_LANE = {
+  histories: [] as AboutHistory[],
+  members: [] as AboutTeamMember[],
+  meta: mockAboutTeamMeta,
+};
 
 function overlayPortalSettings(
   prev: PlatformSettings,
@@ -148,6 +164,12 @@ function emptyApiCatalog(): SharedData {
     comments: [],
     users: [],
     notifications: [],
+    revenueData: [],
+    userGrowthData: [],
+    popularWebtoons: [],
+    transactions: [],
+    reports: [],
+    activityLogs: [],
   };
 }
 
@@ -192,6 +214,12 @@ interface DataContextType {
   setGenres: Dispatch<SetStateAction<Genre[]>>;
   coinPackages: CoinPackage[];
   setCoinPackages: Dispatch<SetStateAction<CoinPackage[]>>;
+  aboutHistories: AboutHistory[];
+  setAboutHistories: Dispatch<SetStateAction<AboutHistory[]>>;
+  aboutTeamMembers: AboutTeamMember[];
+  setAboutTeamMembers: Dispatch<SetStateAction<AboutTeamMember[]>>;
+  aboutTeamMeta: AboutTeamMeta;
+  setAboutTeamMeta: Dispatch<SetStateAction<AboutTeamMeta>>;
   mediaFiles: MediaFile[];
   setMediaFiles: Dispatch<SetStateAction<MediaFile[]>>;
   activityLogs: ActivityLog[];
@@ -208,6 +236,18 @@ interface DataContextType {
   setSettings: Dispatch<SetStateAction<PlatformSettings>>;
   isLoading: boolean;
   error: Error | null;
+  commentsLoading: boolean;
+  commentsError: Error | null;
+  usersLoading: boolean;
+  usersError: Error | null;
+  notificationsLoading: boolean;
+  notificationsError: Error | null;
+  mediaLoading: boolean;
+  mediaError: Error | null;
+  coinsLoading: boolean;
+  coinsError: Error | null;
+  aboutLoading: boolean;
+  aboutError: Error | null;
   retry: () => void;
   reloadCatalog: () => Promise<void>;
 }
@@ -232,8 +272,56 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [db, setDb] = useState<SharedData>(() => (mock ? loadMockDb() : emptyApiCatalog()));
   const [readerComments, setReaderComments] = useState<ReaderComment[]>([]);
   const [readerUsers, setReaderUsers] = useState<ReaderUser[]>([]);
+  const [aboutHistories, setAboutHistories] = useState<AboutHistory[]>(() =>
+    mock ? loadAboutHistories() : [],
+  );
+  const [aboutTeamMembers, setAboutTeamMembers] = useState<AboutTeamMember[]>(() =>
+    mock ? loadAboutTeam().members : [],
+  );
+  const [aboutTeamMeta, setAboutTeamMeta] = useState<AboutTeamMeta>(() =>
+    mock ? loadAboutTeam().meta : mockAboutTeamMeta,
+  );
   const [isLoading, setIsLoading] = useState(() => !mock);
   const [error, setError] = useState<Error | null>(null);
+  const [commentsLoading, setCommentsLoading] = useState(() => !mock);
+  const [commentsError, setCommentsError] = useState<Error | null>(null);
+  const [usersLoading, setUsersLoading] = useState(() => !mock);
+  const [usersError, setUsersError] = useState<Error | null>(null);
+  const [notificationsLoading, setNotificationsLoading] = useState(() => !mock);
+  const [notificationsError, setNotificationsError] = useState<Error | null>(null);
+  const [mediaLoading, setMediaLoading] = useState(() => !mock);
+  const [mediaError, setMediaError] = useState<Error | null>(null);
+  const [coinsLoading, setCoinsLoading] = useState(() => !mock);
+  const [coinsError, setCoinsError] = useState<Error | null>(null);
+  const [aboutLoading, setAboutLoading] = useState(() => !mock);
+  const [aboutError, setAboutError] = useState<Error | null>(null);
+
+  const commentsHadSuccessRef = useRef(false);
+  const usersHadSuccessRef = useRef(false);
+  const notificationsHadSuccessRef = useRef(false);
+  const mediaHadSuccessRef = useRef(false);
+  const coinsHadSuccessRef = useRef(false);
+  const aboutHadSuccessRef = useRef(false);
+  const readerCommentsRef = useRef(readerComments);
+  const readerUsersRef = useRef(readerUsers);
+  const notificationsRef = useRef(db.notifications ?? []);
+  const mediaFilesRef = useRef(db.mediaFiles);
+  const coinPackagesRef = useRef(db.coinPackages);
+  const aboutLaneRef = useRef({
+    histories: aboutHistories,
+    members: aboutTeamMembers,
+    meta: aboutTeamMeta,
+  });
+  readerCommentsRef.current = readerComments;
+  readerUsersRef.current = readerUsers;
+  notificationsRef.current = db.notifications ?? [];
+  mediaFilesRef.current = db.mediaFiles;
+  coinPackagesRef.current = db.coinPackages;
+  aboutLaneRef.current = {
+    histories: aboutHistories,
+    members: aboutTeamMembers,
+    meta: aboutTeamMeta,
+  };
 
   const [settings, setSettings] = useState<PlatformSettings>(() => {
     const fromAdmin = readAdminSettings();
@@ -250,53 +338,145 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const reloadCatalog = useCallback(async () => {
     if (isMockApi()) return;
     setError(null);
+    setCommentsError(null);
+    setUsersError(null);
+    setNotificationsError(null);
+    setMediaError(null);
+    setCoinsError(null);
+    setAboutError(null);
     setIsLoading(true);
+    setCommentsLoading(true);
+    setUsersLoading(true);
+    setNotificationsLoading(true);
+    setMediaLoading(true);
+    setCoinsLoading(true);
+    setAboutLoading(true);
     try {
-      const [catalog, media, packs, commentList, readerList, inbox, platform] = await Promise.all([
-        loadCatalog(),
-        listMedia(),
-        listCoinPackages(),
-        listComments(),
-        listReaderUsers(),
-        listNotifications(),
-        getPlatformSettings(),
-      ]);
-      setReaderComments(commentList.comments);
-      setReaderUsers(readerList.users);
+      try {
+        const catalog = await loadCatalog();
+        setError(null);
+        setDb((prev) => ({
+          ...prev,
+          authors: catalog.authors,
+          genres: catalog.genres,
+          webtoons: catalog.webtoons,
+          episodes: catalog.episodes,
+        }));
+      } catch (reason) {
+        setError(reason instanceof Error ? reason : new Error('Failed to fetch catalog'));
+        setDb((prev) => ({
+          ...prev,
+          authors: [],
+          genres: [],
+          webtoons: [],
+          episodes: [],
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+
+      const [media, packs, commentList, readerList, inbox, aboutLane, platform] =
+        await Promise.allSettled([
+          listMedia(),
+          listCoinPackages(),
+          listComments(),
+          listReaderUsers(),
+          listNotifications(),
+          Promise.all([listAboutHistories(), listAboutTeamMembers(), getAboutTeamMeta()]).then(
+            ([historyList, teamList, teamMeta]) => ({
+              histories: historyList.histories,
+              members: teamList.members,
+              meta: teamMeta.meta,
+            }),
+          ),
+          getPlatformSettings(),
+        ]);
+
+      const commentsNext = applyLaneSettle(
+        mapFulfilled(commentList, (row) => row.comments),
+        readerCommentsRef.current,
+        commentsHadSuccessRef.current,
+        [],
+      );
+      commentsHadSuccessRef.current = commentsNext.hadSuccess;
+      readerCommentsRef.current = commentsNext.value;
+      setReaderComments(commentsNext.value);
+      setCommentsError(commentsNext.error);
+
+      const usersNext = applyLaneSettle(
+        mapFulfilled(readerList, (row) => row.users),
+        readerUsersRef.current,
+        usersHadSuccessRef.current,
+        [],
+      );
+      usersHadSuccessRef.current = usersNext.hadSuccess;
+      readerUsersRef.current = usersNext.value;
+      setReaderUsers(usersNext.value);
+      setUsersError(usersNext.error);
+
+      const notificationsNext = applyLaneSettle(
+        mapFulfilled(inbox, (row) => row.notifications),
+        notificationsRef.current,
+        notificationsHadSuccessRef.current,
+        [],
+      );
+      notificationsHadSuccessRef.current = notificationsNext.hadSuccess;
+      notificationsRef.current = notificationsNext.value;
+
+      const mediaNext = applyLaneSettle(
+        mapFulfilled(media, (row) => row.files),
+        mediaFilesRef.current,
+        mediaHadSuccessRef.current,
+        [],
+      );
+      mediaHadSuccessRef.current = mediaNext.hadSuccess;
+      mediaFilesRef.current = mediaNext.value;
+
+      const coinsNext = applyLaneSettle(
+        mapFulfilled(packs, (row) => row.coinPackages),
+        coinPackagesRef.current,
+        coinsHadSuccessRef.current,
+        [],
+      );
+      coinsHadSuccessRef.current = coinsNext.hadSuccess;
+      coinPackagesRef.current = coinsNext.value;
+
       setDb((prev) => ({
         ...prev,
-        authors: catalog.authors,
-        genres: catalog.genres,
-        webtoons: catalog.webtoons,
-        episodes: catalog.episodes,
-        mediaFiles: media.files,
-        coinPackages: packs.coinPackages,
-        comments: [],
-        users: [],
-        notifications: inbox.notifications,
+        mediaFiles: mediaNext.value,
+        coinPackages: coinsNext.value,
+        notifications: notificationsNext.value,
       }));
-      setSettings((prev) => overlayPortalSettings(prev, platform.settings));
-      setError(null);
-    } catch (err: unknown) {
-      const nextError = err instanceof Error ? err : new Error('Failed to fetch catalog');
-      setError(nextError);
-      setReaderComments([]);
-      setReaderUsers([]);
-      setDb((prev) => ({
-        ...prev,
-        authors: [],
-        genres: [],
-        webtoons: [],
-        episodes: [],
-        mediaFiles: [],
-        coinPackages: [],
-        comments: [],
-        users: [],
-        notifications: [],
-      }));
-      setSettings((prev) => overlayPortalSettings(prev, FAIL_OPEN_PORTAL_SETTINGS));
+      setMediaError(mediaNext.error);
+      setCoinsError(coinsNext.error);
+      setNotificationsError(notificationsNext.error);
+
+      const aboutNext = applyLaneSettle(
+        aboutLane,
+        aboutLaneRef.current,
+        aboutHadSuccessRef.current,
+        EMPTY_ABOUT_LANE,
+      );
+      aboutHadSuccessRef.current = aboutNext.hadSuccess;
+      aboutLaneRef.current = aboutNext.value;
+      setAboutHistories(aboutNext.value.histories);
+      setAboutTeamMembers(aboutNext.value.members);
+      setAboutTeamMeta(aboutNext.value.meta);
+      setAboutError(aboutNext.error);
+
+      setSettings((prev) =>
+        overlayPortalSettings(
+          prev,
+          platform.status === 'fulfilled' ? platform.value.settings : FAIL_OPEN_PORTAL_SETTINGS,
+        ),
+      );
     } finally {
-      setIsLoading(false);
+      setCommentsLoading(false);
+      setUsersLoading(false);
+      setNotificationsLoading(false);
+      setMediaLoading(false);
+      setCoinsLoading(false);
+      setAboutLoading(false);
     }
   }, []);
 
@@ -304,6 +484,16 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     if (!isMockApi()) return;
     saveToLocalStorage({ ...db, settings: toPortalSettings(settings) });
   }, [db, settings]);
+
+  useEffect(() => {
+    if (!isMockApi()) return;
+    saveAboutHistories(aboutHistories);
+  }, [aboutHistories]);
+
+  useEffect(() => {
+    if (!isMockApi()) return;
+    saveAboutTeam(aboutTeamMembers, aboutTeamMeta);
+  }, [aboutTeamMembers, aboutTeamMeta]);
 
   useEffect(() => {
     localStorage.setItem(ADMIN_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
@@ -453,6 +643,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setGenres,
     coinPackages: db.coinPackages,
     setCoinPackages,
+    aboutHistories,
+    setAboutHistories,
+    aboutTeamMembers,
+    setAboutTeamMembers,
+    aboutTeamMeta,
+    setAboutTeamMeta,
     mediaFiles: db.mediaFiles,
     setMediaFiles,
     activityLogs: db.activityLogs,
@@ -469,6 +665,18 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     setSettings,
     isLoading,
     error,
+    commentsLoading,
+    commentsError,
+    usersLoading,
+    usersError,
+    notificationsLoading,
+    notificationsError,
+    mediaLoading,
+    mediaError,
+    coinsLoading,
+    coinsError,
+    aboutLoading,
+    aboutError,
     retry: () => {
       void reloadCatalog();
     },

@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -10,12 +11,9 @@ import {
   Image as ImageIcon,
   FileText,
   Upload,
-  X,
   Clock,
 } from 'lucide-react';
 import { Card, Button, Input, Modal, PageSEO, NoEpisodes, NoSearchResults } from '../../components';
-import MediaPicker from '../../components/MediaPicker/MediaPicker';
-import type { MediaFile } from '../../components/MediaPicker/MediaPicker';
 import { useAuth } from '@/features/auth/useAuth';
 import { useStaffAccess } from '@/lib/auth/staffAccess';
 import { appendActivityLog } from '@/lib/activityLog';
@@ -23,59 +21,24 @@ import { useData } from '@/lib/DataContext';
 import type { Episode } from '../../types';
 import EpisodesPageSkeleton from './components/EpisodesPageSkeleton';
 import { measureImageSize, toImageSizes } from '@/lib/episodeImages';
-import {
-  isoToYangonDateTimeLocal,
-  nowIso,
-  stampIso,
-  yangonDateTimeLocalToIso,
-} from '@/lib/yangonDate';
+import { isoToYangonDateTimeLocal, nowIso } from '@/lib/yangonDate';
 import { apiMessage, isMockApi } from '@/lib/api/http';
-import { createEpisode, deleteEpisode, updateEpisode } from '@/lib/api/catalog';
-import { useOpenCreateQuery } from '@/lib/commands';
-
-interface EpisodeImage {
-  id: string;
-  url: string;
-  order: number;
-  width?: number;
-  height?: number;
-}
+import { deleteEpisode } from '@/lib/api/catalog';
 
 const EpisodesPage = () => {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, isLoading: authLoading } = useAuth();
   const { canWriteCatalog } = useStaffAccess();
   const { episodes, setEpisodes, webtoons, setActivityLogs, isLoading, reloadCatalog } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [webtoonFilter, setWebtoonFilter] = useState<string>('all');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
-  const [formError, setFormError] = useState('');
   const [deleteError, setDeleteError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const pdfInputRef = useRef<HTMLInputElement>(null);
-
-  const [formData, setFormData] = useState({
-    titleEn: '',
-    titleMm: '',
-    descriptionEn: '',
-    descriptionMm: '',
-    webtoonId: '',
-    isPremium: false,
-    coinPrice: 0,
-    status: 'draft' as Episode['status'],
-    images: [] as EpisodeImage[],
-    pdfFile: null as MediaFile | null,
-    scheduledAt: '',
-    freeAt: '',
-  });
-
-  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteCatalog && !isLoading);
 
   const [bulkUploadData, setBulkUploadData] = useState({
     webtoonId: '',
@@ -83,6 +46,12 @@ const EpisodesPage = () => {
     splitByPage: false,
     pagesPerEpisode: 10,
   });
+
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return;
+    if (authLoading) return;
+    navigate(canWriteCatalog ? '/episodes/new' : '/episodes', { replace: true });
+  }, [authLoading, canWriteCatalog, navigate, searchParams]);
 
   const filteredEpisodes = episodes.filter((episode) => {
     const matchesSearch = episode.title.en.toLowerCase().includes(searchQuery.toLowerCase());
@@ -108,245 +77,6 @@ const EpisodesPage = () => {
       scheduled: 'badge-warning',
     };
     return styles[status];
-  };
-
-  const handleImageSelect = async (files: MediaFile[]) => {
-    const measured = await Promise.all(
-      files.map(async (file) => {
-        const size = await measureImageSize(file.url);
-        return {
-          id: file.id,
-          url: file.url,
-          order: 0,
-          ...(size ?? {}),
-        };
-      }),
-    );
-    setFormData((prev) => ({
-      ...prev,
-      images: [
-        ...prev.images,
-        ...measured.map((img, index) => ({ ...img, order: prev.images.length + index + 1 })),
-      ],
-    }));
-    setIsMediaPickerOpen(false);
-  };
-
-  const handlePdfSelect = (files: MediaFile[]) => {
-    if (files.length > 0 && files[0].type === 'pdf') {
-      setFormData({ ...formData, pdfFile: files[0] });
-    }
-    setIsMediaPickerOpen(false);
-  };
-
-  const removeImage = (imageId: string) => {
-    setFormData({
-      ...formData,
-      images: formData.images
-        .filter((img) => img.id !== imageId)
-        .map((img, index) => ({ ...img, order: index + 1 })),
-    });
-  };
-
-  const moveImage = (imageId: string, direction: 'up' | 'down') => {
-    const currentIndex = formData.images.findIndex((img) => img.id === imageId);
-    if (
-      (direction === 'up' && currentIndex === 0) ||
-      (direction === 'down' && currentIndex === formData.images.length - 1)
-    ) {
-      return;
-    }
-
-    const newImages = [...formData.images];
-    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    [newImages[currentIndex], newImages[targetIndex]] = [
-      newImages[targetIndex],
-      newImages[currentIndex],
-    ];
-
-    setFormData({
-      ...formData,
-      images: newImages.map((img, index) => ({ ...img, order: index + 1 })),
-    });
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    const measured = await Promise.all(
-      Array.from(files)
-        .filter((file) => file.type.startsWith('image/'))
-        .map(async (file) => {
-          const url = URL.createObjectURL(file);
-          const size = await measureImageSize(url);
-          return {
-            id: Math.random().toString(36).slice(2, 11),
-            url,
-            order: 0,
-            ...(size ?? {}),
-          };
-        }),
-    );
-    setFormData((prev) => ({
-      ...prev,
-      images: [
-        ...prev.images,
-        ...measured.map((img, index) => ({ ...img, order: prev.images.length + index + 1 })),
-      ],
-    }));
-  };
-
-  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      const newPdf: MediaFile = {
-        id: Math.random().toString(36).slice(2, 11),
-        name: file.name,
-        type: 'pdf',
-        url: URL.createObjectURL(file),
-        size: file.size,
-        uploadedAt: new Date().toISOString().split('T')[0],
-        category: 'episodes',
-      };
-      setFormData({ ...formData, pdfFile: newPdf });
-    }
-  };
-
-  const episodeScheduleFields = () => ({
-    scheduledAt:
-      formData.status === 'scheduled' && formData.scheduledAt
-        ? yangonDateTimeLocalToIso(formData.scheduledAt)
-        : undefined,
-    freeAt:
-      formData.isPremium && formData.freeAt ? yangonDateTimeLocalToIso(formData.freeAt) : undefined,
-  });
-
-  const episodeWriteBody = (includeWebtoonId: boolean) => {
-    const schedule = episodeScheduleFields();
-    return {
-      title: { en: formData.titleEn, mm: formData.titleMm },
-      description:
-        formData.descriptionEn || formData.descriptionMm
-          ? { en: formData.descriptionEn, mm: formData.descriptionMm }
-          : undefined,
-      ...(includeWebtoonId ? { webtoonId: formData.webtoonId } : {}),
-      images: formData.images.map((img) => img.url),
-      imageSizes: toImageSizes(formData.images),
-      isPremium: formData.isPremium,
-      coinPrice: formData.isPremium ? formData.coinPrice : 0,
-      status: formData.status,
-      ...schedule,
-    };
-  };
-
-  const handleAddEpisode = async () => {
-    if (!canWriteCatalog) return;
-    if (!isMockApi()) {
-      try {
-        const { episode } = await createEpisode(episodeWriteBody(true));
-        await reloadCatalog();
-        appendActivityLog(setActivityLogs, {
-          action: 'create',
-          targetType: 'episode',
-          targetId: episode.id,
-          targetName: episode.title,
-          admin: user,
-        });
-        setIsAddModalOpen(false);
-        resetForm();
-      } catch (err) {
-        setFormError(apiMessage(err, 'Could not save episode'));
-      }
-      return;
-    }
-    const webtoon = webtoons.find((w) => w.id === formData.webtoonId);
-    const now = nowIso();
-    const imageSizes = toImageSizes(formData.images);
-    const newEpisode: Episode = {
-      id: `${Date.now()}`,
-      webtoonId: formData.webtoonId,
-      webtoonTitle: webtoon?.title || { en: '', mm: '' },
-      title: { en: formData.titleEn, mm: formData.titleMm },
-      description:
-        formData.descriptionEn || formData.descriptionMm
-          ? { en: formData.descriptionEn, mm: formData.descriptionMm }
-          : undefined,
-      images: formData.images.map((img) => img.url),
-      ...(imageSizes ? { imageSizes } : {}),
-      isPremium: formData.isPremium,
-      coinPrice: formData.isPremium ? formData.coinPrice : 0,
-      viewCount: 0,
-      likeCount: 0,
-      episodeNumber: episodes.filter((e) => e.webtoonId === formData.webtoonId).length + 1,
-      status: formData.status,
-      createdAt: stampIso(),
-      updatedAt: now,
-      ...episodeScheduleFields(),
-    };
-    setEpisodes([newEpisode, ...episodes]);
-    appendActivityLog(setActivityLogs, {
-      action: 'create',
-      targetType: 'episode',
-      targetId: newEpisode.id,
-      targetName: newEpisode.title,
-      admin: user,
-    });
-    setIsAddModalOpen(false);
-    resetForm();
-  };
-
-  const handleEditEpisode = async () => {
-    if (!canWriteCatalog || !selectedEpisode) return;
-    if (!isMockApi()) {
-      try {
-        await updateEpisode(selectedEpisode.id, episodeWriteBody(false));
-        await reloadCatalog();
-        appendActivityLog(setActivityLogs, {
-          action: 'update',
-          targetType: 'episode',
-          targetId: selectedEpisode.id,
-          targetName: formData.titleEn,
-          admin: user,
-        });
-        setIsEditModalOpen(false);
-        resetForm();
-      } catch (err) {
-        setFormError(apiMessage(err, 'Could not save episode'));
-      }
-      return;
-    }
-    const imageSizes = toImageSizes(formData.images);
-    setEpisodes(
-      episodes.map((e) => {
-        if (e.id !== selectedEpisode.id) return e;
-        const next: Episode = {
-          ...e,
-          title: { en: formData.titleEn, mm: formData.titleMm },
-          description:
-            formData.descriptionEn || formData.descriptionMm
-              ? { en: formData.descriptionEn, mm: formData.descriptionMm }
-              : undefined,
-          images: formData.images.map((img) => img.url),
-          isPremium: formData.isPremium,
-          coinPrice: formData.isPremium ? formData.coinPrice : 0,
-          status: formData.status,
-          updatedAt: nowIso(),
-          ...episodeScheduleFields(),
-        };
-        if (imageSizes) next.imageSizes = imageSizes;
-        else delete next.imageSizes;
-        return next;
-      }),
-    );
-    appendActivityLog(setActivityLogs, {
-      action: 'update',
-      targetType: 'episode',
-      targetId: selectedEpisode.id,
-      targetName: formData.titleEn,
-      admin: user,
-    });
-    setIsEditModalOpen(false);
-    resetForm();
   };
 
   const handleDeleteEpisode = async () => {
@@ -468,34 +198,6 @@ const EpisodesPage = () => {
     });
   };
 
-  const openEditModal = (episode: Episode) => {
-    setSelectedEpisode(episode);
-    setFormData({
-      titleEn: episode.title.en,
-      titleMm: episode.title.mm,
-      descriptionEn: episode.description?.en || '',
-      descriptionMm: episode.description?.mm || '',
-      webtoonId: episode.webtoonId,
-      isPremium: episode.isPremium,
-      coinPrice: episode.coinPrice,
-      status: episode.status,
-      images: episode.images.map((url, index) => {
-        const size = episode.imageSizes?.[index];
-        return {
-          id: `${index}`,
-          url,
-          order: index + 1,
-          ...(size ? { width: size.width, height: size.height } : {}),
-        };
-      }),
-      pdfFile: null,
-      scheduledAt: episode.scheduledAt ? isoToYangonDateTimeLocal(episode.scheduledAt) : '',
-      freeAt: episode.freeAt ? isoToYangonDateTimeLocal(episode.freeAt) : '',
-    });
-    setIsEditModalOpen(true);
-    setOpenMenuId(null);
-  };
-
   const openDeleteModal = (episode: Episode) => {
     setSelectedEpisode(episode);
     setDeleteError('');
@@ -503,362 +205,10 @@ const EpisodesPage = () => {
     setOpenMenuId(null);
   };
 
-  const resetForm = () => {
-    setFormData({
-      titleEn: '',
-      titleMm: '',
-      descriptionEn: '',
-      descriptionMm: '',
-      webtoonId: '',
-      isPremium: false,
-      coinPrice: 0,
-      status: 'draft',
-      images: [],
-      pdfFile: null,
-      scheduledAt: '',
-      freeAt: '',
-    });
-    setSelectedEpisode(null);
-    setFormError('');
+  const goToEditor = (path: string) => {
+    setOpenMenuId(null);
+    navigate(path);
   };
-
-  const EpisodeForm = ({ isEdit = false }: { isEdit?: boolean }) => (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (isEdit) {
-          void handleEditEpisode();
-        } else {
-          void handleAddEpisode();
-        }
-      }}
-      className="space-y-4"
-    >
-      {!isEdit && (
-        <div>
-          <label
-            htmlFor={`${isEdit ? 'edit' : 'add'}-webtoon`}
-            className="mb-1.5 block text-sm font-medium text-fg-secondary"
-          >
-            Webtoon
-          </label>
-          <select
-            id={`${isEdit ? 'edit' : 'add'}-webtoon`}
-            value={formData.webtoonId}
-            onChange={(e) => setFormData({ ...formData, webtoonId: e.target.value })}
-            className="input-base"
-            required
-          >
-            <option value="">Select webtoon</option>
-            {webtoons
-              .filter((w) => w.status !== 'draft')
-              .map((webtoon) => (
-                <option key={webtoon.id} value={webtoon.id}>
-                  {webtoon.title.en}
-                </option>
-              ))}
-          </select>
-        </div>
-      )}
-      <Input
-        label="Title (EN)"
-        value={formData.titleEn}
-        onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
-        required
-      />
-      <Input
-        label="Title (MM)"
-        value={formData.titleMm}
-        onChange={(e) => setFormData({ ...formData, titleMm: e.target.value })}
-      />
-      <div>
-        <label
-          htmlFor={`${isEdit ? 'edit' : 'add'}-description-en`}
-          className="mb-1.5 block text-sm font-medium text-fg-secondary"
-        >
-          Description (EN)
-        </label>
-        <textarea
-          id={`${isEdit ? 'edit' : 'add'}-description-en`}
-          value={formData.descriptionEn}
-          onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
-          rows={2}
-          className="input-base"
-        />
-      </div>
-      <div>
-        <label
-          htmlFor={`${isEdit ? 'edit' : 'add'}-description-mm`}
-          className="mb-1.5 block text-sm font-medium text-fg-secondary"
-        >
-          Description (MM)
-        </label>
-        <textarea
-          id={`${isEdit ? 'edit' : 'add'}-description-mm`}
-          value={formData.descriptionMm}
-          onChange={(e) => setFormData({ ...formData, descriptionMm: e.target.value })}
-          rows={2}
-          className="input-base"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-fg-secondary">Episode Images</label>
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setIsMediaPickerOpen(true);
-              }}
-            >
-              <ImageIcon className="mr-1 h-4 w-4" />
-              From Media
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Upload className="mr-1 h-4 w-4" />
-              Upload
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              aria-label="Upload episode images"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </div>
-
-          {formData.images.length > 0 && (
-            <div className="max-h-60 overflow-y-auto rounded-lg border p-3">
-              <p className="mb-2 text-xs text-fg-muted">{formData.images.length} images</p>
-              <div className="grid grid-cols-4 gap-2">
-                {formData.images.map((image, index) => (
-                  <div
-                    key={image.id}
-                    className="group relative aspect-[3/4] overflow-hidden rounded border"
-                  >
-                    <img
-                      src={image.url}
-                      alt={`Page ${index + 1}`}
-                      className="h-full w-full object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                      <button
-                        type="button"
-                        onClick={() => moveImage(image.id, 'up')}
-                        className="rounded bg-white p-1 text-xs"
-                        disabled={index === 0}
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveImage(image.id, 'down')}
-                        className="rounded bg-white p-1 text-xs"
-                        disabled={index === formData.images.length - 1}
-                      >
-                        ↓
-                      </button>
-                      <button
-                        type="button"
-                        title="Remove image"
-                        onClick={() => removeImage(image.id)}
-                        className="rounded bg-red-500 p-1 text-xs text-white"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                    <span className="absolute bottom-1 left-1 rounded bg-black/70 px-1 text-xs text-white">
-                      {index + 1}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-fg-secondary">
-          PDF File (Optional)
-        </label>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setIsMediaPickerOpen(true);
-            }}
-          >
-            <FileText className="mr-1 h-4 w-4" />
-            From Media
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => pdfInputRef.current?.click()}
-          >
-            <Upload className="mr-1 h-4 w-4" />
-            Upload PDF
-          </Button>
-          <input
-            ref={pdfInputRef}
-            type="file"
-            accept=".pdf"
-            aria-label="Upload PDF file"
-            onChange={handlePdfUpload}
-            className="hidden"
-          />
-        </div>
-        {formData.pdfFile && (
-          <div className="mt-2 flex items-center gap-2 rounded-lg bg-gray-50 p-2">
-            <FileText className="h-5 w-5 text-red-500" />
-            <span className="text-sm text-fg-secondary">{formData.pdfFile.name}</span>
-            <button
-              type="button"
-              title="Remove PDF file"
-              onClick={() => setFormData({ ...formData, pdfFile: null })}
-              className="ml-auto text-fg-muted hover:text-red-500"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor={`${isEdit ? 'edit' : 'add'}-status`}
-            className="mb-1.5 block text-sm font-medium text-fg-secondary"
-          >
-            Status
-          </label>
-          <select
-            id={`${isEdit ? 'edit' : 'add'}-status`}
-            value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value as Episode['status'] })
-            }
-            className="input-base"
-          >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-            <option value="scheduled">Scheduled</option>
-          </select>
-        </div>
-        {formData.status === 'scheduled' && (
-          <div>
-            <label
-              htmlFor={`${isEdit ? 'edit' : 'add'}-scheduled`}
-              className="mb-1.5 block text-sm font-medium text-fg-secondary"
-            >
-              Schedule Date
-            </label>
-            <input
-              id={`${isEdit ? 'edit' : 'add'}-scheduled`}
-              type="datetime-local"
-              value={formData.scheduledAt}
-              onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
-              className="input-base"
-              required
-            />
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id={`${isEdit ? 'edit' : 'add'}EpisodeIsPremium`}
-          checked={formData.isPremium}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              isPremium: e.target.checked,
-              coinPrice: e.target.checked ? formData.coinPrice || 5 : 0,
-              freeAt: e.target.checked ? formData.freeAt : '',
-            })
-          }
-          className="h-4 w-4 rounded border-line-strong text-primary-600 focus:ring-primary-500"
-        />
-        <label
-          htmlFor={`${isEdit ? 'edit' : 'add'}EpisodeIsPremium`}
-          className="text-sm text-fg-secondary"
-        >
-          Premium Content
-        </label>
-      </div>
-      {formData.isPremium && (
-        <>
-          <Input
-            label="Coin Price"
-            type="number"
-            min={1}
-            value={formData.coinPrice}
-            onChange={(e) => setFormData({ ...formData, coinPrice: parseInt(e.target.value) || 0 })}
-          />
-          <div>
-            <label
-              htmlFor={`${isEdit ? 'edit' : 'add'}-free-at`}
-              className="mb-1.5 block text-sm font-medium text-fg-secondary"
-            >
-              Free at (optional, Yangon)
-            </label>
-            <input
-              id={`${isEdit ? 'edit' : 'add'}-free-at`}
-              type="datetime-local"
-              value={formData.freeAt}
-              onChange={(e) => setFormData({ ...formData, freeAt: e.target.value })}
-              className="input-base"
-            />
-            <p className="mt-1 text-xs text-fg-muted">
-              After this time the episode is free. Leave blank for coins-only.
-            </p>
-          </div>
-        </>
-      )}
-      {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
-      <div className="flex justify-end gap-3 pt-4">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => {
-            if (isEdit) {
-              setIsEditModalOpen(false);
-            } else {
-              setIsAddModalOpen(false);
-            }
-            resetForm();
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={
-            !formData.titleEn ||
-            (!isEdit && !formData.webtoonId) ||
-            (formData.status === 'scheduled' && !formData.scheduledAt)
-          }
-        >
-          {isEdit ? 'Save Changes' : 'Add Episode'}
-        </Button>
-      </div>
-    </form>
-  );
 
   return (
     <>
@@ -885,7 +235,7 @@ const EpisodesPage = () => {
                 ) : null}
                 <Button
                   leftIcon={<Plus className="h-4 w-4" />}
-                  onClick={() => setIsAddModalOpen(true)}
+                  onClick={() => navigate('/episodes/new')}
                 >
                   Add Episode
                 </Button>
@@ -1017,7 +367,7 @@ const EpisodesPage = () => {
                                 <>
                                   <button
                                     type="button"
-                                    onClick={() => openEditModal(episode)}
+                                    onClick={() => goToEditor(`/episodes/${episode.id}/edit`)}
                                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-fg-secondary hover:bg-gray-50"
                                   >
                                     <Edit className="h-4 w-4" />
@@ -1044,7 +394,7 @@ const EpisodesPage = () => {
             </div>
 
             {episodes.length === 0 ? (
-              <NoEpisodes onAdd={canWriteCatalog ? () => setIsAddModalOpen(true) : undefined} />
+              <NoEpisodes onAdd={canWriteCatalog ? () => navigate('/episodes/new') : undefined} />
             ) : filteredEpisodes.length === 0 ? (
               <NoSearchResults
                 query={searchQuery}
@@ -1056,30 +406,6 @@ const EpisodesPage = () => {
               />
             ) : null}
           </Card>
-
-          <Modal
-            isOpen={isAddModalOpen}
-            onClose={() => {
-              setIsAddModalOpen(false);
-              resetForm();
-            }}
-            title="Add New Episode"
-            size="lg"
-          >
-            <EpisodeForm />
-          </Modal>
-
-          <Modal
-            isOpen={isEditModalOpen}
-            onClose={() => {
-              setIsEditModalOpen(false);
-              resetForm();
-            }}
-            title="Edit Episode"
-            size="lg"
-          >
-            <EpisodeForm isEdit />
-          </Modal>
 
           <Modal
             isOpen={isDeleteModalOpen}
@@ -1264,7 +590,7 @@ const EpisodesPage = () => {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleBulkUpload}
+                  onClick={() => void handleBulkUpload()}
                   disabled={!bulkUploadData.webtoonId || bulkUploadData.files.length === 0}
                 >
                   Upload {bulkUploadData.files.length > 0 && `(${bulkUploadData.files.length})`}
@@ -1272,21 +598,6 @@ const EpisodesPage = () => {
               </div>
             </div>
           </Modal>
-
-          <MediaPicker
-            isOpen={isMediaPickerOpen}
-            onClose={() => setIsMediaPickerOpen(false)}
-            onSelect={(files) => {
-              const imageFiles = files.filter((f) => f.type === 'image');
-              if (imageFiles.length > 0) {
-                handleImageSelect(imageFiles);
-              } else if (files.length > 0 && files[0].type === 'pdf') {
-                handlePdfSelect(files);
-              }
-            }}
-            accept="all"
-            multiple
-          />
         </div>
       )}
     </>

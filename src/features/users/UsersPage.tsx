@@ -18,6 +18,7 @@ import {
   PageSEO,
   EmptyState,
   NoUsers,
+  LaneStatus,
   coverSheenClass,
 } from '../../components';
 import { useAuth } from '@/features/auth/useAuth';
@@ -460,7 +461,8 @@ const MockUsersPage = () => {
 const ReaderUsersPage = () => {
   const { user: admin } = useAuth();
   const { canWriteCommunity } = useStaffAccess();
-  const { readerUsers, setActivityLogs, isLoading, reloadCatalog } = useData();
+  const { readerUsers, setActivityLogs, usersLoading, usersError, reloadCatalog, retry } =
+    useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [loadedAvatars, setLoadedAvatars] = useState<Set<string>>(() => new Set());
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -556,8 +558,16 @@ const ReaderUsersPage = () => {
   return (
     <>
       <PageSEO.Users />
-      {isLoading ? (
+      {usersLoading ? (
         <UsersPageSkeleton />
+      ) : usersError ? (
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-fg">Users</h1>
+            <p className="mt-1 text-fg-muted">Moderate portal readers</p>
+          </div>
+          <LaneStatus message="Users request failed." onRetry={retry} />
+        </div>
       ) : (
         <div className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

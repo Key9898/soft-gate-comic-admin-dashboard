@@ -12,7 +12,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Card, PageSEO } from '../../components';
+import { Card, PageSEO, EmptyState } from '../../components';
 import { useData } from '@/lib/DataContext';
 import { isMockApi } from '@/lib/api/http';
 import { readSgVar, useTheme } from '@/lib/theme';
@@ -65,6 +65,10 @@ const DashboardPage = () => {
     readerComments,
     transactions,
     isLoading,
+    commentsLoading,
+    commentsError,
+    usersLoading,
+    usersError,
   } = useData();
 
   const formatNumber = (num: number) => {
@@ -86,11 +90,13 @@ const DashboardPage = () => {
     .filter((tx) => tx.type === 'purchase' && tx.status === 'completed')
     .reduce((sum, tx) => sum + tx.amount, 0);
   const mock = isMockApi();
-  const userCount = mock ? users.length : readerUsers.length;
+  const userCount = mock ? users.length : usersLoading || usersError ? null : readerUsers.length;
   const activeUsers = mock ? users.filter((u) => u.status === 'active').length : 0;
   const commentCountCaption = mock
     ? `${comments.filter((c) => c.status === 'visible').length} visible comments`
-    : `${readerComments.length} reader comments`;
+    : commentsLoading || commentsError
+      ? 'Comments unavailable'
+      : `${readerComments.length} reader comments`;
   const growthRate =
     userGrowthData.length >= 2
       ? (
@@ -115,7 +121,7 @@ const DashboardPage = () => {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Users"
-              value={formatNumber(userCount)}
+              value={userCount === null ? 'Unavailable' : formatNumber(userCount)}
               icon={<Users className="h-6 w-6" />}
               change={mock ? `${activeUsers} active` : undefined}
               changeType="positive"
@@ -144,150 +150,185 @@ const DashboardPage = () => {
               title="Total Revenue"
               value={formatCurrency(totalRevenue)}
               icon={<DollarSign className="h-6 w-6" />}
-              change="From completed purchases"
-              changeType="positive"
+              change={mock ? 'From completed purchases' : 'Not wired on live'}
+              changeType={mock ? 'positive' : 'neutral'}
             />
             <StatCard
               title="Active Users"
               value={formatNumber(activeUsers)}
               icon={<Activity className="h-6 w-6" />}
-              changeType="positive"
+              change={mock ? undefined : 'Not wired on live'}
+              changeType={mock ? 'positive' : 'neutral'}
             />
             <StatCard
               title="Growth Rate"
               value={`${growthRate}%`}
               icon={<TrendingUp className="h-6 w-6" />}
-              change="Across user-growth series"
-              changeType="positive"
+              change={mock ? 'Across user-growth series' : 'Not wired on live'}
+              changeType={mock ? 'positive' : 'neutral'}
             />
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <h3 className="mb-4 text-lg font-semibold text-fg">Revenue Overview</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={revenueData}>
-                    <defs>
-                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#0E9494" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#0E9494" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
-                    <XAxis
-                      dataKey="date"
-                      tickFormatter={(value) => value.split('-')[2]}
-                      stroke={tickStroke}
-                      fontSize={12}
-                    />
-                    <YAxis stroke={tickStroke} fontSize={12} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: `1px solid ${gridStroke}`,
-                        borderRadius: '8px',
-                      }}
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="#0E9494"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorRevenue)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+              {mock ? (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={revenueData}>
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#0E9494" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#0E9494" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                      <XAxis
+                        dataKey="date"
+                        tickFormatter={(value) => value.split('-')[2]}
+                        stroke={tickStroke}
+                        fontSize={12}
+                      />
+                      <YAxis stroke={tickStroke} fontSize={12} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: `1px solid ${gridStroke}`,
+                          borderRadius: '8px',
+                        }}
+                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="#0E9494"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorRevenue)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <EmptyState
+                  title="Not wired on live"
+                  description="This desk has no chart API yet."
+                  className="py-8"
+                />
+              )}
             </Card>
 
             <Card>
               <h3 className="mb-4 text-lg font-semibold text-fg">User Growth</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={userGrowthData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
-                    <XAxis dataKey="date" stroke={tickStroke} fontSize={12} />
-                    <YAxis stroke={tickStroke} fontSize={12} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: `1px solid ${gridStroke}`,
-                        borderRadius: '8px',
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="users"
-                      stroke="#0E9494"
-                      strokeWidth={2}
-                      dot={{ fill: '#0E9494', strokeWidth: 2 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="activeUsers"
-                      stroke="#22C55E"
-                      strokeWidth={2}
-                      dot={{ fill: '#22C55E', strokeWidth: 2 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              {mock ? (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={userGrowthData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                      <XAxis dataKey="date" stroke={tickStroke} fontSize={12} />
+                      <YAxis stroke={tickStroke} fontSize={12} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: `1px solid ${gridStroke}`,
+                          borderRadius: '8px',
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="users"
+                        stroke="#0E9494"
+                        strokeWidth={2}
+                        dot={{ fill: '#0E9494', strokeWidth: 2 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="activeUsers"
+                        stroke="#22C55E"
+                        strokeWidth={2}
+                        dot={{ fill: '#22C55E', strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <EmptyState
+                  title="Not wired on live"
+                  description="This desk has no chart API yet."
+                  className="py-8"
+                />
+              )}
             </Card>
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <h3 className="mb-4 text-lg font-semibold text-fg">Popular Webtoons</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={popularWebtoons} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
-                    <XAxis type="number" stroke={tickStroke} fontSize={12} />
-                    <YAxis
-                      dataKey="title.en"
-                      type="category"
-                      stroke={tickStroke}
-                      fontSize={12}
-                      width={100}
-                      tickFormatter={(value) =>
-                        value.length > 12 ? `${value.slice(0, 12)}...` : value
-                      }
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: `1px solid ${gridStroke}`,
-                        borderRadius: '8px',
-                      }}
-                      formatter={(value: number) => [formatNumber(value), 'Views']}
-                    />
-                    <Bar dataKey="views" fill="#0E9494" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {mock ? (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={popularWebtoons} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+                      <XAxis type="number" stroke={tickStroke} fontSize={12} />
+                      <YAxis
+                        dataKey="title.en"
+                        type="category"
+                        stroke={tickStroke}
+                        fontSize={12}
+                        width={100}
+                        tickFormatter={(value) =>
+                          value.length > 12 ? `${value.slice(0, 12)}...` : value
+                        }
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: `1px solid ${gridStroke}`,
+                          borderRadius: '8px',
+                        }}
+                        formatter={(value: number) => [formatNumber(value), 'Views']}
+                      />
+                      <Bar dataKey="views" fill="#0E9494" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <EmptyState
+                  title="Not wired on live"
+                  description="This desk has no chart API yet."
+                  className="py-8"
+                />
+              )}
             </Card>
 
             <Card>
               <h3 className="mb-4 text-lg font-semibold text-fg">Top Revenue Webtoons</h3>
-              <div className="space-y-4">
-                {popularWebtoons.map((webtoon, index) => (
-                  <div
-                    key={webtoon.id}
-                    className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-700">
-                        {index + 1}
+              {mock ? (
+                <div className="space-y-4">
+                  {popularWebtoons.map((webtoon, index) => (
+                    <div
+                      key={webtoon.id}
+                      className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-700">
+                          {index + 1}
+                        </span>
+                        <span className="font-medium text-fg">{webtoon.title.en}</span>
+                      </div>
+                      <span className="font-semibold text-fg">
+                        {formatCurrency(webtoon.revenue)}
                       </span>
-                      <span className="font-medium text-fg">{webtoon.title.en}</span>
                     </div>
-                    <span className="font-semibold text-fg">{formatCurrency(webtoon.revenue)}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="Not wired on live"
+                  description="This desk has no chart API yet."
+                  className="py-8"
+                />
+              )}
             </Card>
           </div>
         </div>

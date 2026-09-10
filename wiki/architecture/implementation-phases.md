@@ -1,6 +1,6 @@
 # Implementation track — SoftGate Comic Admin
 
-> Numbering is sequential **Impl 1–54** (Lark-aligned). SoftGate name + logo = Impl 7; Profile polish + media-backed avatar = Impl 8.
+> Numbering is sequential **Impl 1–67** (Lark-aligned). SoftGate name + logo = Impl 7; Profile polish + media-backed avatar = Impl 8.
 > Terminology: work batches are labeled **Impl N** (not “Phase N”).
 
 ## Impl 1 — Documentation, architecture & SoftGate branding
@@ -391,3 +391,81 @@
 - [x] Copy website `ReaderUser` + `Wallet` + delete-child models into Admin Prisma (no `ReaderComment` FKs, no Admin migrate); `prisma generate` only (2026-09-10)
 - [x] `/api/users` lists portal rows, PATCH profile fields, hard DELETE (website cascade); mock ban/suspend unchanged (2026-09-10)
 - [x] Live Users desk uses `readerUsers`; coins are wallet read-only; Help: delete removes the reader (2026-09-10)
+
+## Impl 55 — In-page episode editor
+
+- [x] Add/Edit Episode is `/episodes/new` and `/episodes/:episodeId/edit` (not a nested modal); palette `episode.new` is `/episodes/new` (2026-09-10)
+- [x] JPEG/PNG multi-upload through `/api/media` (mock: data URLs); never persist `blob:`; numbered 1, 2, 3; PDF slot removed; bulk stays mock-only (2026-09-10)
+- [x] Webtoon cover copy matches Choose from Media; Help + command-palette conventions; website repo untouched; WebP ingest is Impl 56 (2026-09-10)
+
+## Impl 56 — WebP ingest (same pixels)
+
+- [x] `POST /api/media` transcodes JPEG/PNG/still WebP to lossy WebP quality 80 with no resize; object key `{uuid}.webp`; display name unchanged (2026-09-10)
+- [x] GIF, PDF, and animated (`pages > 1`) passthrough; sharp throw or dimension mismatch is 400; inbound 2MB unchanged; no old-object migrate; website untouched (2026-09-10)
+- [x] Help + conventions honest about live WebP vs mock data URLs; leftover Impl 51 not part of this work (2026-09-10)
+
+## Impl 57 — Purge live Impl 50 smoke catalog
+
+- [x] Convention: live shared catalog must not keep ops smoke `ongoing`/`published`; delete the graph after verify (2026-09-10)
+- [x] Staff REST delete of the Impl 50 smoke series (episode → webtoon → unused author/genre → matched media/R2); mock seeds and website repo untouched (2026-09-10)
+- [x] Help Catalog note + AGENTS: do not recreate a published smoke title (2026-09-10)
+
+## Impl 58 — In-page webtoon editor
+
+- [x] Add/Edit Webtoon is `/webtoons/new` and `/webtoons/:webtoonId/edit` (not a nested modal); palette `webtoon.new` is `/webtoons/new` (2026-09-10)
+- [x] Cover stays Choose from Media; never persist `blob:`; delete confirm stays a list modal; Authors/Genres stay list+modal (2026-09-10)
+- [x] Help + command-palette conventions; website repo untouched; leftover Impl 51 not part of this work (2026-09-10)
+
+## Impl 59 — Admin About History CMS
+
+- [x] Prisma `AboutHistory` + `/api/about/history`; write = `canWriteSettings`; photo only on first published row of that year (2026-09-10)
+- [x] Desk `/about` modal CRUD; mock key `softgate_admin_about_history_v1`; empty API catalog does not leak mock rows (2026-09-10)
+- [x] Help honesty: reader `/about` unchanged until website 205–206; website repo untouched (2026-09-10)
+
+## Impl 60 — Admin About Team CMS
+
+- [x] Prisma `AboutTeamMember` + `AboutTeamMeta` (`id=about-team`) + `/api/about/team` (register `/meta` before `/:id`); write = `canWriteSettings`; photo allowed on every member (2026-09-10)
+- [x] Desk `/about` Team section under History; mock key `softgate_admin_about_team_v1`; empty API members do not leak mock rows; GET meta fail-open to portal copy (2026-09-10)
+- [x] Help honesty: reader `/about` unchanged until website 205–207; `member.new` is `/about?new=member`; website repo untouched (2026-09-10)
+
+## Impl 61 — Catalog fail-open + comments/about 500
+
+- [x] `reloadCatalog` treats authors/genres/webtoons/episodes as catalog-critical; satellite GETs use `Promise.allSettled` so comments/about 500 do not wipe catalog or show `"Catalog request failed."` (2026-09-10)
+- [x] GET `/api/comments` and GET `/api/about/history` return `[]` on Prisma `P2021` (missing table); no Admin `ReaderComment` migrate (2026-09-10)
+- [x] Applied Admin migrate `AboutHistory` + `AboutTeam` on the live `DATABASE_URL`; website repo untouched (2026-09-10)
+
+## Impl 62 — Split desk load lanes
+
+- [x] Core `loadCatalog()` only drives `isLoading` + CatalogStatus **Catalog request failed.**; six side lanes settle after with `Promise.allSettled` and their own `*Loading` / `*Error` (2026-09-10)
+- [x] Side list pages (Comments required) show lane alert vs empty; Dashboard does not print `0` comments/users while that lane is loading or failed (2026-09-10)
+- [x] Help COMMUNITY + convention; mock `reloadCatalog` still no-ops; no Admin `ReaderComment` migrate; website repo untouched (2026-09-10)
+
+## Impl 63 — Press CMS (Admin writes, website `/press` reads)
+
+- [x] Prisma `PressMeta` (`id=press`) + `PressNews` + `PressStill`; staff `/api/press` CRUD; write = `canWriteSettings`; first GET upserts today’s EN/MM kit copy with an empty news table; GET fail-open on `P2021` (2026-09-10)
+- [x] Desk `/press` page-local load (not DataContext / not CatalogStatus); LaneStatus **Press request failed.**; mock key `softgate_admin_press_v1`; ZIP is a URL field; spokesperson is an About team pick; palette stays on this page (2026-09-10)
+- [x] Website persist `GET /api/press` + PressPage live fetch with i18n fallback; website consume note **211**; no website CREATE migrate; no 7th `reloadCatalog` lane (2026-09-10)
+
+## Impl 64 — Live Dashboard / Analytics / Revenue honest empty
+
+- [x] Live `emptyApiCatalog` zeros `revenueData`, `userGrowthData`, `popularWebtoons`, `transactions`; mock desk keeps demo seeds (2026-09-10)
+- [x] Dashboard / Analytics / Revenue live captions **Not wired on live** + EmptyState; no LaneStatus Retry; Genre pie stays catalog (2026-09-10)
+- [x] Help Business + Overview honesty; no analytics/revenue REST; website repo untouched (2026-09-10)
+
+## Impl 65 — Live Reports / Activity Log honest empty
+
+- [x] Live `emptyApiCatalog` zeros `reports` and `activityLogs`; mock desk keeps demo seeds (2026-09-10)
+- [x] Reports live caption **Not wired on live** + EmptyState (no reports API); Activity Log live caption **This session only**; `appendActivityLog` still records this session (2026-09-10)
+- [x] Help Overview/Community/Business honesty; no reports/activity REST; website repo untouched (2026-09-10)
+
+## Impl 66 — Admin FAQ + Cookie Policy CMS
+
+- [x] Prisma `FaqMeta` (`id=faq`, `nextItemNumber` 21 after seed) + `FaqItem`; staff `/api/faq` CRUD; write = `canWriteSettings`; first GET seeds meta + `q1`–`q20`; later empty lists stay empty; GET fail-open on `P2021` (2026-09-10)
+- [x] Prisma `CookieMeta` (`id=cookies`) + `CookieStorageRow`; staff `/api/cookies` + `/rows`; frozen 22 copy keys + 5 glance + 16 storage keys; `storageKey` immutable; first GET seeds meta + 16 rows (2026-09-10)
+- [x] Desks `/faq` and `/cookies` (same-path as About/Press; not `/legal`); page-local load; LaneStatus **FAQ request failed.** / **Cookie policy request failed.**; mock keys `softgate_admin_faq_v1` / `softgate_admin_cookies_v1`; Help About-style honesty; website consume later; clickwrap `/privacy` `/terms` untouched (2026-09-10)
+
+## Impl 67 — Privacy + Terms CMS (Admin writes, website `/privacy` `/terms` reads)
+
+- [x] Prisma `PrivacyMeta` (`id=privacy`) + `PrivacySection` + `TermsMeta` (`id=terms`) + `TermsSection`; staff `/api/legal/privacy|terms` CRUD; write = `canWriteSettings`; first GET upserts today’s EN/MM copy including “no server” glance; GET fail-open on `P2021` (2026-09-10)
+- [x] Desk `/legal` (not staff clickwrap `/privacy` `/terms`); page-local load; LaneStatus **Legal request failed.**; mock key `softgate_admin_legal_v1`; two stacked editors; no MediaPicker (2026-09-10)
+- [x] Website persist `GET /api/legal/privacy` + `GET /api/legal/terms` + PrivacyPage/TermsPage live fetch with i18n fallback; website consume note **212**; no website CREATE migrate; Cookies page and `LEGAL_EFFECTIVE_DATE` default unchanged (2026-09-10)

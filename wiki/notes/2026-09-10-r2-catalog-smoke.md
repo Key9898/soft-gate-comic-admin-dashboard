@@ -22,6 +22,8 @@ Ops-and-verify only. No new API, Prisma models, or website-repo work. Real R2 en
 - Admin `GET /api/webtoons` / `GET /api/episodes` (staff cookie) show the non-draft series, published episode, and R2 URLs.
 - Website `GET /api/catalog` is best-effort on the website origin. This pass did not have a website API listening; Admin-side verify still holds.
 
+Live rows from this pass were purged in Impl 57 (`wiki/notes/2026-09-10-live-smoke-purge.md`). Do not recreate them as `ongoing` / `published`.
+
 ## Desk notes (local only)
 
 - Shared DB `StaffUser` was empty (`setupRequired: true`). Applied pending `20260909200000_staff_auth_setup` (TOTP columns). First Super Admin via `POST /setup` (not a Team invite). Sign-in password was ephemeral — use Forgot password, do not reuse a demo account.

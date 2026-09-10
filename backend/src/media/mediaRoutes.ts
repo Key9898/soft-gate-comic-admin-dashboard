@@ -8,6 +8,7 @@ import { inspectUpload, MAX_PDF_BYTES, newAssetId, newObjectKey } from './inspec
 import type { MediaAssetStore } from './mediaAssetStore.js';
 import type { ObjectStore } from './objectStore.js';
 import { publicMediaFile } from './serialize.js';
+import { prepareStoredUpload } from './transcodeUpload.js';
 
 export type MediaServices = {
   assets: MediaAssetStore;
@@ -84,11 +85,17 @@ export function mountMediaRoutes(app: Express, store: StaffStore, media: MediaSe
       return;
     }
 
-    const key = newObjectKey(inspected.extension);
+    const prepared = await prepareStoredUpload(inspected, file.buffer);
+    if ('error' in prepared) {
+      res.status(400).json({ error: prepared.error });
+      return;
+    }
+
+    const key = newObjectKey(prepared.extension);
     const put = await media.objects.put({
       key,
-      body: file.buffer,
-      contentType: inspected.contentType,
+      body: prepared.body,
+      contentType: prepared.contentType,
     });
 
     try {
@@ -97,9 +104,9 @@ export function mountMediaRoutes(app: Express, store: StaffStore, media: MediaSe
         key,
         url: put.url,
         name: file.originalname || key,
-        contentType: inspected.contentType,
+        contentType: prepared.contentType,
         kind: inspected.kind,
-        size: file.size,
+        size: prepared.size,
         category: readCategory(req.body?.category),
       });
       res.status(201).json({ file: publicMediaFile(row) });

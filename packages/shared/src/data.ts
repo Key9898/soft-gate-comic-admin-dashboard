@@ -8,6 +8,9 @@ import type {
   Author,
   Genre,
   CoinPackage,
+  AboutHistory,
+  AboutTeamMember,
+  AboutTeamMeta,
   Comment,
   PopularWebtoon,
   MediaFile,
@@ -814,6 +817,100 @@ export const mockCoinPackages: CoinPackage[] = [
   { id: '4', coins: 650, price: 10000, bonus: 80 },
   { id: '5', coins: 1400, price: 20000, bonus: 200, bestValue: true },
   { id: '6', coins: 3000, price: 40000, bonus: 500 },
+];
+
+export const mockAboutHistories: AboutHistory[] = [
+  {
+    id: 'h1',
+    year: 2026,
+    month: 1,
+    title: { en: 'Founded', mm: 'တည်ထောင်ခြင်း' },
+    description: {
+      en: 'A Myanmar-first webtoon studio starts building a local reading portal.',
+      mm: 'မြန်မာဦးစားပေး webtoon စတူဒီယိုက ဒေသခံ ဖတ်ရှုရေး portal တည်ဆောက်ရန် စတင်သည်။',
+    },
+    sortOrder: 0,
+    published: true,
+  },
+  {
+    id: 'h2',
+    year: 2026,
+    month: 3,
+    title: { en: 'Portal', mm: 'Portal' },
+    description: {
+      en: 'Catalog, episode reader, and English plus Myanmar ship in the same product.',
+      mm: 'Catalog၊ အပိုင်းဖတ်ရှုခြင်းနှင့် အင်္ဂလိပ်-မြန်မာကို ထုတ်ကုန်တစ်ခုတည်းတွင် တင်ဆက်သည်။',
+    },
+    sortOrder: 0,
+    published: true,
+  },
+  {
+    id: 'h3',
+    year: 2026,
+    month: 6,
+    title: { en: 'Demo wallet', mm: 'ဒီမို ပိုက်ဆံအိတ်' },
+    description: {
+      en: 'Coins unlock premium episodes on this device only.',
+      mm: 'Coins ဖြင့် premium အပိုင်းများကို ဤစက်ပေါ်တွင်သာ ဖွင့်သည်။',
+    },
+    sortOrder: 0,
+    published: true,
+  },
+  {
+    id: 'h4',
+    year: 2026,
+    month: 12,
+    title: { en: 'Production path', mm: 'ထုတ်လုပ်ရေး လမ်း' },
+    description: {
+      en: 'Real APIs and creator tools are the aim — not a claim that they already ship.',
+      mm: 'အမှန်တကယ် API နှင့် ဖန်တီးသူကိရိယာများသည် ရည်မှန်းချက် — ယခု တင်ပြီးသားဟု မဆိုလို။',
+    },
+    sortOrder: 0,
+    published: true,
+  },
+];
+
+export const mockAboutTeamMeta: AboutTeamMeta = {
+  deck: {
+    en: 'The public-facing studio roles for this portal.',
+    mm: 'ဤ portal အတွက် အများပြည်သူသို့ ပြသသော စတူဒီယို ရာထူးများ။',
+  },
+  standInNote: {
+    en: 'Portraits and names are stand-ins until the studio publishes its public roster.',
+    mm: 'ပုံတူများနှင့် နာမည်များသည် စတူဒီယိုက အများပြည်သူ စာရင်း မထုတ်မီ ယာယီ အစားထိုးများ ဖြစ်သည်။',
+  },
+  standInVisible: true,
+};
+
+export const mockAboutTeamMembers: AboutTeamMember[] = [
+  {
+    id: 'm1',
+    name: { en: 'Nandar Aye', mm: 'နန္ဒာအေး' },
+    role: { en: 'Founder', mm: 'တည်ထောင်သူ' },
+    sortOrder: 0,
+    published: true,
+  },
+  {
+    id: 'm2',
+    name: { en: 'Min Khant', mm: 'မင်းခန့်' },
+    role: { en: 'Editorial', mm: 'အယ်ဒီတာ' },
+    sortOrder: 1,
+    published: true,
+  },
+  {
+    id: 'm3',
+    name: { en: 'Su Myat', mm: 'စုမြတ်' },
+    role: { en: 'Product', mm: 'ထုတ်ကုန်' },
+    sortOrder: 2,
+    published: true,
+  },
+  {
+    id: 'm4',
+    name: { en: 'Thiri Win', mm: 'သီရိဝင်း' },
+    role: { en: 'Creator partnerships', mm: 'ဖန်တီးသူ ပူးပေါင်းဆောင်ရွက်ရေး' },
+    sortOrder: 3,
+    published: true,
+  },
 ];
 
 export const getSharedData = (): SharedData => ({

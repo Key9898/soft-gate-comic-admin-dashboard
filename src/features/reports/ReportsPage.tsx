@@ -6,6 +6,7 @@ import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog';
 import { useAuth } from '@/features/auth/useAuth';
 import { useStaffAccess } from '@/lib/auth/staffAccess';
 import { appendActivityLog } from '@/lib/activityLog';
+import { isMockApi } from '@/lib/api/http';
 import { useData } from '@/lib/DataContext';
 
 import type { Report } from '../../types';
@@ -15,6 +16,7 @@ const ReportsPage = () => {
   const { user } = useAuth();
   const { canWriteCommunity } = useStaffAccess();
   const { reports, setReports, setActivityLogs, isLoading } = useData();
+  const mock = isMockApi();
   const { addToast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -110,7 +112,9 @@ const ReportsPage = () => {
             <h1 className="text-2xl font-bold text-fg">Reports</h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-fg-muted">
-                {reports.filter((r) => r.status === 'pending').length} pending
+                {mock
+                  ? `${reports.filter((r) => r.status === 'pending').length} pending`
+                  : 'Not wired on live'}
               </span>
             </div>
           </div>
@@ -247,8 +251,12 @@ const ReportsPage = () => {
 
             {reports.length === 0 ? (
               <EmptyState
-                title="No reports yet"
-                description="User reports will appear here when submitted."
+                title={mock ? 'No reports yet' : 'Not wired on live'}
+                description={
+                  mock
+                    ? 'User reports will appear here when submitted.'
+                    : 'This desk has no reports API.'
+                }
               />
             ) : filteredReports.length === 0 ? (
               <EmptyState

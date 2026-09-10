@@ -7,6 +7,7 @@ import {
   PageSEO,
   NoMedia,
   NoSearchResults,
+  LaneStatus,
   coverSheenClass,
 } from '../../components';
 import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog';
@@ -26,7 +27,7 @@ import { useOpenCreateQuery } from '@/lib/commands';
 const MediaLibraryPage = () => {
   const { user } = useAuth();
   const { canWriteCatalog } = useStaffAccess();
-  const { mediaFiles, setMediaFiles, setActivityLogs, isLoading } = useData();
+  const { mediaFiles, setMediaFiles, setActivityLogs, mediaLoading, mediaError, retry } = useData();
   const { addToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,7 +39,7 @@ const MediaLibraryPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [loadedThumbs, setLoadedThumbs] = useState<Set<string>>(() => new Set());
 
-  useOpenCreateQuery(() => fileInputRef.current?.click(), canWriteCatalog && !isLoading);
+  useOpenCreateQuery(() => fileInputRef.current?.click(), canWriteCatalog && !mediaLoading);
 
   const filteredFiles = mediaFiles.filter((file) => {
     const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -131,8 +132,16 @@ const MediaLibraryPage = () => {
   return (
     <>
       <PageSEO.Media />
-      {isLoading ? (
+      {mediaLoading ? (
         <MediaLibraryPageSkeleton />
+      ) : mediaError ? (
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-fg">Media Library</h1>
+            <p className="mt-1 text-fg-muted">Manage your media files</p>
+          </div>
+          <LaneStatus message="Media request failed." onRetry={retry} />
+        </div>
       ) : (
         <div className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

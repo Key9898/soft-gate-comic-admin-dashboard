@@ -17,6 +17,7 @@ import RevenuePageSkeleton from '../../features/revenue/components/RevenuePageSk
 import NotificationsPageSkeleton from '../../features/notifications/components/NotificationsPageSkeleton';
 import SchedulePageSkeleton from '../../features/schedule/components/SchedulePageSkeleton';
 import TeamPageSkeleton from '../../features/team/components/TeamPageSkeleton';
+import AboutPageSkeleton from '../../features/about/components/AboutPageSkeleton';
 import SettingsPageSkeleton from '../../features/settings/components/SettingsPageSkeleton';
 import ProfilePageSkeleton from '../../features/profile/components/ProfilePageSkeleton';
 
@@ -37,6 +38,7 @@ const pages = [
   ['Notifications', NotificationsPageSkeleton],
   ['Schedule', SchedulePageSkeleton],
   ['Team', TeamPageSkeleton],
+  ['About', AboutPageSkeleton],
   ['Settings', SettingsPageSkeleton],
   ['Profile', ProfilePageSkeleton],
 ] as const;

@@ -11,7 +11,7 @@ import {
   Settings,
   Trash2,
 } from 'lucide-react';
-import { Card, Button, Modal, PageSEO, EmptyState } from '../../components';
+import { Card, Button, Modal, PageSEO, EmptyState, LaneStatus } from '../../components';
 import { useData } from '@/lib/DataContext';
 import { useStaffAccess } from '@/lib/auth/staffAccess';
 import { apiMessage, isMockApi } from '@/lib/api/http';
@@ -23,11 +23,19 @@ import {
 
 import type { Notification } from '../../types';
 import NotificationsPageSkeleton from './components/NotificationsPageSkeleton';
+import ReaderBroadcastPanel from './ReaderBroadcastPanel';
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
   const { canWriteBusiness } = useStaffAccess();
-  const { notifications, setNotifications, isLoading, reloadCatalog } = useData();
+  const {
+    notifications,
+    setNotifications,
+    notificationsLoading,
+    notificationsError,
+    reloadCatalog,
+    retry,
+  } = useData();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
@@ -173,8 +181,16 @@ const NotificationsPage = () => {
   return (
     <>
       <PageSEO.Notifications />
-      {isLoading ? (
+      {notificationsLoading ? (
         <NotificationsPageSkeleton />
+      ) : notificationsError ? (
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-fg">Notifications</h1>
+            <p className="mt-1 text-fg-muted">Staff inbox</p>
+          </div>
+          <LaneStatus message="Notifications request failed." onRetry={retry} />
+        </div>
       ) : (
         <div className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -201,6 +217,8 @@ const NotificationsPage = () => {
           </div>
 
           {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
+
+          <ReaderBroadcastPanel canWrite={canWriteBusiness} />
 
           <Card>
             <div className="border-b border-line p-4">

@@ -4,6 +4,7 @@ import { canWriteCommunity } from '../auth/rbac.js';
 import { createRequireStaff, type AuthedRequest } from '../auth/requireStaff.js';
 import type { StaffStore } from '../auth/staffStore.js';
 import { publicComment, type CommentStore } from './commentStore.js';
+import { isMissingTableError } from '../prismaMissingTable.js';
 
 function requireCommunityWrite(req: AuthedRequest, res: Response, next: NextFunction) {
   if (!canWriteCommunity(req.staff?.role)) {
@@ -35,8 +36,16 @@ export function mountCommentRoutes(app: Express, staff: StaffStore, comments: Co
     const raw = req.query.reported;
     const filter =
       raw === 'true' ? { reported: true } : raw === 'false' ? { reported: false } : undefined;
-    const list = await comments.list(filter);
-    res.json({ comments: list.map(publicComment) });
+    try {
+      const list = await comments.list(filter);
+      res.json({ comments: list.map(publicComment) });
+    } catch (err) {
+      if (isMissingTableError(err)) {
+        res.json({ comments: [] });
+        return;
+      }
+      throw err;
+    }
   });
 
   router.patch('/:id', requireCommunityWrite, async (req: AuthedRequest, res) => {

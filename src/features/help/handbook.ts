@@ -31,7 +31,7 @@ export const OVERVIEW_DATA_MOCK =
   'This browser keeps mock data. Saves stay here. They do not appear on the public site.';
 
 export const OVERVIEW_DATA_API =
-  'This desk is connected to the catalog API. Catalog, media, and coin packages you save can reach the reader site. Users on this desk are portal ReaderUser rows. Delete removes the reader; wallet coins are read-only. Team is still staff. Comments on this desk are portal ReaderComment rows. Reported is the moderation queue; delete removes the reader thread. Notifications you mark read or delete save on this desk’s notifications API; they are not the reader inbox. Super Admin and Admin can also send bilingual reader broadcasts when the website service is configured. Maintenance, registration, contact email, and default language save on this desk’s settings API; they can reach the reader site when the portal persist is on. Dashboard charts, revenue, and reports stay mock or local even then. Theme and the other Settings controls stay in this browser. Webtoon and episode counts on the Dashboard can be real; purchase and growth charts are not.';
+  'This desk is connected to the catalog API. Catalog, media, and coin packages you save can reach the reader site. Users on this desk are portal ReaderUser rows. Delete removes the reader; wallet coins are read-only. Team is still staff. Comments on this desk are portal ReaderComment rows. Reported is the moderation queue; delete removes the reader thread. Notifications you mark read or delete save on this desk’s notifications API; they are not the reader inbox. Super Admin and Admin can also send bilingual reader broadcasts when the website service is configured. Maintenance, registration, contact email, and default language save on this desk’s settings API; they can reach the reader site when the portal persist is on. About history and team save on this desk’s About API; this desk does not change reader /about until website 205–207. Press saves on this desk’s Press API and can reach reader /press when the portal persist is on. FAQ and Cookie Policy save on this desk’s FAQ and Cookies APIs and can reach reader /faq and /cookies when the portal persist is on. Privacy and Terms save on this desk’s Legal API and can reach reader /privacy and /terms when the portal persist is on. On this catalog API desk, Analytics charts and Revenue transactions stay empty (not portal money). Mock desk still shows demo series. The Reports list stays empty (no reports API). Activity Log starts empty and only records this browser’s trail. Theme and the other Settings controls stay in this browser. Webtoon and episode counts on the Dashboard can be real.';
 
 export const OVERVIEW_JUMP = 'Jump with Search or jump… in the header, or Ctrl+K (Mac: ⌘K).';
 
@@ -43,7 +43,7 @@ export const DESK_OWNER_EMAIL = 'admin@softgatecomic.com';
 export const CATALOG_NOTES: ReadonlyArray<{ title: string; body: string }> = [
   {
     title: 'Order',
-    body: 'Add an active author (and a genre) before a series, then episodes. Covers and files come from Media.',
+    body: 'Add an active author (and a genre) before a series, then episodes. Add and edit a series on /webtoons/new and /webtoons/:id/edit. Cover comes from Media. Authors and genres stay on their list pages.',
   },
   {
     title: 'Delete a series',
@@ -55,26 +55,30 @@ export const CATALOG_NOTES: ReadonlyArray<{ title: string; body: string }> = [
   },
   {
     title: 'Episode files',
-    body: 'Bulk Upload (PDF split) is mock desk only. The episode form PDF slot is not saved — use page images.',
+    body: 'JPEG/PNG episode pages upload on the episode editor through Media (2MB each). When the catalog API is on, live Media stores them as WebP at the same pixel width and height; mock keeps the original data URL. The PDF slot is gone. Bulk Upload (PDF split) is mock desk only.',
   },
   {
     title: 'Media size',
-    body: 'Upload limits: image 2MB, PDF 10MB.',
+    body: 'Inbound limits: image 2MB, PDF 10MB. When the catalog API is on, JPEG, PNG, and still WebP are stored as WebP at the same pixel width and height (not the same byte size). GIF and PDF stay as uploaded. Mock desk stores the original data URL.',
   },
   {
     title: 'Coin packages',
     body: 'Coin packages are shop SKUs on this desk, not a payments API. When the catalog API is on, packages save on the server. Super Admin and Admin can write; Member and Viewer look only.',
   },
+  {
+    title: 'Live smoke',
+    body: 'When this desk is on the catalog API, non-draft series can appear on the public reader site. Do not leave ops smoke titles ongoing or published. After a live probe, delete the series (episodes first), then unused author or genre, then the matched Media files.',
+  },
 ];
 
 export const COMMUNITY_NOTE = {
   title: 'Users, comments, reports',
-  body: 'Live Users are portal ReaderUser rows when the catalog API is on: search email, username, and display name; coins are the wallet balance (read-only); delete removes the reader. Ban and suspend stay on the mock desk only. Team is still staff. Reports stay mock. Comments are portal ReaderComment rows when the catalog API is on: reported is the queue; delete removes the reader thread. Hide and resolve or dismiss need Admin or Super Admin. Member and Viewer can look only. Report actions apply to pending items only.',
+  body: 'Live Users are portal ReaderUser rows when the catalog API is on: search email, username, and display name; coins are the wallet balance (read-only); delete removes the reader. Ban and suspend stay on the mock desk only. Team is still staff. The Reports list stays empty when the catalog API is on (no reports API). Mock desk still shows demo reports. Comments are portal ReaderComment rows when the catalog API is on: reported is the queue; delete removes the reader thread. Hide and resolve or dismiss need Admin or Super Admin. Member and Viewer can look only. Report actions apply to pending items only. Comments and users load separately from the catalog; a comments API failure does not empty Webtoons or show a catalog banner.',
 };
 
 export const BUSINESS_NOTE = {
   title: 'Charts and money',
-  body: 'Analytics and Revenue are mock. Notifications save on this desk’s notifications API when the catalog API is on; they are not the reader inbox. Super Admin and Admin can send bilingual reader broadcasts when the website service is configured; Member and Viewer look only. Delete on the staff inbox is permanent. Revenue Export is a CSV of this desk’s list, not a bank. Payouts are demo. Activity Log is this browser’s trail, not a server audit API.',
+  body: 'On the catalog API, Analytics charts and Revenue lists are empty; they are not portal money. Mock desk still shows demo series. Notifications save on this desk’s notifications API when the catalog API is on; they are not the reader inbox. Super Admin and Admin can send bilingual reader broadcasts when the website service is configured; Member and Viewer look only. Delete on the staff inbox is permanent. Revenue Export is a CSV of this desk’s list, not a bank. Payouts on the mock desk are demo. On the catalog API, Activity Log starts empty and only records this browser’s trail, not a server audit API.',
 };
 
 export const ADMIN_INVITE =
@@ -85,6 +89,21 @@ export const ADMIN_SIGNIN =
 
 export const ADMIN_SETTINGS =
   'When the catalog API is on, Save writes maintenance, registration, contact email, and default language to this desk’s settings API; they can reach the reader site when the portal persist is on. Theme applies immediately for every role from the header, palette, or Settings, and is not the Save button. Site name, description, email-verification, and notification toggles stay in this browser. Member and Viewer can look only.';
+
+export const ADMIN_ABOUT =
+  'About is a timeline and team CMS on this desk. History is year, month, and bilingual title and description; a photo is only on the first published entry of that year. Team is bilingual name and role, optional photo on every member, plus page deck and stand-in copy. Super Admin and Admin can write; Member and Viewer look only. This desk does not change reader /about until website 205–207.';
+
+export const ADMIN_PRESS =
+  'Press saves on this desk’s Press API and can reach reader /press when the portal persist is on.';
+
+export const ADMIN_FAQ =
+  'FAQ saves on this desk’s FAQ API and can reach reader /faq when the portal persist is on. Super Admin and Admin can write; Member and Viewer look only.';
+
+export const ADMIN_COOKIES =
+  'Cookie Policy saves on this desk’s Cookies API and can reach reader /cookies when the portal persist is on. Storage keys stay on the frozen legal table. Super Admin and Admin can write; Member and Viewer look only.';
+
+export const ADMIN_LEGAL =
+  'Privacy and Terms save on this desk’s Legal API and can reach reader /privacy and /terms when the portal persist is on.';
 
 export const ADMIN_PROFILE =
   'Profile is not in the sidebar. Open it from the header or the profile command. Authenticator is optional: if you turn it on, Sign in asks for a 6-digit code. Against the catalog API, name and password stay in this session only; authenticator saves on the staff API.';

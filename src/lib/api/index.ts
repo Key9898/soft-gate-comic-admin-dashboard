@@ -81,4 +81,70 @@ export {
   markAllNotificationsRead,
   markNotificationRead,
 } from './notifications';
+export {
+  listReaderBroadcasts,
+  previewReaderBroadcast,
+  searchBroadcastReaders,
+  sendReaderBroadcast,
+  type BroadcastPreview,
+  type BroadcastWriteBody,
+  type ReaderBroadcast,
+  type ReaderHit,
+} from './readerBroadcasts';
 export { getPlatformSettings, updatePlatformSettings } from './settings';
+export {
+  createAboutHistory,
+  deleteAboutHistory,
+  listAboutHistories,
+  updateAboutHistory,
+  type AboutHistoryWriteBody,
+} from './aboutHistory';
+export {
+  createAboutTeamMember,
+  deleteAboutTeamMember,
+  getAboutTeamMeta,
+  listAboutTeamMembers,
+  updateAboutTeamMember,
+  updateAboutTeamMeta,
+  type AboutTeamMemberWriteBody,
+  type AboutTeamMetaWriteBody,
+} from './aboutTeam';
+export {
+  createPressNews,
+  createPressStill,
+  deletePressNews,
+  deletePressStill,
+  getPressMeta,
+  listPressNews,
+  listPressStills,
+  updatePressMeta,
+  updatePressNews,
+  updatePressStill,
+  type PressMetaWriteBody,
+  type PressNewsWriteBody,
+  type PressStillWriteBody,
+} from './press';
+export {
+  createFaqItem,
+  deleteFaqItem,
+  listFaqItems,
+  updateFaqItem,
+  type FaqItemWriteBody,
+} from './faq';
+export {
+  createCookieRow,
+  deleteCookieRow,
+  getCookiesPolicy,
+  updateCookieRow,
+  updateCookiesMeta,
+  type CookieMetaWriteBody,
+  type CookieRowWriteBody,
+} from './cookies';
+export {
+  createLegalSection,
+  deleteLegalSection,
+  getLegalMeta,
+  listLegalSections,
+  updateLegalMeta,
+  updateLegalSection,
+} from './legal';

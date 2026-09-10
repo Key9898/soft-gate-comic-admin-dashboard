@@ -9,6 +9,7 @@ import {
   EmptyState,
   NoSearchResults,
   Toggle,
+  LaneStatus,
 } from '../../components';
 import { useAuth } from '@/features/auth/useAuth';
 import { useStaffAccess } from '@/lib/auth/staffAccess';
@@ -52,7 +53,15 @@ const formatMmk = (price: number): string => new Intl.NumberFormat('en-US').form
 const CoinPackagesPage = () => {
   const { user } = useAuth();
   const { canWriteBusiness } = useStaffAccess();
-  const { coinPackages, setCoinPackages, setActivityLogs, isLoading, reloadCatalog } = useData();
+  const {
+    coinPackages,
+    setCoinPackages,
+    setActivityLogs,
+    coinsLoading,
+    coinsError,
+    reloadCatalog,
+    retry,
+  } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -62,7 +71,7 @@ const CoinPackagesPage = () => {
   const [formData, setFormData] = useState<PackFormState>(emptyForm);
   const [formError, setFormError] = useState('');
 
-  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteBusiness && !isLoading);
+  useOpenCreateQuery(() => setIsAddModalOpen(true), canWriteBusiness && !coinsLoading);
 
   const filteredPackages = coinPackages.filter((pack) => {
     const haystack = `${pack.coins} ${pack.price} ${pack.bonus ?? ''}`.toLowerCase();
@@ -304,8 +313,16 @@ const CoinPackagesPage = () => {
   return (
     <>
       <PageSEO.CoinPackages />
-      {isLoading ? (
+      {coinsLoading ? (
         <CoinPackagesPageSkeleton />
+      ) : coinsError ? (
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-fg">Coin packages</h1>
+            <p className="mt-1 text-fg-muted">Manage shop SKUs for the reader coin store</p>
+          </div>
+          <LaneStatus message="Coin packages request failed." onRetry={retry} />
+        </div>
       ) : (
         <div className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

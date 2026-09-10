@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useData } from '@/lib/DataContext';
 import Button from '../Button/Button';
+import LaneStatus from '../LaneStatus/LaneStatus';
 
 const CatalogStatus = () => {
   const { isLoading, error, retry } = useData();
@@ -16,17 +17,7 @@ const CatalogStatus = () => {
   }, [isLoading]);
 
   if (error) {
-    return (
-      <div
-        role="alert"
-        className="mb-4 flex flex-col gap-3 rounded-lg border border-line bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <p className="text-sm text-fg-secondary">Catalog request failed.</p>
-        <Button type="button" size="sm" variant="outline" onClick={retry}>
-          Retry
-        </Button>
-      </div>
-    );
+    return <LaneStatus message="Catalog request failed." onRetry={retry} />;
   }
 
   if (isLoading && slow) {

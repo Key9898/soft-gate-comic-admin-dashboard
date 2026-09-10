@@ -12,7 +12,7 @@ const PALETTE_FOOTER = 'Type to filter · ↑↓ to move · Enter to run · Esc 
 const CommandPalette = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { canWriteCatalog, canManageTeam, inviteRoles } = useStaffAccess();
+  const { canWriteCatalog, canManageTeam, canWriteSettings, inviteRoles } = useStaffAccess();
   const { setPreference } = useTheme();
   const { isOpen, close, focusNonce } = useCommandPalette();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -21,8 +21,8 @@ const CommandPalette = () => {
 
   const canInvite = canManageTeam && inviteRoles.length > 0;
   const matches = useMemo(
-    () => filterCommands(query, { canWriteCatalog, canInvite }),
-    [query, canWriteCatalog, canInvite],
+    () => filterCommands(query, { canWriteCatalog, canInvite, canWriteSettings }),
+    [query, canWriteCatalog, canInvite, canWriteSettings],
   );
   const grouped = useMemo(() => groupCommands(matches), [matches]);
   const flat = matches;

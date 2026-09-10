@@ -10,6 +10,11 @@ import HelpPage from './HelpPage';
 import {
   ADMIN_INVITE,
   ADMIN_SETTINGS,
+  ADMIN_ABOUT,
+  ADMIN_PRESS,
+  ADMIN_FAQ,
+  ADMIN_COOKIES,
+  ADMIN_LEGAL,
   ADMIN_SIGNIN,
   BUSINESS_NOTE,
   CATALOG_NOTES,
@@ -76,6 +81,12 @@ describe('HelpPage', () => {
     expect(screen.getByText(/existing draft or scheduled episode/i)).toBeInTheDocument();
     expect(screen.getByText(/not a payments API/i)).toBeInTheDocument();
     expect(screen.getByText(/Bulk Upload \(PDF split\) is mock desk only/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/JPEG\/PNG episode pages upload on the episode editor/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/stored as WebP at the same pixel width and height/i),
+    ).toBeInTheDocument();
   });
 
   it('shows community mock copy for Member and Viewer, not viewer-only', async () => {
@@ -108,6 +119,11 @@ describe('HelpPage', () => {
     expect(screen.getByText(ADMIN_SIGNIN)).toBeInTheDocument();
     expect(screen.getByText(ADMIN_INVITE)).toBeInTheDocument();
     expect(screen.getByText(ADMIN_SETTINGS)).toBeInTheDocument();
+    expect(screen.getByText(ADMIN_ABOUT)).toBeInTheDocument();
+    expect(screen.getByText(ADMIN_PRESS)).toBeInTheDocument();
+    expect(screen.getByText(ADMIN_FAQ)).toBeInTheDocument();
+    expect(screen.getByText(ADMIN_COOKIES)).toBeInTheDocument();
+    expect(screen.getByText(ADMIN_LEGAL)).toBeInTheDocument();
   });
 
   it('hides Create slugs for a viewer on Commands', async () => {

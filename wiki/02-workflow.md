@@ -73,4 +73,4 @@ After implementation work: update **both** tracks + give the user a Lark Title +
 
 ## Current implementation status
 
-Impls **1–54** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest: Impl 54 = moderate portal `ReaderUser` (profile PATCH + hard delete; wallet read-only). Labels use **Impl N** (not Phase).
+Impls **1–67** complete (see [`architecture/implementation-phases.md`](architecture/implementation-phases.md)). Latest legal work: Impl 67 = Privacy + Terms CMS (desk `/legal`; website consume 212). Impl 66 = Admin FAQ + Cookie Policy CMS (desks `/faq` `/cookies`; website consume later). Impl 63 = Admin Press CMS + website `/press` consume. Impl 64 = live Dashboard/Analytics/Revenue stay empty (not portal money). Impl 65 = live Reports stay empty (no reports API) and Activity Log starts empty (this session only). Labels use **Impl N** (not Phase).

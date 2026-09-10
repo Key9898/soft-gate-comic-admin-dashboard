@@ -8,15 +8,23 @@ Welcome to the official developer wiki for the SoftGate Comic Admin Dashboard pr
 - [01-stack.md](01-stack.md) — Technical stack & core configurations
 - [02-workflow.md](02-workflow.md) — Git workflow, husky gates, dual-track docs
 - [03-folder-map.md](03-folder-map.md) — Codebase architecture and feature folders layout
-- [architecture/implementation-phases.md](architecture/implementation-phases.md) — Impl **1–54** (Impl 54 = moderate portal `ReaderUser`)
+- [architecture/implementation-phases.md](architecture/implementation-phases.md) — Impl **1–67** (Impl 63 = Press CMS; Impl 64 = live Dashboard/Analytics/Revenue empty; Impl 65 = live Reports/Activity Log empty; Impl 66 = Admin FAQ + Cookie Policy CMS; Impl 67 = Privacy + Terms CMS)
 - [references/website-integration.md](references/website-integration.md) — pre-backend Admin work list (21) so the portal can consume catalog/settings
 - [conventions/brand-color-tokens.md](conventions/brand-color-tokens.md) — Logo-aligned teal + `burst-*` magenta tokens
 - [conventions/backend-workspace.md](conventions/backend-workspace.md) — API in `backend/`; Admin SPA at repo root
 - [conventions/staff-auth.md](conventions/staff-auth.md) — staff mock auth; API session when `VITE_USE_MOCK_API=false`
 - [conventions/loading-states.md](conventions/loading-states.md) — Sheen skeletons, no splash, empty ≠ loading ≠ error
+- [conventions/desk-load-lanes.md](conventions/desk-load-lanes.md) — core catalog vs side-lane loads; CatalogStatus is catalog-only
 - [conventions/command-palette.md](conventions/command-palette.md) — Ctrl+K go/create/system commands
-- [conventions/staff-help.md](conventions/staff-help.md) — `/help` staff desk handbook (six Help-only tabs); no Help modal
+- [conventions/episode-editor.md](conventions/episode-editor.md) — in-page episode editor; JPEG/PNG through Media; never persist `blob:`
+- [conventions/webtoon-editor.md](conventions/webtoon-editor.md) — in-page webtoon editor; cover from Media; never persist `blob:`
+- [conventions/media-webp-ingest.md](conventions/media-webp-ingest.md) — live `/api/media` stores same-pixel WebP; mock keeps data URLs
+- [conventions/press-cms.md](conventions/press-cms.md) — Admin `/press` CMS; page-local load; ZIP URL; About spokesperson pick
+- [conventions/faq-cookie-cms.md](conventions/faq-cookie-cms.md) — Admin `/faq` + `/cookies` CMS; page-local; frozen cookie keys; website consume later
+- [conventions/legal-cms.md](conventions/legal-cms.md) — Admin `/legal` Privacy + Terms CMS (Impl 67)
 - [conventions/reader-broadcasts.md](conventions/reader-broadcasts.md) — staff inbox vs reader broadcast prefix
+- [conventions/live-catalog-smoke.md](conventions/live-catalog-smoke.md) — live shared catalog must not keep reader-visible ops smoke
+- [conventions/live-business-empty.md](conventions/live-business-empty.md) — live Dashboard/Analytics/Revenue slices empty; mock desk keeps demo
 - [decisions/001-theme-preference-system-default.md](decisions/001-theme-preference-system-default.md) — Brand fixed; theme Light/Dark/System
 - [decisions/002-admin-root-sibling-backend.md](decisions/002-admin-root-sibling-backend.md) — Admin SPA at root; API is sibling `backend/`
 - [decisions/003-postgresql-prisma.md](decisions/003-postgresql-prisma.md) — PostgreSQL + Prisma 6; not Mongo
@@ -77,6 +85,19 @@ Welcome to the official developer wiki for the SoftGate Comic Admin Dashboard pr
 - [notes/2026-09-10-live-join-desk.md](notes/2026-09-10-live-join-desk.md) — Impl 52 live join desk
 - [notes/2026-09-10-reader-comment-moderation.md](notes/2026-09-10-reader-comment-moderation.md) — Impl 53 moderate portal `ReaderComment`
 - [notes/2026-09-10-reader-users.md](notes/2026-09-10-reader-users.md) — Impl 54 moderate portal `ReaderUser`
+- [notes/2026-09-10-episode-in-page-editor.md](notes/2026-09-10-episode-in-page-editor.md) — Impl 55 in-page episode editor
+- [notes/2026-09-10-media-webp-ingest.md](notes/2026-09-10-media-webp-ingest.md) — Impl 56 same-pixel WebP ingest
+- [notes/2026-09-10-live-smoke-purge.md](notes/2026-09-10-live-smoke-purge.md) — Impl 57 purge live Impl 50 smoke catalog
+- [notes/2026-09-10-webtoon-in-page-editor.md](notes/2026-09-10-webtoon-in-page-editor.md) — Impl 58 in-page webtoon editor
+- [notes/2026-09-10-about-history-cms.md](notes/2026-09-10-about-history-cms.md) — Impl 59 Admin About History CMS
+- [notes/2026-09-10-about-team-cms.md](notes/2026-09-10-about-team-cms.md) — Impl 60 Admin About Team CMS
+- [notes/2026-09-10-catalog-fail-open.md](notes/2026-09-10-catalog-fail-open.md) — Impl 61 catalog fail-open + comments/about 500
+- [notes/2026-09-10-desk-load-lanes.md](notes/2026-09-10-desk-load-lanes.md) — Impl 62 split desk load lanes
+- [notes/2026-09-10-press-cms.md](notes/2026-09-10-press-cms.md) — Impl 63 Press CMS (Admin writes, website `/press` reads)
+- [notes/2026-09-10-live-business-empty.md](notes/2026-09-10-live-business-empty.md) — Impl 64 live Dashboard/Analytics/Revenue empty
+- [notes/2026-09-10-live-reports-activity-empty.md](notes/2026-09-10-live-reports-activity-empty.md) — Impl 65 live Reports/Activity Log empty
+- [notes/2026-09-10-faq-cookie-cms.md](notes/2026-09-10-faq-cookie-cms.md) — Impl 66 Admin FAQ + Cookie Policy CMS
+- [notes/2026-09-10-privacy-terms-cms.md](notes/2026-09-10-privacy-terms-cms.md) — Impl 67 Privacy + Terms CMS (Admin writes, website `/privacy` `/terms` reads)
 - [notes/2026-08-22-staff-auth.md](notes/2026-08-22-staff-auth.md) — Impl 20 staff auth (login/register/forgot OTP)
 
 ## Wiki taxonomy
